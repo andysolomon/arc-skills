@@ -16,6 +16,18 @@ This follows the `vercel-labs/skills` README flow.
 npx skills add andysolomon/arc-skills --list
 ```
 
+### Install all ARC skills in the current project (cwd)
+
+```bash
+npx skills add andysolomon/arc-skills --skill '*'
+```
+
+### Install all ARC skills in cwd for Claude Code + Codex only
+
+```bash
+npx skills add andysolomon/arc-skills -a claude-code -a codex --skill '*'
+```
+
 ### Install all ARC skills globally for Claude Code + Codex
 
 ```bash
