@@ -6,15 +6,43 @@ Portable repository for ARC skills (`arc-*`) so they can be shared and installed
 
 Each skill lives in its own directory and includes a `SKILL.md` entrypoint.
 
-## Install on a machine
+## Install (recommended: skills CLI)
 
-Run:
+This follows the `vercel-labs/skills` README flow.
+
+### List available skills in this repo
+
+```bash
+npx skills add andysolomon/arc-skills --list
+```
+
+### Install all ARC skills globally for Claude Code + Codex
+
+```bash
+npx skills add andysolomon/arc-skills -g -a claude-code -a codex --skill '*'
+```
+
+### Install only specific skills
+
+```bash
+npx skills add andysolomon/arc-skills -g -a claude-code -a codex --skill arc-implementation-plan-progress --skill arc-ideabrowser-openclaw-flow
+```
+
+### Copy mode (instead of symlinks)
+
+```bash
+npx skills add andysolomon/arc-skills -g -a claude-code -a codex --skill '*' --copy
+```
+
+## Local installer (fallback)
+
+You can also use the repo script:
 
 ```bash
 ./scripts/install.sh
 ```
 
-This script symlinks all `arc-*` skill folders into:
+This symlinks all `arc-*` skill folders into:
 - `~/.claude/skills`
 - `~/.codex/skills`
 
