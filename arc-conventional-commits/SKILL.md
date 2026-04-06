@@ -1,5 +1,5 @@
 ---
-name: conventional-commits
+name: arc-conventional-commits
 description: >
   Set up Conventional Commits with semantic-release for automated semantic
   versioning. Use this skill whenever the user mentions conventional commits,
