@@ -36,11 +36,18 @@
     },
     {
       "id": "trigger-negative-unit-tests",
-      "prompt": "Write unit tests for a TypeScript JSON loader in this repository. Do not create skill evals or an evals/evals.json file.",
-      "expected_output": "The assistant treats this as a normal unit-test request, not as a skill-eval authoring task.",
+      "prompt": "Write node:test unit tests for src/json-loader.mjs in this repository. Put them in tests/json-loader.test.mjs. Do not create skill evals or an evals/evals.json file.",
+      "setup": {
+        "kind": "seeded",
+        "sources": [{ "from": "files/unit-test-repo", "to": "." }],
+        "mountMode": "flatten-contents"
+      },
+      "expected_output": "The assistant treats this as a normal unit-test request, not as a skill-eval authoring task, and writes tests/json-loader.test.mjs.",
       "assertions": [
+        { "type": "file-exists", "path": "tests/json-loader.test.mjs" },
+        { "type": "regex-match", "pattern": "loadJsonFile", "target": { "file": "tests/json-loader.test.mjs" } },
         "The response does not propose creating a skill eval suite or an evals/evals.json file.",
-        "The response focuses on unit tests for a TypeScript JSON loader rather than trigger, execution, or with-skill/without-skill skill evaluation cases."
+        "The response focuses on unit tests for the JSON loader rather than trigger, execution, or with-skill/without-skill skill evaluation cases."
       ]
     },
     {
@@ -57,7 +64,8 @@
         { "type": "json-valid", "path": "arc-demo-file-writer/evals/evals.json" },
         { "type": "regex-match", "pattern": "file-exists", "target": { "file": "arc-demo-file-writer/evals/evals.json" } },
         { "type": "regex-match", "pattern": "notes/summary\\.md", "target": { "file": "arc-demo-file-writer/evals/evals.json" } },
-        "The generated suite includes a negative or adjacent case that should not invoke the full file-writing workflow."
+        "The generated suite includes a negative or adjacent case that should not invoke the full file-writing workflow.",
+        "The response includes the eval-authoring reminder that every manual fix is a signal for a future case."
       ]
     },
     {
