@@ -4,7 +4,7 @@ Portable repository for ARC skills (`arc-*`) so they can be shared and installed
 
 ## Contents
 
-Each skill lives in its own directory and includes a `SKILL.md` entrypoint.
+Each skill lives in its own directory and includes a `SKILL.md` entrypoint. Skills may also include an `evals/evals.json` suite consumable by [`arc-skill-eval`](https://github.com/andysolomon/arc-skill-eval).
 
 ## Install (recommended: skills CLI)
 
