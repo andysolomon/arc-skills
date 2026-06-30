@@ -1,130 +1,58 @@
 ---
 name: arc-ideabrowser-openclaw-flow
-description: Extract startup idea details from IdeaBrowser and produce deterministic scaffold specs for implementation plans and progress tracking. Playwright CLI is primary; OpenClaw is fallback.
+description: IdeaBrowser extraction into scaffold-ready specs. Use when crawling an IdeaBrowser idea page, extracting startup idea details, or producing a deterministic scaffold spec for implementation planning/progress tracking. Playwright CLI is primary; OpenClaw is fallback.
 metadata:
   short-description: Crawl IdeaBrowser pages and generate scaffold-ready extraction
 ---
+# Arc IdeaBrowser OpenClaw Flow
 
-# IdeaBrowser Crawl + Scaffold Flow
+Extract an IdeaBrowser startup idea into a scaffold-ready spec. The leading word is **coverage**: every expected subpage is either `ok`, `missing`, or `blocked`.
 
-Use this skill for end-to-end **read/extract/plan** workflows from IdeaBrowser.
+Default boundary: **safe-by-default**. Do not write files, commit, push, deploy, or execute scaffold commands unless the user explicitly asks.
 
-Default boundary: **safe-by-default**.
-- Do not write files, commit, push, or deploy unless the user explicitly asks.
-- If blocked by auth/checkpoint, pause and give minimal remediation steps.
+For required output sections, load [references/output-contract.md](references/output-contract.md). For subpage names and normalized fields, load [IDEA_SCHEMA.md](IDEA_SCHEMA.md). For scaffold stack defaults, load [STACK_PROFILE.md](STACK_PROFILE.md) when producing the scaffold spec.
 
-## Preferred Tooling
+## Steps
 
-1. Primary: `playwright-cli` with extension bridge to existing Chrome session.
-2. Secondary fallback: OpenClaw (`openclaw browser ...`) when Playwright bridge is unavailable.
+1. **Verify browser path.**
+   - Prefer `playwright-cli` with the Chrome extension bridge.
+   - Use OpenClaw only when Playwright bridge is blocked or unavailable.
+   - If auth/checkpoint blocks access, stop and give minimal remediation steps.
 
-## Stack Profile Defaults For Scaffold Specs
+   Completion criterion: there is an attached/readable browser session, or the response reports the exact blocker and next command.
 
-Default profile for generated scaffold specs:
-- Framework: Next.js + TypeScript + shadcn/ui
-- Data/Auth/Deploy: Convex + Clerk + Vercel
-- TanStack: TanStack Query + TanStack Router
-- Testing: Jest (Next.js), Playwright (e2e)
-- Syntax/shell: ESNext-first and zsh-compatible commands
+2. **Detect the target idea.**
+   - Use an explicit slug or URL when provided.
+   - Otherwise infer the slug/title from the current URL, page title, or browser snapshot.
 
-Optional profile (`postgres-sql-mode`) when user asks:
-- Database: PostgreSQL
-- ORM: Drizzle (preferred), avoid Prisma unless explicitly requested
+   Completion criterion: `Detected Idea` has slug/URL/title where observable; unknown fields are marked `unknown`.
 
-## Prerequisites
+3. **Crawl core subpages.**
+   - Visit the core IdeaBrowser subpages from `IDEA_SCHEMA.md`.
+   - Use helper scripts for deterministic logs when available:
+     - `scripts/crawl_idea_subpages_playwright.sh [target] [snap_limit]`
+     - `scripts/crawl_idea_subpages.sh [target] [snap_limit]` as OpenClaw fallback
 
-- `playwright-cli` installed and available.
-- Playwright MCP Bridge extension installed in Chrome.
-- If needed, set token in environment:
-  - `PLAYWRIGHT_MCP_EXTENSION_TOKEN=<token>`
+   Completion criterion: `Subpage Coverage` lists every expected page with `ok`, `missing`, or `blocked`.
 
-## Workflow
+4. **Extract normalized fields.**
+   - Extract only what is visible in snapshots/pages.
+   - Do not infer missing market claims, scores, proof, or keywords.
+   - Use `scripts/extract_idea_fields.sh [target] [limit]` when useful.
 
-1. Verify browser connectivity (Playwright-first)
-- `playwright-cli list`
-- If no browser open:
-  - `playwright-cli open --extension https://www.ideabrowser.com/idea/<slug>`
-- If extension mode cannot attach, use `--headed --extension` once for approval/tab selection.
+   Completion criterion: `Structured Extraction` contains every normalized field from `IDEA_SCHEMA.md`, with unknowns explicit.
 
-2. Detect target idea
-- Use explicit target when provided (`slug` or full URL).
-- If missing, infer slug from current URL/title/snapshot.
+5. **Produce scaffold spec.**
+   - Recommend a repo slug; use `scripts/propose_repo_name.sh` when useful.
+   - Include stack profile, README summary block, `IMPLEMENTATION_PLAN.md` phase outline, `progress.txt` starter entries, and command checklist.
+   - Put commands under `Commands To Execute (on approval)` unless the user explicitly approved execution.
 
-3. Crawl core pages
-- `main`
-- `value-ladder`
-- `why-now`
-- `proof-signals`
-- `market-gap`
-- `execution-plan`
-- `value-equation`
-- `value-matrix`
-- `acp`
-- `keywords`
-- `feasibility-score`
-- `problem-score`
-- `opportunity`
-- `opportunity-score` (compat fallback only)
+   Completion criterion: the final output follows `references/output-contract.md` section order and contains no unapproved mutations.
 
-4. Extract normalized fields
-- slug/id
-- title
-- core problem
-- audience/market
-- offer/value ladder
-- why-now
-- proof/signals
-- market-gap
-- execution-plan
-- frameworks (value equation/matrix/acp)
-- scoring pages
-- top keywords
+## Failure handling
 
-5. Produce deterministic output sections
-- `Detected Idea`
-- `Subpage Coverage` (include explicit crawled/missing/blocked list)
-- `Structured Extraction`
-- `Scaffold Spec`
-- `Commands To Execute (on approval)`
-- `Risks / Missing Fields`
+If extraction cannot proceed, output only:
 
-## Resilient Mode
-
-If crawling is unstable:
-
-1. Playwright CLI retry mode
-- Reopen session: `playwright-cli close-all && playwright-cli open --extension <idea-url>`
-- Retry per-page with `goto` + `snapshot`.
-
-2. Manual assist mode
-- Ask user to load one subpage.
-- Snapshot immediately after `loaded`.
-
-3. OpenClaw fallback
-- Use OpenClaw only when Playwright extension bridge is blocked/unavailable.
-
-## Scaffold Spec Template
-
-Provide (as content unless user asks to write files):
-- repo slug recommendation
-- stack profile selected (`next-convex-clerk-shadcn` by default)
-- README summary block
-- `IMPLEMENTATION_PLAN.md` phase outline
-- `progress.txt` starter entries
-- optional command checklist for scaffold/validate/git/deploy
-
-## Failure Handling
-
-If extraction fails, output only:
 1. blocker
 2. minimal user action
 3. exact next command
-
-## Helpers
-
-- `scripts/crawl_idea_subpages_playwright.sh [target] [snap_limit]`
-- `scripts/crawl_idea_subpages.sh [target] [snap_limit]` (OpenClaw fallback)
-- `scripts/extract_idea_fields.sh [target] [limit]`
-- `scripts/propose_repo_name.sh`
-
-Use helper scripts for consistency and deterministic logs.

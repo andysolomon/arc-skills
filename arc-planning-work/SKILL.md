@@ -1,96 +1,56 @@
 ---
 name: arc-planning-work
-description: "Creates implementation plans from tracked work items in Linear, GitHub Issues, Agile Accelerator, or PRDs."
+description: Implementation planning for existing tracked work items. Use when asked to plan an existing GitHub issue, Agile Accelerator story, or PRD before coding begins. Produces ordered tasks, file-level changes, test strategy, and acceptance-criteria mapping. Do not use to create new user-story backlogs.
 ---
+# Arc Planning Work
 
-# Planning Work
+Create implementation plans before coding. The leading word is **read-before-plan**: inspect the work item and relevant code before proposing tasks.
 
-Creates detailed implementation plans by reading the tracked work item, analyzing code, and posting plan output back to the source system.
+For the shared plan template, load [PLAN_FORMAT.md](PLAN_FORMAT.md). For destination-specific commands, load [GITHUB_MODE.md](GITHUB_MODE.md), [AGILE_ACCELERATOR_MODE.md](AGILE_ACCELERATOR_MODE.md), or [PRD_MODE.md](PRD_MODE.md) after mode detection.
 
-## Destination/Mode Selection
+## Steps
 
-If user does not specify system, ask:
+1. **Detect the planning source.**
+   - GitHub mode: issue number/URL, `#123`, or explicit GitHub issue request.
+   - Agile Accelerator mode: `W-000000` work item or Salesforce Agile Accelerator story.
+   - PRD-to-plan mode: the user asks for an implementation plan from an existing PRD document.
+   - If ambiguous, ask where the work item is tracked before planning.
 
-> Where is this work item tracked?
->
-> 1. Linear
-> 2. GitHub Issues
-> 3. Agile Accelerator
-> 4. PRD file/doc only
+   Completion criterion: the plan has exactly one source mode, or the response stops with a destination/source clarification question.
 
-If Linear is selected, ask each run:
-- Team key (required)
-- Project key/name (optional)
+2. **Read the source item.**
+   - Fetch the issue/story/PRD body and comments where relevant.
+   - Preserve the source's acceptance criteria, constraints, and context.
+   - Do not create new stories/issues; this skill plans existing work.
 
-## Workflow (All Modes)
+   Completion criterion: every acceptance criterion or scenario from the source is available for mapping, or missing source access is reported as a blocker.
 
-1. Read tracked work item details
-2. Read relevant code and architecture context
-3. Build ordered task plan (vertical slices preferred)
-4. Map tasks to acceptance criteria
-5. Post plan back to source
+3. **Analyze the codebase.**
+   - Read files referenced by the work item.
+   - Search for related components, routes, models, tests, docs, and similar implementations.
+   - Identify dependencies, risks, and likely test locations.
 
-## Plan Format
+   Completion criterion: every planned task cites concrete files/areas or explicitly states why the file path is unknown.
 
-````markdown
-## Implementation Plan
+4. **Draft the implementation plan.**
+   - Use ordered, atomic tasks.
+   - Include specific file changes and test strategy.
+   - Map each acceptance criterion to one or more tasks and verification methods.
+   - Name the feature branch using the source ID when available.
 
-**Story:** [W-XXXXXX] Title
-**Branch:** `feat/W-XXXXXX-short-description`
+   Completion criterion: another agent can implement the plan without re-discovering scope or asking basic sequencing questions.
 
-### Analysis
-Short summary grounded in actual code.
+5. **Publish the plan to the source.**
+   - GitHub: comment on the issue.
+   - Agile Accelerator: append to `agf__Details__c` and update status where appropriate.
+   - PRD-to-plan: write `./plans/<feature>.md` or the user-specified plan path.
+   - Update sprint plan docs if the repo has a matching `docs/sprints/` plan.
 
-### Tasks
-- [ ] 1. ...
-- [ ] 2. ...
-- [ ] 3. ...
+   Completion criterion: the plan is posted/written to the requested destination, or the exact permission/tooling blocker is reported.
 
-### Test Strategy
-- [ ] Unit
-- [ ] Integration/E2E
-- [ ] Manual QA
+## Boundaries
 
-### Acceptance Criteria Mapping
-| Scenario | Task(s) | Verification |
-|----------|---------|--------------|
-| ... | ... | ... |
-
-### Risks & Notes
-- ...
-````
-
-## Linear Mode
-
-- Fetch issue details from Linear (GraphQL/API tooling)
-- Post plan as issue comment or append structured plan section in description
-- Keep status tracking in Linear as canonical source
-
-Recommended conventions:
-- Keep epic/parent issue for roadmap
-- Keep child issues execution-focused
-- Use semantic-version/vertical-slice checkpoints in plan comments when relevant
-
-## GitHub Mode
-
-- Read issue: `gh issue view <number> --json title,body,labels`
-- Post plan: `gh issue comment <number> --body-file <file>`
-- Branch naming: `feat/W-XXXXXX-short-description`
-
-## Agile Accelerator Mode
-
-- Query story fields from `agf__ADM_Work__c`
-- Append plan to details and update status if requested
-
-## PRD-to-Plan Mode
-
-- Identify durable architecture decisions first
-- Produce thin vertical slices by phase
-- Save plan output to `./plans/<feature>.md`
-
-## Rules
-
-- Never plan from assumptions; always read code first.
-- Every acceptance criterion maps to at least one task.
-- Keep tasks atomic and reviewable.
-- This skill plans only; do not implement unless user asks.
+- Use `arc-creating-user-stories` to create new GitHub issue backlogs with Gherkin stories.
+- Use `arc-defining-work` to create new work items across destinations after asking the user where to create them.
+- Use `arc-prd-to-issues` when the target output is new GitHub issues from a PRD, not an implementation plan.
+- Do not start coding until the user approves the plan.

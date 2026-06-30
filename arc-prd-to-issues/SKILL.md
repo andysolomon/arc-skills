@@ -1,92 +1,51 @@
 ---
 name: arc-prd-to-issues
-description: Break a PRD into independently-grabbable GitHub issues using tracer-bullet vertical slices. Use when user wants to convert a PRD to issues, create implementation tickets, or break down a PRD into work items.
+description: PRD-to-GitHub-issues slicing with tracer-bullet vertical slices. Use when converting a PRD into independently grabbable GitHub issues, reviewing slice granularity, or creating implementation tickets from a PRD. Do not use for implementation plans of existing issues.
 ---
+# Arc PRD to Issues
 
-# PRD to Issues
+Convert a PRD into GitHub issues. The leading word is **tracer-bullet**: each issue is a narrow, end-to-end vertical slice, not a horizontal layer.
 
-Break a PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets).
+For slice rules and issue template, load [SLICE_FORMAT.md](SLICE_FORMAT.md). For GitHub creation commands, load [GITHUB_CREATION.md](GITHUB_CREATION.md) after the user approves the slice breakdown.
 
-## Process
+## Steps
 
-### 1. Locate the PRD
+1. **Locate the PRD.**
+   - Use an explicit issue number, URL, file path, or pasted PRD.
+   - If missing, ask for the PRD source.
+   - Fetch GitHub PRDs with comments when relevant.
 
-Ask the user for the PRD GitHub issue number (or URL).
+   Completion criterion: the PRD content is available, or the run stops with a source request.
 
-If the PRD is not already in your context window, fetch it with `gh issue view <number>` (with comments).
+2. **Explore current code where useful.**
+   - Read enough repo structure and existing implementation to avoid impossible or duplicate slices.
+   - Keep this lightweight when the PRD is greenfield.
 
-### 2. Explore the codebase (optional)
+   Completion criterion: slices reflect current repo reality or state that repo context is unknown.
 
-If you have not already explored the codebase, do so to understand the current state of the code.
+3. **Draft tracer-bullet slices.**
+   - Each slice cuts through all needed layers and is independently verifiable.
+   - Mark each slice AFK or HITL.
+   - Identify blockers/dependencies and PRD user stories covered.
 
-### 3. Draft vertical slices
+   Completion criterion: every PRD requirement is assigned to at least one slice or explicitly deferred/out of scope.
 
-Break the PRD into **tracer bullet** issues. Each issue is a thin vertical slice that cuts through ALL integration layers end-to-end, NOT a horizontal slice of one layer.
+4. **Quiz the user before issue creation.**
+   - Present numbered slices with title, type, blockers, user stories covered, and acceptance criteria.
+   - Ask whether granularity, dependencies, and HITL/AFK labels are correct.
+   - Iterate until approved.
 
-Slices may be 'HITL' or 'AFK'. HITL slices require human interaction, such as an architectural decision or a design review. AFK slices can be implemented and merged without human interaction. Prefer AFK over HITL where possible.
+   Completion criterion: the user approves the breakdown, or no GitHub issues are created.
 
-<vertical-slice-rules>
-- Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests)
-- A completed slice is demoable or verifiable on its own
-- Prefer many thin slices over few thick ones
-</vertical-slice-rules>
+5. **Create GitHub issues in dependency order.**
+   - Create blockers first so dependent issues can reference real issue numbers.
+   - Do not close or modify the parent PRD issue.
+   - Include `Closes #<number>` guidance for later PRs, not during issue creation.
 
-### 4. Quiz the user
+   Completion criterion: every approved slice has a GitHub issue or an exact GitHub/tooling blocker is reported.
 
-Present the proposed breakdown as a numbered list. For each slice, show:
+## Boundaries
 
-- **Title**: short descriptive name
-- **Type**: HITL / AFK
-- **Blocked by**: which other slices (if any) must complete first
-- **User stories covered**: which user stories from the PRD this addresses
-
-Ask the user:
-
-- Does the granularity feel right? (too coarse / too fine)
-- Are the dependency relationships correct?
-- Should any slices be merged or split further?
-- Are the correct slices marked as HITL and AFK?
-
-Iterate until the user approves the breakdown.
-
-### 5. Create the GitHub issues
-
-For each approved slice, create a GitHub issue using `gh issue create`. Use the issue body template below.
-
-Create issues in dependency order (blockers first) so you can reference real issue numbers in the "Blocked by" field.
-
-<issue-template>
-## Parent PRD
-
-#<prd-issue-number>
-
-## What to build
-
-A concise description of this vertical slice. Describe the end-to-end behavior, not layer-by-layer implementation. Reference specific sections of the parent PRD rather than duplicating content.
-
-## Acceptance criteria
-
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
-
-## Blocked by
-
-- Blocked by #<issue-number> (if any)
-
-Or "None - can start immediately" if no blockers.
-
-## User stories addressed
-
-Reference by number from the parent PRD:
-
-- User story 3
-- User story 7
-
-</issue-template>
-
-Do NOT close or modify the parent PRD issue.
-
-### PR Convention
-
-When creating pull requests that implement these issues, always include `Closes #<number>` in the PR body so issues auto-close on merge. For PRs that address multiple issues, include multiple `Closes` lines.
+- Use `arc-planning-work` when the output is an implementation plan for an existing PRD/issue, not new GitHub issues.
+- Use `arc-defining-work` when the user has not chosen a destination or may want Agile Accelerator.
+- Use `arc-creating-user-stories` for general Gherkin backlog creation not specifically driven by PRD tracer-bullet slicing.

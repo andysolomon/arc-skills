@@ -1,0 +1,84 @@
+{
+  "version": "1",
+  "skill_name": "arc-defining-work",
+  "evals": [
+    {
+      "id": "destination-first",
+      "description": "The skill must ask for destination before analysis or mutation when destination is absent.",
+      "prompt": "Create tracked stories for the product brief in `product-brief.md`.",
+      "setup": {
+        "kind": "seeded",
+        "sources": [
+          { "from": "files/starter-inputs/product-brief.md", "to": "product-brief.md" }
+        ]
+      },
+      "assertions": [
+        {
+          "id": "asks-destination",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should ask the user to choose GitHub Issues or Agile Accelerator before creating stories or doing deep analysis.",
+          "mustPass": true
+        },
+        {
+          "id": "no-created-claim",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not claim that issues, records, labels, or work items were created because the destination was not chosen.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["destination", "gating"], "difficulty": "easy", "intent": "destination-first" }
+    },
+    {
+      "id": "github-draft-after-destination",
+      "description": "After GitHub destination is chosen, draft work items for approval before mutation.",
+      "prompt": "Destination: GitHub Issues. Draft tracked work items for `product-brief.md`, but do not create issues until I approve.",
+      "setup": {
+        "kind": "seeded",
+        "sources": [
+          { "from": "files/starter-inputs/product-brief.md", "to": "product-brief.md" }
+        ]
+      },
+      "assertions": [
+        {
+          "id": "drafts-gherkin-stories",
+          "kind": "output",
+          "method": "regex",
+          "pattern": "User Story[\\s\\S]*Given[\\s\\S]*When[\\s\\S]*Then",
+          "mustPass": true
+        },
+        {
+          "id": "includes-metadata",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The draft should include useful work-item metadata such as epic/theme, priority, size, context, or dependencies.",
+          "mustPass": true
+        },
+        {
+          "id": "no-mutation-before-approval",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not claim that GitHub issues were created because the user asked for a draft before approval.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["execution", "github", "draft"], "difficulty": "medium", "intent": "draft-work-items" }
+    },
+    {
+      "id": "adjacent-negative-existing-issue-plan",
+      "description": "Existing issue implementation planning belongs to arc-planning-work.",
+      "prompt": "Issue #42 already exists. Create an implementation plan for it; do not create any new stories or work items.",
+      "assertions": [
+        {
+          "id": "does-not-create-work-items",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not create or draft new stories/work items; it should recognize this as implementation planning for existing work.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["routing", "negative"], "difficulty": "easy", "intent": "avoid-overtrigger" }
+    }
+  ]
+}
