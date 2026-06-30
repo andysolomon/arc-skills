@@ -1,132 +1,51 @@
 ---
 name: arc-defining-work
-description: "Creates work items from codebase analysis or PRD breakdown. Prompts for destination each run: Linear, Agile Accelerator, or GitHub Issues."
+description: New work-item creation for Agile Accelerator or GitHub Issues. Use when asked to create stories, build a backlog, define work from codebase analysis, or convert requirements into tracked work items after choosing a destination. Do not use for implementation planning of existing work.
 ---
+# Arc Defining Work
 
-# Defining Work
+Create new tracked work items. The leading word is **destination-first**: ask where to create work before analysis or mutation.
 
-Creates work items from either codebase analysis or PRD breakdown into vertical slices.
+For story format and numbering, load [WORK_ITEM_FORMAT.md](WORK_ITEM_FORMAT.md). For destination-specific creation commands, load [GITHUB_DESTINATION.md](GITHUB_DESTINATION.md) or [AGILE_ACCELERATOR_DESTINATION.md](AGILE_ACCELERATOR_DESTINATION.md) after the user chooses. For PRD slicing rules, load [PRD_SLICING.md](PRD_SLICING.md) when the source is a PRD.
 
-## Step 0: Choose Destination (Required Every Run)
+## Steps
 
-Before any analysis or story creation, ask:
+1. **Choose destination before analysis.**
+   - Ask: GitHub Issues or Agile Accelerator?
+   - Do not infer the destination from repo context.
+   - Wait for the user's answer before creating or deeply analyzing work items.
 
-> Where should I create the stories?
->
-> 1. **Linear** — creates issues in Linear team/project
-> 2. **Agile Accelerator** — creates `agf__ADM_Work__c` records in Salesforce
-> 3. **GitHub Issues** — creates issues on the repo
->
-> Which destination?
+   Completion criterion: the run has one explicit destination, or it stops with the destination question.
 
-Do not assume a destination.
+2. **Detect source mode.**
+   - Codebase analysis mode: user wants backlog/stories from observed gaps or next-phase improvements.
+   - PRD breakdown mode: user wants requirements converted into vertical-slice work items.
 
-If destination is **Linear**, also ask every run:
-- Team key (required), e.g. `ARC`
-- Project key/name (optional, but preferred)
+   Completion criterion: the output states the selected mode and source material.
 
-## Mode Detection
+3. **Draft work items for approval.**
+   - Use Gherkin user stories for feature/backlog work.
+   - Use tracer-bullet vertical slices for PRD breakdowns.
+   - Assign epic, priority, size, context, dependencies, and acceptance criteria.
+   - Do not create records/issues before user approval unless the user explicitly asked to create without review.
 
-After destination is chosen, detect mode:
+   Completion criterion: every draft item is independently implementable or explicitly marked blocked/HITL.
 
-| Input | Mode | Approach |
-|-------|------|----------|
-| "create stories", "build backlog", "plan next phase" | **Codebase Analysis** | analyze codebase -> epic-grouped stories |
-| "break down PRD", "convert PRD to issues", PRD issue/file | **PRD Breakdown** | vertical slices through all layers |
+4. **Create work items in the chosen destination.**
+   - Preserve sequential `W-` numbering where applicable.
+   - Create labels/project metadata for GitHub where useful.
+   - For Agile Accelerator, let Salesforce assign `Name` and query it after creation.
 
-## Story Numbering
+   Completion criterion: every approved item exists in the chosen tracker, or exact tooling/permission blockers are reported.
 
-All stories must include sequential IDs: `W-000001`, `W-000002`, ...
+5. **Verify and summarize.**
+   - Query created issues/records.
+   - Report IDs, links where available, destination, and any failed items.
 
-### Find highest existing number
+   Completion criterion: the user receives a created-work summary with enough IDs/links to continue planning or implementation.
 
-**GitHub:**
-```bash
-gh issue list --limit 100 --state all --json title --jq '.[].title' | grep -oE 'W-[0-9]+' | sort -r | head -1
-```
+## Boundaries
 
-**Agile Accelerator:**
-```bash
-sf data query --query "SELECT Name FROM agf__ADM_Work__c ORDER BY Name DESC LIMIT 1" --target-org <org-alias> --json
-```
-
-**Linear (GraphQL):**
-Search issue titles for `W-######` in target team and determine max in memory.
-
-If none exist, start from `W-000001`.
-
-## Workflow
-
-1. Read source input (prompt + PRD/code context)
-2. Analyze codebase for realistic slices and dependencies
-3. Draft stories grouped by epic/theme
-4. Present for quick approval
-5. Create stories in chosen destination
-6. Verify creation
-
-## Story Body Format
-
-```markdown
-## User Story
-**ID:** W-XXXXXX
-
-As a [user/developer/maintainer], I want [goal] so that [benefit].
-
-## Acceptance Criteria
-
-### Scenario: [Descriptive scenario]
-**Given** [precondition]
-**When** [action]
-**Then** [expected outcome]
-**And** [additional outcome]
-
-## Context
-Brief technical context referencing files/patterns.
-```
-
-## PRD Breakdown Rules
-
-- Create thin vertical slices that cut across schema/API/UI/tests.
-- Mark each slice as AFK (fully implementable) or HITL (needs human input).
-- Include dependencies and user stories addressed.
-
-## Destination: Linear
-
-### Preferred approach
-Use Linear GraphQL API for new story creation. Keep one parent planning issue when needed and child execution issues.
-
-### Minimum fields per issue
-- Title: `[W-XXXXXX] <short title>`
-- Description: user story + Gherkin acceptance criteria + context
-- Team: required from user prompt
-- Project: optional from user prompt
-- Labels: `epic:<name>`, `priority:P0|P1|P2`, `size:S|M|L|XL` (create if needed)
-
-### Migration runbook (GitHub -> Linear)
-Use the local importer for one-time migration before net-new story creation:
-```bash
-export LINEAR_API_KEY=<token>
-linear-import --importer github --team <TEAM_KEY> --project "<Project Name>"
-```
-Post-import checklist:
-- Verify statuses and priorities mapped correctly
-- Merge or close duplicates
-- Keep Linear as canonical tracker after cutover
-
-
-## Destination: GitHub Issues
-
-- Create/apply labels: epic, priority, size.
-- Create issues titled `[W-XXXXXX] ...`.
-- Add to repo GitHub Project when available.
-
-## Destination: Agile Accelerator
-
-- Create `agf__ADM_Work__c` records with story body in details.
-- Query resulting `Name` for W-number if auto-generated by org config.
-
-## Verify
-
-- Confirm expected item count created.
-- List created IDs/URLs back to user.
-- Do not start implementation unless asked.
+- Use `arc-planning-work` for implementation plans for existing work items.
+- Use `arc-prd-to-issues` when the user specifically wants PRD-to-GitHub-issues with a granularity quiz.
+- Use `arc-creating-user-stories` when the destination is already GitHub Issues and the request is a Gherkin story backlog.

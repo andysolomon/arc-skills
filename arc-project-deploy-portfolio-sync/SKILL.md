@@ -1,55 +1,54 @@
 ---
 name: arc-project-deploy-portfolio-sync
-description: Deploy a project to Vercel and add/update its case-study presence on andrewsolomon.dev (project page plus homepage card), then redeploy the portfolio site and verify links.
+description: Vercel deploy plus andrewsolomon.dev portfolio sync. Use when a finished project should be deployed, added or updated as a portfolio case study, linked from the homepage, and verified end-to-end. Do not use for generic Vercel troubleshooting or portfolio copywriting alone.
 metadata:
   short-description: Deploy app and sync portfolio entry
 ---
+# Arc Project Deploy Portfolio Sync
 
-# Project Deploy + Portfolio Sync
+Deploy a finished project and make it visible on `andrewsolomon.dev`. The leading word is **end-to-end**: app deploy, portfolio page, homepage link, redeploy, and verification must stay connected.
 
-Use this skill when the user says a project is finished and wants it deployed and visible on `andrewsolomon.dev`.
+For the required response sections, load [references/output-contract.md](references/output-contract.md). Use helper scripts only when their target repos are available locally.
 
-## Workflow
+## Steps
 
-1. Verify project repo context
-- Confirm git branch and local changes.
-- Run lint/build/tests in app repo using project stack defaults.
-- Identify or create Vercel project.
+1. **Preflight the project repo.**
+   - Confirm the current repo, branch, local changes, package manager, and build/test commands.
+   - Run lint/build/tests appropriate to the project before deployment.
+   - Use `scripts/project_status_check.sh <project-repo>` when applicable.
 
-2. Deploy project app
-- Run production deploy from the app repo.
-- Capture deployment URL and alias URL.
+   Completion criterion: deployment is either preflight-clean or blocked by exact failing commands/errors.
 
-3. Sync portfolio content
-- In `andrewsolomon.dev`, ensure a dedicated project page exists under `projects/`.
-- Ensure homepage `index.html` has a card linking to that page.
-- Include the live demo URL on the case-study page.
-- Do not include unnecessary technology-explainer text if user requests concise portfolio copy.
+2. **Deploy the project app.**
+   - Identify or create the Vercel project.
+   - Run a production deploy only when credentials/context are available and the user has requested live deployment.
+   - Capture both the deployment URL and stable alias/custom URL.
 
-4. Deploy and verify portfolio
-- Deploy `andrewsolomon.dev` to production.
-- Verify homepage card + project page + live demo link are reachable.
+   Completion criterion: the live app URL is captured and checked, or the response names the exact deployment blocker and next command.
 
-5. Commit/push (on user request)
-- Commit website changes and push `main`.
+3. **Sync portfolio content.**
+   - In the local `andrewsolomon.dev` repo, create or update the project page under `projects/`.
+   - Add or update the homepage `index.html` card linking to that page.
+   - Include the live demo URL on the case-study page.
+   - Keep copy lightweight and consistent with existing portfolio pages.
 
-## Deterministic Output Sections
-Always return:
-1. `Project Deploy Status`
-2. `Portfolio Sync Status`
-3. `Live URLs`
-4. `Findings / Risks`
-5. `Next Commands`
+   Completion criterion: homepage card, project page, and live demo URL all reference the same project identity.
 
-## Stack Interop Notes
-- Integrates with shared Clerk and Vercel skills when auth/deploy environment checks are needed.
-- Keep deployment commands zsh-compatible.
+4. **Deploy and verify the portfolio.**
+   - Deploy `andrewsolomon.dev` to production.
+   - Verify the homepage card, project page, and live demo link are reachable.
+   - Use `scripts/portfolio_entry_check.sh <andrewsolomon.dev-repo> <keyword>` for local link checks when useful.
 
-## Conventions
-- Keep case-study pages lightweight and practical.
-- Prefer existing style/structure from other pages in `andrewsolomon.dev/projects/`.
-- Never remove existing portfolio cards unless user asks.
+   Completion criterion: every public URL is verified reachable, or the exact verification/deploy blocker is reported.
 
-## Helpers
-- `scripts/project_status_check.sh` for app-repo preflight
-- `scripts/portfolio_entry_check.sh` for andrewsolomon.dev link presence checks
+5. **Commit/push only on request.**
+   - Commit portfolio changes and push `main` only if the user asks.
+   - Never remove existing portfolio cards unless explicitly requested.
+
+   Completion criterion: the final response states whether changes were committed/pushed and why.
+
+## Boundaries
+
+- Use a Vercel-specific skill for deploy troubleshooting that does not involve portfolio sync.
+- Use this skill only when the workflow requires both app deployment and portfolio visibility.
+- If live external deployment is impossible in the current environment, do not fake URLs; report blockers and next commands in the output contract.

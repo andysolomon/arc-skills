@@ -1,76 +1,55 @@
 ---
 name: arc-implementation-plan-progress
-description: Create or update highly specific implementation plans and aligned progress trackers for software projects. Use when a user asks for an implementation plan, roadmap, phased delivery plan, gap analysis against an idea/spec, or asks to create/update `progress.txt` with actionable checklist items mapped to milestones.
+description: Implementation-plan/progress tracker creation for software projects. Use when a user asks for an implementation plan, phased roadmap, gap analysis against a spec, or synchronized `IMPLEMENTATION_PLAN.md` and `progress.txt` execution tracker. Do not use for creating GitHub user-story backlogs.
 ---
+# Arc Implementation Plan Progress
 
-# Implementation Plan Progress
+Create two synchronized root-level artifacts:
 
-## Overview
+- `IMPLEMENTATION_PLAN.md` or a clearly named variant
+- `progress.txt` with checkbox execution tracking mapped to the plan phases
 
-Produce two synchronized artifacts in the project root:
-- `IMPLEMENTATION_PLAN.md` (or a clearly named variant)
-- `progress.txt` with checkbox-style execution tracking mapped to plan phases
+The leading word is **synchronized**: every progress item must trace to the plan, and every plan phase must have progress coverage.
 
-Keep scope grounded in repository evidence and the user-provided spec/idea. Prefer explicit unknowns over invented details.
+For the required output shape, load [references/output-contract.md](references/output-contract.md). For default stack assumptions, load [STACK_DEFAULTS.md](STACK_DEFAULTS.md) only when the user has not specified a stack.
 
-## Stack Defaults Policy
+## Steps
 
-Unless user overrides, plans should assume:
-- Next.js + TypeScript + shadcn/ui
-- Convex + Clerk + Vercel
-- TanStack Query + TanStack Router
-- ESNext syntax preference
-- zsh-compatible commands
-- Tests: Jest for Next.js, Vitest for Vite, Playwright for e2e
+1. **Gather repository and request context.**
+   - Read existing `README*`, planning docs, `progress.txt`, and relevant source structure.
+   - Identify user-provided specs/ideas and whether they are available locally.
+   - Prefer explicit `unknown` notes over invented details.
 
-If SQL backend is explicitly chosen:
-- PostgreSQL + Drizzle (preferred), avoid Prisma by default
+   Completion criterion: the baseline section can cite concrete repo evidence or explicitly mark unavailable facts as `unknown`.
 
-## Workflow
+2. **Choose plan mode.**
+   - Greenfield mode: no meaningful implementation exists; plan from zero.
+   - Gap mode: implementation exists; compare current baseline to target scope and plan missing work.
 
-1. Gather context quickly
-- Read existing `README*`, planning docs, and any `progress.txt`.
-- Scan the codebase to identify shipped capabilities and obvious gaps.
-- If an external idea/spec is provided but unavailable, state that and proceed from local evidence.
+   Completion criterion: the plan states its mode and why that mode fits the observed repo state.
 
-2. Choose plan mode
-- `Greenfield mode`: no meaningful implementation exists; create full phased plan from zero.
-- `Gap mode`: implementation exists; create "missing work" plan comparing current baseline to target scope.
+3. **Write the implementation plan.**
+   - Follow the contract in `references/output-contract.md`.
+   - Include objective, scope boundaries, baseline, milestones, deliverables, dependencies, risks, acceptance criteria, deferred/out-of-scope work, and immediate next steps.
+   - Include concrete test tasks aligned to user-focused behavior, not implementation-detail coupling.
 
-3. Write the plan document
-- Use the output contract in `references/output-contract.md`.
-- Include:
-  - objective and scope boundaries
-  - current baseline (for gap mode)
-  - phased milestones with goals, deliverables, dependencies, risks, acceptance criteria
-  - explicit "deferred/out of scope" section
-  - next concrete steps
+   Completion criterion: every milestone has deliverables, dependencies/risks where relevant, and acceptance criteria that another agent can verify.
 
-4. Create or update `progress.txt`
-- Use `scripts/init_progress_txt.sh <plan-file> [progress-file]`.
-- Ensure each phase has:
-  - phase-level checkbox line
-  - numbered sub-steps using consistent IDs (`1.1`, `1.2`, etc.)
-- Preserve completed items when updating existing progress files.
+4. **Create or update `progress.txt`.**
+   - Run or follow `scripts/init_progress_txt.sh <plan-file> [progress-file]` when useful.
+   - Preserve completed `[x]` items when updating an existing tracker.
+   - Use stable numeric IDs (`1.0`, `1.1`, `2.0`) and ASCII checkboxes.
 
-5. Validate coherence
-- Every progress item must map to a plan phase.
-- Avoid vague tasks ("improve app"). Use concrete deliverables.
-- Ensure ordering is executable by another LLM with minimal clarification.
-- Add explicit test tasks aligned to Kent C. Dodds testing fundamentals (user-focused behavior, minimal implementation-detail coupling).
+   Completion criterion: every plan phase has a phase-level checkbox and concrete sub-step checkboxes; completed prior work remains completed.
 
-## Output Rules
+5. **Validate synchronization.**
+   - Check that each progress item maps to a plan phase.
+   - Check that each plan phase appears in `progress.txt`.
+   - Replace vague tasks such as "improve app" with concrete deliverables.
 
-- Prefer filename `IMPLEMENTATION_PLAN.md` for primary plans.
-- For gap-focused work, use a specific name such as `*_MISSING_IMPLEMENTATION_PLAN.md`.
-- Keep claims tied to visible code/docs; mark uncertain facts as `unknown`.
-- Write actionable tasks, not narrative-only prose.
-- Keep progress format plain text (ASCII checkboxes: `[ ]`, `[x]`).
+   Completion criterion: the final response names both artifact paths and confirms plan/progress synchronization or lists the exact unresolved mismatch.
 
-## Resources
+## Boundaries
 
-### scripts/init_progress_txt.sh
-Generate an initial or merged `progress.txt` from plan phase headings.
-
-### references/output-contract.md
-Defines the required plan structure and required `progress.txt` format contract.
+- Use `arc-creating-user-stories` when the user wants GitHub Issues with Gherkin user stories.
+- Use `arc-planning-work` when the user asks to plan implementation of an existing tracked work item rather than create root-level plan/progress artifacts.
