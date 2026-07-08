@@ -1,6 +1,6 @@
 # Worktree Setup
 
-Load this when creating or reusing a worktree for `arc-work-issue`.
+Load this when creating, shipping, or cleaning up a worktree for `arc-work-issue`.
 
 ## Defaults
 
@@ -58,6 +58,27 @@ If the branch already exists locally, attach with `git worktree add "$WT_DIR" "$
 
 If `origin/main` is missing, use the repo's default branch.
 
+## Commit (Conventional Commits)
+
+Load `arc-conventional-commits` and choose the correct type:
+
+- `feat:` for new behavior
+- `fix:` for defect repair
+- `test:`, `refactor:`, `docs:`, etc. when that is the sole change
+
+```bash
+git add <issue-scoped-files>
+
+git commit -m "$(cat <<'EOF'
+feat: add queue dispatch retry with backoff
+
+Closes #14
+EOF
+)"
+```
+
+Include the `W-XXXXXX` ID in the subject when the issue uses one.
+
 ## Push and open PR
 
 ```bash
@@ -76,14 +97,36 @@ EOF
 )"
 ```
 
-Use `arc-conventional-commits` commit/PR conventions when the repo already follows them.
+## Merge PR
 
-## Cleanup (later)
-
-After merge:
+Prefer squash merge after checks pass:
 
 ```bash
-git worktree remove "$WT_DIR"
-git branch -d "$BRANCH"
-git push origin --delete "$BRANCH"  # only when policy allows
+gh pr checks <pr-number> --watch
+gh pr merge <pr-number> --squash --delete-branch
 ```
+
+If the repo uses required checks that cannot complete in this environment, enable auto-merge and report the PR URL:
+
+```bash
+gh pr merge <pr-number> --squash --auto --delete-branch
+```
+
+## Cleanup worktree (required after merge)
+
+Run from the repository root:
+
+```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+git fetch origin
+
+git worktree remove "$WT_DIR"
+git worktree prune
+git branch -d "$BRANCH" 2>/dev/null || true
+
+cd "$REPO_ROOT"
+git pull origin main
+```
+
+Do not delete the remote branch manually when `gh pr merge --delete-branch` already removed it.

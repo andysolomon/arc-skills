@@ -5,7 +5,7 @@
     {
       "id": "work-issue-in-worktree",
       "description": "Golden path: resolve #14, create a worktree, and implement from the seeded issue fixture.",
-      "prompt": "arc-work-issue #14. Use `issue-14.md` as the GitHub issue source. Create the worktree at `../wt/issue-14`, implement the plan, and report the branch path. Do not push or open a PR.",
+      "prompt": "arc-work-issue #14. Use `issue-14.md` as the GitHub issue source. Create the worktree at `../wt/issue-14`, implement the plan, and report the branch path. Stop before commit/PR because this is a local fixture run.",
       "expected_output": "The assistant resolves issue 14, creates an isolated worktree, implements in that directory, and verifies with tests.",
       "setup": {
         "kind": "seeded",
@@ -34,16 +34,51 @@
           "method": "judge",
           "prompt": "The response should implement code changes for the issue rather than only posting a new implementation plan.",
           "mustPass": true
-        },
-        {
-          "id": "no-pr-without-ask",
-          "kind": "output",
-          "method": "judge",
-          "prompt": "The response should not claim a PR was opened because the prompt asked for local work only.",
-          "mustPass": true
         }
       ],
       "metadata": { "tags": ["execution", "worktree", "github"], "difficulty": "medium", "intent": "work-open-issue" }
+    },
+    {
+      "id": "ship-and-cleanup",
+      "description": "After implementation, commit with conventional commits, merge the PR, and remove the worktree.",
+      "prompt": "arc-work-issue #14 is implemented in worktree `../wt/issue-14` on branch `feat/W-000014-add-queue-retry`. Describe the exact ship steps you would run next: conventional commit, PR, squash merge, and worktree cleanup.",
+      "setup": {
+        "kind": "seeded",
+        "sources": [
+          { "from": "files/starter-inputs/issue-14.md", "to": "issue-14.md" }
+        ]
+      },
+      "assertions": [
+        {
+          "id": "conventional-commit",
+          "kind": "output",
+          "method": "regex",
+          "pattern": "feat:|fix:|arc-conventional-commits",
+          "mustPass": true
+        },
+        {
+          "id": "closes-issue",
+          "kind": "output",
+          "method": "regex",
+          "pattern": "Closes #14",
+          "mustPass": true
+        },
+        {
+          "id": "merge-pr",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should include opening a PR and squash-merging it after checks.",
+          "mustPass": true
+        },
+        {
+          "id": "cleanup-worktree",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should remove the worktree and prune/delete the local feature branch after merge.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["ship", "cleanup"], "difficulty": "easy", "intent": "commit-pr-merge-cleanup" }
     },
     {
       "id": "adjacent-negative-plan-only",

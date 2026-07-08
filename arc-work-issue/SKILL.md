@@ -1,14 +1,14 @@
 ---
 name: arc-work-issue
-description: Work an open GitHub issue in a new git worktree. Invoke with `#14` or `W-000014`.
+description: Work an open GitHub issue in a new git worktree, then commit, PR, merge, and clean up. Invoke with `#14` or `W-000014`.
 disable-model-invocation: true
 ---
 
 # Work Issue
 
-Open an isolated git worktree and implement one **open** GitHub issue. The leading word is **worktree-first**: never implement on the main checkout.
+Open an isolated git worktree, implement one **open** GitHub issue, then ship it end-to-end. The leading word is **worktree-first**: never implement on the main checkout.
 
-For git/gh command recipes and branch naming, load [WORKTREE.md](WORKTREE.md) before creating the worktree.
+Load [WORKTREE.md](WORKTREE.md) before creating the worktree. Load `arc-conventional-commits` before committing for commit type and message format.
 
 ## Input
 
@@ -44,24 +44,38 @@ If no reference is present, ask for one and stop.
    - Read issue body and comments for an implementation plan or acceptance criteria.
    - If no plan exists and scope is non-trivial, run `arc-planning-work` in the worktree context before coding.
 
-   Completion criterion: you can state what "done" means from the issue or an posted plan.
+   Completion criterion: you can state what "done" means from the issue or a posted plan.
 
 5. **Implement and verify in the worktree.**
    - Make the smallest correct change that satisfies acceptance criteria.
    - Run the repo's test/lint/typecheck commands from the worktree.
-   - Commit only when verification passes; include `Closes #<number>` in the commit body.
 
-   Completion criterion: tests relevant to the change pass and the worktree has at least one commit on the feature branch, or you report a concrete blocker.
+   Completion criterion: tests relevant to the change pass, or you report a concrete blocker before shipping.
 
-6. **Ship when the user expects a PR.**
-   - Push the branch and open a PR with `gh pr create` unless the user asked to stop after local work.
-   - Link the issue in the PR body with `Closes #<number>`.
+6. **Commit with Conventional Commits.**
+   - Follow `arc-conventional-commits` for type and message format (`feat:`, `fix:`, etc.).
+   - Use a subject that matches the issue; include `Closes #<number>` in the commit body.
+   - Stage only issue-scoped files; never commit on the default branch.
 
-   Completion criterion: PR URL is returned, or you explicitly confirm local-only work was requested.
+   Completion criterion: the feature branch has at least one conventional commit on the worktree branch.
+
+7. **Open and merge the PR.**
+   - Push the branch and open a PR per [WORKTREE.md](WORKTREE.md).
+   - Put `Closes #<number>` in the PR body.
+   - Wait for required checks when the repo enforces them, then squash-merge the PR.
+
+   Completion criterion: the PR is merged on GitHub and the linked issue closes, or you report the exact merge/check blocker.
+
+8. **Clean up the worktree.**
+   - From the repository root, remove the worktree, prune stale entries, and delete the local feature branch per [WORKTREE.md](WORKTREE.md).
+   - Return the shell to the main checkout.
+
+   Completion criterion: `git worktree list` no longer shows the issue worktree and the local feature branch is removed.
 
 ## Boundaries
 
-- Use `arc-planning-work` for plan-only requests; this skill implements.
+- Use `arc-planning-work` for plan-only requests; this skill implements and ships.
 - Use `arc-parallel-implement` for multiple issues at once.
 - Do not modify files in the main checkout or an unrelated worktree.
 - Do not start work on closed issues.
+- Do not leave the worktree behind after a successful merge.
