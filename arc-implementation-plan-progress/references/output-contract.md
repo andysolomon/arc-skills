@@ -1,7 +1,15 @@
 # Output Contract
 
+## File naming & lifecycle
+Prefix both files with a unique work-item identifier so concurrent plans never
+collide in the project root: the tracked work-item ID when one exists
+(`W-000025-IMPLEMENTATION_PLAN.md`, `W-000025-progress.txt`), else a short
+kebab-case feature slug (`rate-limit-IMPLEMENTATION_PLAN.md`,
+`rate-limit-progress.txt`). The plan and its progress file MUST share one prefix.
+On completion (all items `[x]` / shipping PR merged), move both into `docs/archive/`.
+
 ## Plan File
-Use `IMPLEMENTATION_PLAN.md` unless user asks for a different filename.
+Use `<ID>-IMPLEMENTATION_PLAN.md` (or a user-specified filename).
 
 Required sections:
 1. Product goal and scope boundaries
@@ -17,7 +25,7 @@ Required sections:
 6. Immediate next steps
 
 ## Progress File
-Filename: `progress.txt` in project root unless user specifies otherwise.
+Filename: `<ID>-progress.txt` in project root (same prefix as the plan) unless the user specifies otherwise.
 
 Required format:
 - Plain text
@@ -28,14 +36,18 @@ Required format:
 Template:
 
 ```txt
-Project Name - Progress
+<ID> - Project Name - Progress
 Generated: YYYY-MM-DD HH:MM:SS TZ
+On completion, move this file and the plan to docs/archive/.
 
 [ ] 1.0 - Phase 1 - Foundation
     [ ] 1.1 - Task
     [ ] 1.2 - Task
 [ ] 2.0 - Phase 2 - Feature Build
     [ ] 2.1 - Task
+[ ] 3.0 - Ship & archive
+    [ ] 3.1 - Verify / open shipping PR
+    [ ] 3.2 - On merge: move <ID>-IMPLEMENTATION_PLAN.md + <ID>-progress.txt to docs/archive/
 ```
 
 ## Quality Bar
