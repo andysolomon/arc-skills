@@ -189,9 +189,8 @@ duplicate.
 | Need | Delegate to |
 |------|-------------|
 | Gherkin acceptance criteria & story body | [arc-creating-user-stories](../arc-creating-user-stories/SKILL.md) |
-| Fix/implementation plan to attach | [arc-planning-work](../arc-planning-work/SKILL.md) |
+| Fix/implementation plan to attach (incl. GitHub plan-comment workflow) | [arc-planning-work](../arc-planning-work/SKILL.md) |
 | Bulk Linear creation mechanics & W-number sequencing | [arc-linear-issue-creator](../arc-linear-issue-creator/SKILL.md) |
-| GitHub plan-comment workflow | [arc-planning-github-issues](../arc-planning-github-issues/SKILL.md) |
 | Branch/commit naming for the eventual fix | [arc-conventional-commits](../arc-conventional-commits/SKILL.md) |
 
 ### W-number sequencing

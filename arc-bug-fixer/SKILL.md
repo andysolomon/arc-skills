@@ -6,7 +6,7 @@ description: >
   ships the fix — branch, conventional commit, PR, and ticket update. Reviewing
   is the core competency: it re-reproduces the defect, confirms the cited root
   cause still exists, and chooses the best fix rather than trusting the ticket
-  blindly. Delegates plan formatting to arc-planning-work / arc-planning-github-issues,
+  blindly. Delegates plan formatting to arc-planning-work,
   commit/PR mechanics to arc-conventional-commits / arc-git-pr-check.
   TRIGGER when: user asks to fix/resolve/implement a filed bug, points at a bug
   ticket or issue number, says "fix this bug", "resolve W-######", or "work the
@@ -144,9 +144,8 @@ A one-line fix needs no plan — go to Step 5. For multi-file or risky fixes, pr
 an ordered task plan mapped to the ticket's acceptance criteria and post it to the
 ticket:
 
-- GitHub → [arc-planning-github-issues](../arc-planning-github-issues/SKILL.md)
-  (`gh issue comment` with the plan).
-- Linear / Agile Accelerator / PRD → [arc-planning-work](../arc-planning-work/SKILL.md).
+- GitHub / Linear / Agile Accelerator / PRD → [arc-planning-work](../arc-planning-work/SKILL.md)
+  (GitHub: `gh issue comment` with the plan per `GITHUB_MODE.md`).
 
 Reuse the existing `**Branch:** feat/...` convention from those skills, but for a
 defect prefer a `fix/` branch (see Step 7).
@@ -228,8 +227,7 @@ Update the source ticket and then report to the user.
 | Need | Delegate to |
 |------|-------------|
 | Fetch / research the bug if no ticket exists yet | [arc-bug-finder](../arc-bug-finder/SKILL.md) |
-| Implementation plan on a GitHub issue | [arc-planning-github-issues](../arc-planning-github-issues/SKILL.md) |
-| Implementation plan on Linear / AA / PRD | [arc-planning-work](../arc-planning-work/SKILL.md) |
+| Implementation plan on GitHub / Linear / AA / PRD | [arc-planning-work](../arc-planning-work/SKILL.md) |
 | Commit message convention | [arc-conventional-commits](../arc-conventional-commits/SKILL.md) |
 | Commit + push + PR + auto-merge (GitHub) | [arc-git-pr-check](../arc-git-pr-check/SKILL.md) |
 | GitLab MR + CI/CD mechanics (`glab`, `.gitlab-ci.yml`) | [arc-gitlab-glab](../arc-gitlab-glab/SKILL.md) |
