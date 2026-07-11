@@ -56,3 +56,19 @@ git checkout -b feat/W-XXXXXX-short-description
 ## Sprint plan docs
 
 If a matching `docs/sprints/` plan exists, add or update the implementation plan in the corresponding story section.
+
+## Docs artifacts
+
+After updating the Agile Accelerator record, also create synchronized in-flight artifacts under `docs/`:
+
+- `docs/<W-XXXXXX>-IMPLEMENTATION_PLAN.md`
+- `docs/<W-XXXXXX>-progress.txt`
+
+Follow `arc-implementation-plan-progress/references/output-contract.md`. Initialize progress with:
+
+```bash
+mkdir -p docs
+arc-implementation-plan-progress/scripts/init_progress_txt.sh \
+  docs/<W-XXXXXX>-IMPLEMENTATION_PLAN.md \
+  docs/<W-XXXXXX>-progress.txt
+```

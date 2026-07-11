@@ -5,8 +5,8 @@
     {
       "id": "github-issue-plan-from-fixture",
       "description": "Golden path: create an implementation plan for an existing GitHub issue from seeded issue text and source files.",
-      "prompt": "Create an implementation plan for existing GitHub issue #42 using `issue-42.md` as the issue body. Do not implement the change or create new issues; just produce the plan that would be posted as an issue comment.",
-      "expected_output": "The assistant should produce an implementation plan with analysis, ordered tasks, file-level changes, test strategy, acceptance-criteria mapping, and no coding.",
+      "prompt": "Create an implementation plan for existing GitHub issue #42 using `issue-42.md` as the issue body. Do not implement the change or create new issues. Produce the plan for an issue comment and also create synchronized docs/issue-42-IMPLEMENTATION_PLAN.md and docs/issue-42-progress.txt.",
+      "expected_output": "The assistant should produce an implementation plan with analysis, ordered tasks, file-level changes, test strategy, acceptance-criteria mapping, synchronized docs/ artifacts, and no code changes.",
       "setup": {
         "kind": "seeded",
         "sources": [
@@ -42,6 +42,20 @@
           "kind": "output",
           "method": "judge",
           "prompt": "The response should not modify code or claim implementation is complete; it should only provide an implementation plan for the existing issue.",
+          "mustPass": true
+        },
+        {
+          "id": "docs-plan-artifact-created",
+          "kind": "workspace",
+          "method": "file-exists",
+          "path": "docs/issue-42-IMPLEMENTATION_PLAN.md",
+          "mustPass": true
+        },
+        {
+          "id": "docs-progress-artifact-created",
+          "kind": "workspace",
+          "method": "file-exists",
+          "path": "docs/issue-42-progress.txt",
           "mustPass": true
         }
       ],

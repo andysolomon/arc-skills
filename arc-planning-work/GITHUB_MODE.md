@@ -53,3 +53,19 @@ Closes #<number>
 ```
 
 This planning skill should not create the PR or start coding.
+
+## Docs artifacts
+
+After posting the issue comment, also create synchronized in-flight artifacts under `docs/`:
+
+- `docs/issue-<number>-IMPLEMENTATION_PLAN.md`
+- `docs/issue-<number>-progress.txt`
+
+Follow `arc-implementation-plan-progress/references/output-contract.md`. Initialize progress with:
+
+```bash
+mkdir -p docs
+arc-implementation-plan-progress/scripts/init_progress_txt.sh \
+  docs/issue-<number>-IMPLEMENTATION_PLAN.md \
+  docs/issue-<number>-progress.txt
+```
