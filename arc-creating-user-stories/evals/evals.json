@@ -3,10 +3,10 @@
   "skill_name": "arc-creating-user-stories",
   "evals": [
     {
-      "id": "draft-gherkin-backlog",
+      "id": "draft-verifiable-backlog",
       "description": "Golden path: draft a GitHub Issues backlog from a feature brief, but do not mutate GitHub before approval.",
       "prompt": "Create a draft GitHub Issues backlog from `feature-brief.md`. Do not create issues yet; I want to review the proposed stories first.",
-      "expected_output": "The assistant should produce a concrete draft backlog with W-prefixed story IDs, epics, priorities, sizes, user-story sentences, and Gherkin acceptance criteria. It should not claim to have created GitHub issues.",
+      "expected_output": "The assistant should produce a concrete draft backlog with W-prefixed story IDs, epics, priorities, sizes, job-story sentences, and checklist acceptance criteria with per-criterion verification methods. It should not claim to have created GitHub issues.",
       "setup": {
         "kind": "seeded",
         "sources": [
@@ -25,11 +25,18 @@
           "mustPass": true
         },
         {
-          "id": "uses-gherkin-given-when-then",
+          "id": "uses-job-story-sentence",
           "kind": "output",
           "method": "regex",
-          "pattern": "Given.*When.*Then",
+          "pattern": "When .*I want .*so that",
           "flags": "s",
+          "mustPass": true
+        },
+        {
+          "id": "criteria-have-verify-method",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "Acceptance criteria should be checklists of observable outcomes where each criterion names a concrete verification method (a test to run or write, a command, or a specific manual observation), not Given/When/Then Gherkin scenarios.",
           "mustPass": true
         },
         {

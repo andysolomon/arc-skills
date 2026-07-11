@@ -131,7 +131,7 @@
     {
       "id": "adjacent-negative-github-stories",
       "description": "Adjacent negative: GitHub user-story backlog requests belong to arc-creating-user-stories, not this docs-artifact plan skill.",
-      "prompt": "Turn this PRD into GitHub Issues with Gherkin user stories and labels. Do not create IMPLEMENTATION_PLAN.md or progress.txt.",
+      "prompt": "Turn this PRD into GitHub Issues with user stories and labels. Do not create IMPLEMENTATION_PLAN.md or progress.txt.",
       "expected_output": "The assistant should not force docs/ implementation plan/progress artifacts when the user specifically asked for GitHub Issues.",
       "assertions": [
         {

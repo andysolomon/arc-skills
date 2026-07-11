@@ -1,17 +1,15 @@
 ---
 name: arc-defining-work
-description: New work-item creation for Agile Accelerator or GitHub Issues. Use when asked to create stories, build a backlog, define work from codebase analysis, or convert requirements into tracked work items after choosing a destination. Do not use for implementation planning of existing work.
+description: Destination router for new work-item creation across GitHub Issues, Linear, or Agile Accelerator. Use when asked to create stories, build a backlog, define work from codebase analysis, or convert requirements into tracked work items and the destination tracker is not yet fixed. Do not use for implementation planning of existing work.
 ---
 # Arc Defining Work
 
-Create new tracked work items. The leading word is **destination-first**: ask where to create work before analysis or mutation.
-
-For story format and numbering, load [WORK_ITEM_FORMAT.md](WORK_ITEM_FORMAT.md). For destination-specific creation commands, load [GITHUB_DESTINATION.md](GITHUB_DESTINATION.md) or [AGILE_ACCELERATOR_DESTINATION.md](AGILE_ACCELERATOR_DESTINATION.md) after the user chooses. For PRD slicing rules, load [PRD_SLICING.md](PRD_SLICING.md) when the source is a PRD.
+Route new-work requests to the right creation skill. The leading word is **destination-first**: ask where to create work before analysis or mutation, then delegate to the destination specialist. This skill creates work items itself only for Agile Accelerator.
 
 ## Steps
 
 1. **Choose destination before analysis.**
-   - Ask: GitHub Issues or Agile Accelerator?
+   - Ask: GitHub Issues, Linear, or Agile Accelerator?
    - Do not infer the destination from repo context.
    - Wait for the user's answer before creating or deeply analyzing work items.
 
@@ -23,29 +21,34 @@ For story format and numbering, load [WORK_ITEM_FORMAT.md](WORK_ITEM_FORMAT.md).
 
    Completion criterion: the output states the selected mode and source material.
 
-3. **Draft work items for approval.**
-   - Use Gherkin user stories for feature/backlog work.
-   - Use tracer-bullet vertical slices for PRD breakdowns.
-   - Assign epic, priority, size, context, dependencies, and acceptance criteria.
-   - Do not create records/issues before user approval unless the user explicitly asked to create without review.
+3. **Route to the destination specialist.**
+
+   | Destination | Source | Continue with |
+   |---|---|---|
+   | GitHub Issues | PRD | `arc-prd-to-issues` (tracer-bullet slices + granularity quiz) |
+   | GitHub Issues | codebase/ideas | `arc-creating-user-stories` |
+   | Linear | any | `arc-linear-issue-creator` (for PRD sources, slice per `arc-prd-to-issues/SLICE_FORMAT.md` before bulk creation) |
+   | Agile Accelerator | any | steps 4–5 below |
+
+   All destinations share the story contract in `arc-creating-user-stories/STORY_FORMAT.md` (job story + verifiable checklist acceptance criteria + W-numbering).
+
+   Completion criterion: for GitHub or Linear, the run hands off to the specialist skill with destination and source mode stated; for Agile Accelerator, it proceeds to step 4.
+
+4. **Agile Accelerator: draft work items for approval.**
+   - Follow `arc-creating-user-stories/STORY_FORMAT.md` for story bodies, metadata, and acceptance-criteria rules; for PRD sources, slice per `arc-prd-to-issues/SLICE_FORMAT.md`.
+   - Do not create records before user approval unless the user explicitly asked to create without review.
 
    Completion criterion: every draft item is independently implementable or explicitly marked blocked/HITL.
 
-4. **Create work items in the chosen destination.**
-   - Preserve sequential `W-` numbering where applicable.
-   - Create labels/project metadata for GitHub where useful.
-   - For Agile Accelerator, let Salesforce assign `Name` and query it after creation.
+5. **Agile Accelerator: create and verify records.**
+   - Load [AGILE_ACCELERATOR_DESTINATION.md](AGILE_ACCELERATOR_DESTINATION.md) for `sf` commands.
+   - Let Salesforce assign `Name` and query it after creation.
+   - Report record IDs, assigned `W-` numbers, and any failed items.
 
-   Completion criterion: every approved item exists in the chosen tracker, or exact tooling/permission blockers are reported.
-
-5. **Verify and summarize.**
-   - Query created issues/records.
-   - Report IDs, links where available, destination, and any failed items.
-
-   Completion criterion: the user receives a created-work summary with enough IDs/links to continue planning or implementation.
+   Completion criterion: every approved item exists in Agile Accelerator with its queried `W-` number reported, or exact tooling/permission blockers are reported.
 
 ## Boundaries
 
 - Use `arc-planning-work` for implementation plans for existing work items.
-- Use `arc-prd-to-issues` when the user specifically wants PRD-to-GitHub-issues with a granularity quiz.
-- Use `arc-creating-user-stories` when the destination is already GitHub Issues and the request is a Gherkin story backlog.
+- Go directly to `arc-creating-user-stories`, `arc-prd-to-issues`, or `arc-linear-issue-creator` when the user has already fixed the destination; this router adds value only while the destination is open.
+- Use `arc-bug-finder` for defect intake; this skill defines feature/backlog work.

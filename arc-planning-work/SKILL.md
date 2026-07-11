@@ -59,7 +59,7 @@ For the shared plan template, load [PLAN_FORMAT.md](PLAN_FORMAT.md). For destina
 
 ## Boundaries
 
-- Use `arc-creating-user-stories` to create new GitHub issue backlogs with Gherkin stories.
+- Use `arc-creating-user-stories` to create new GitHub issue backlogs of user stories.
 - Use `arc-defining-work` to create new work items across destinations after asking the user where to create them.
 - Use `arc-prd-to-issues` when the target output is new GitHub issues from a PRD, not an implementation plan.
 - Do not start coding until the user approves the plan.

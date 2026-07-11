@@ -38,21 +38,19 @@ gh label create "priority: P2" --color "fbca04" --description "Nice to have" 2>&
 
 ## Creating issues
 
-Always write the issue body to a temp file and use `--body-file`. Inline markdown with `--body` can trigger security prompts and shell escaping problems.
+Always write the issue body to a temp file and use `--body-file`. Inline markdown with `--body` can trigger security prompts and shell escaping problems. The body follows [STORY_FORMAT.md](STORY_FORMAT.md) — do not restyle it here.
 
 ```bash
 cat > /tmp/gh-issue-body-W-000001.md << 'ISSUE_EOF'
 ## User Story
 **ID:** W-000001
 
-As a user, I want ...
+When [situation], I want [motivation], so that [outcome].
 
 ## Acceptance Criteria
 
-### Scenario: ...
-**Given** ...
-**When** ...
-**Then** ...
+- [ ] [Observable outcome]
+  - Verify: [test command, CLI check, or manual observation]
 
 ## Context
 ...

@@ -125,7 +125,8 @@ Clerk, Stripe, Vercel, etc.), consult it before concluding.
 ## Step 5: Synthesize the Bug Report
 
 Produce the report body below. This is the canonical bug format — reuse it for all
-three trackers. Acceptance criteria use Gherkin per `arc-creating-user-stories`.
+three trackers. Acceptance criteria follow `arc-creating-user-stories/STORY_FORMAT.md`
+(verifiable checklist with a `Verify:` method per criterion).
 
 ````markdown
 ## Bug
@@ -149,11 +150,10 @@ three trackers. Acceptance criteria use Gherkin per `arc-creating-user-stories`.
 **Expected:** what should happen.
 
 ## Acceptance Criteria (fix is done when)
-### Scenario: [name]
-**Given** [precondition]
-**When** [action]
-**Then** [correct outcome]
-**And** [no regression in ...]
+- [ ] [Correct outcome stated as an observable fact]
+  - Verify: [test command, CLI check, or manual observation]
+- [ ] No regression in [adjacent behavior]
+  - Verify: [existing test/suite that proves it]
 
 ## Root Cause
 Grounded in code: `path/to/file.ts:NN`. What is wrong and why it produces the
@@ -188,7 +188,7 @@ duplicate.
 
 | Need | Delegate to |
 |------|-------------|
-| Gherkin acceptance criteria & story body | [arc-creating-user-stories](../arc-creating-user-stories/SKILL.md) |
+| Story body & acceptance-criteria format | [arc-creating-user-stories](../arc-creating-user-stories/SKILL.md) |
 | Fix/implementation plan to attach (incl. GitHub plan-comment workflow) | [arc-planning-work](../arc-planning-work/SKILL.md) |
 | Bulk Linear creation mechanics & W-number sequencing | [arc-linear-issue-creator](../arc-linear-issue-creator/SKILL.md) |
 | Branch/commit naming for the eventual fix | [arc-conventional-commits](../arc-conventional-commits/SKILL.md) |

@@ -177,7 +177,7 @@ Follow the project's convention. Default: `feat/W-XXXXXX-short-description`
 
 ## Commit Convention
 
-Use semantic commits per `arc-semantic-release`:
+Use semantic commits per `arc-conventional-commits`:
 - `feat:` for new features
 - `fix:` for bug fixes
 - `test:` for test-only changes

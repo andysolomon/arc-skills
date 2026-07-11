@@ -64,7 +64,7 @@
     {
       "id": "adjacent-negative-new-backlog",
       "description": "Adjacent negative: a request to create new stories/backlog is defining work, not implementation planning for existing work.",
-      "prompt": "Create a new GitHub issue backlog for my product idea with Gherkin user stories and labels.",
+      "prompt": "Create a new GitHub issue backlog for my product idea with user stories and labels.",
       "expected_output": "The assistant should not force an implementation plan for an existing work item.",
       "assertions": [
         {

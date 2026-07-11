@@ -48,4 +48,4 @@ For slice rules and issue template, load [SLICE_FORMAT.md](SLICE_FORMAT.md). For
 
 - Use `arc-planning-work` when the output is an implementation plan for an existing PRD/issue, not new GitHub issues.
 - Use `arc-defining-work` when the user has not chosen a destination or may want Agile Accelerator.
-- Use `arc-creating-user-stories` for general Gherkin backlog creation not specifically driven by PRD tracer-bullet slicing.
+- Use `arc-creating-user-stories` for general story-backlog creation not specifically driven by PRD tracer-bullet slicing; its `STORY_FORMAT.md` is the shared story contract.

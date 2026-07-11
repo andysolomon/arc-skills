@@ -1,7 +1,7 @@
 ---
 name: arc-linear-issue-creator
 description: >
-  Bulk-creates Linear issues with Gherkin acceptance criteria, W-number sequencing,
+  Bulk-creates Linear issues with verifiable checklist acceptance criteria, W-number sequencing,
   label taxonomy, and dependency tracking. Integrates with arc-creating-user-stories
   and arc-defining-work story format.
   TRIGGER when: user wants to create issues in Linear, bulk-create stories,
@@ -104,7 +104,7 @@ Skip labels that already exist (matched by name from Step 0d).
 
 ## Step 2: Story Body Format
 
-Every issue follows the `arc-creating-user-stories` format:
+Every issue follows `arc-creating-user-stories/STORY_FORMAT.md`:
 
 ### Title format
 
@@ -118,15 +118,14 @@ Every issue follows the `arc-creating-user-stories` format:
 ## User Story
 **ID:** W-XXXXXX
 
-As a [user/role], I want [goal] so that [benefit].
+When [situation], I want [motivation], so that [outcome].
 
 ## Acceptance Criteria
 
-### Scenario: [Descriptive name]
-**Given** [precondition]
-**When** [action]
-**Then** [expected outcome]
-**And** [additional outcome]
+- [ ] [Observable outcome stated as a checkable fact]
+  - Verify: [test command, CLI check, or manual observation]
+- [ ] [Another observable outcome]
+  - Verify: [how an implementer proves this criterion]
 
 ## Context
 Technical context: affected files, patterns, dependencies.
@@ -257,10 +256,10 @@ Add Linear cross-references to each phase:
 
 | Requirement | Delegate to | Why |
 |---|---|---|
-| Story format & Gherkin criteria | [arc-creating-user-stories](../arc-creating-user-stories/SKILL.md) | Canonical story body format |
-| Vertical slice breakdown | [arc-defining-work](../arc-defining-work/SKILL.md) | Slice identification and epic grouping |
-| Commit conventions & branch naming | [arc-semantic-release](../arc-semantic-release/SKILL.md) | `feat/W-XXXXXX-*` branch pattern |
-| Plan pressure-testing | [grill-me](../grill-me/SKILL.md) | Decision-complete plan before issue creation |
+| Story format & acceptance criteria | [arc-creating-user-stories](../arc-creating-user-stories/STORY_FORMAT.md) | Canonical story body format |
+| Vertical slice breakdown | [arc-prd-to-issues](../arc-prd-to-issues/SKILL.md) | Tracer-bullet slice rules |
+| Commit conventions & branch naming | [arc-conventional-commits](../arc-conventional-commits/SKILL.md) | `feat/W-XXXXXX-*` branch pattern |
+| Plan pressure-testing | `grill-me` (global skill, not in this repo) | Decision-complete plan before issue creation |
 | Ongoing issue management | Linear MCP server | Triage, sprint planning, retrospectives |
 
 ## Verification Checklist

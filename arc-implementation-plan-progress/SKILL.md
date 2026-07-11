@@ -73,5 +73,5 @@ For the required output shape, load [references/output-contract.md](references/o
 
 ## Boundaries
 
-- Use `arc-creating-user-stories` when the user wants GitHub Issues with Gherkin user stories.
+- Use `arc-creating-user-stories` when the user wants a GitHub Issues user-story backlog.
 - Use `arc-planning-work` when the user asks to plan implementation of an existing tracked work item (it publishes to the source destination and also creates synchronized `docs/<ID>-IMPLEMENTATION_PLAN.md` and `docs/<ID>-progress.txt` artifacts). Use this skill directly for standalone plan/progress creation or updates without a tracked work-item source.

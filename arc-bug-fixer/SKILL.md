@@ -80,7 +80,7 @@ exists, this is intake, not a fix — hand off to
 [arc-bug-finder](../arc-bug-finder/SKILL.md) first, then return here.
 
 Parse the arc-bug-finder body into its parts — you will check each: **Summary**,
-**Steps to Reproduce**, **Acceptance Criteria** (Gherkin), **Root Cause**
+**Steps to Reproduce**, **Acceptance Criteria** (verifiable checklist), **Root Cause**
 (`file:line` + originating commit), **Recommended Fix** (ranked options),
 **Research Notes**, **Blast Radius**.
 
@@ -171,7 +171,7 @@ The fix is not done until all of these hold — show the evidence:
 1. **Repro now passes.** Re-run the exact reproduction from Step 2; the symptom is
    gone.
 2. **Regression test added.** Add a test that fails on the old code and passes on the
-   new — ideally encoding the ticket's Gherkin acceptance criteria. This is
+   new — ideally encoding the ticket's acceptance criteria. This is
    mandatory; a fix with no test guarding it can silently regress.
 3. **Existing suite is green.** Run the project's test commands (e.g. `sf apex test
    run --wait 10 --code-coverage`, `pnpm run test:unit`, relevant E2E) and lint.

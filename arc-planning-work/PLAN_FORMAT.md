@@ -44,7 +44,7 @@ Brief summary of what needs to change and why, based on reading the actual code.
 - Read source files before planning.
 - Tasks are atomic and reviewable.
 - Order tasks so each builds on previous work: data/types before consumers, utilities before UI, tests alongside behavior.
-- Map every source acceptance criterion or Gherkin scenario to tasks and verification.
+- Map every source acceptance criterion to tasks and verification.
 - Include specific test file paths and test names where possible.
 - Do not start implementation in this skill.
 
