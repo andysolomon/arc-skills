@@ -2,14 +2,14 @@
 
 ## File naming & lifecycle
 Prefix both files with a unique work-item identifier so concurrent plans never
-collide in the project root: the tracked work-item ID when one exists
-(`W-000025-IMPLEMENTATION_PLAN.md`, `W-000025-progress.txt`), else a short
-kebab-case feature slug (`rate-limit-IMPLEMENTATION_PLAN.md`,
-`rate-limit-progress.txt`). The plan and its progress file MUST share one prefix.
+collide in `docs/`: the tracked work-item ID when one exists
+(`docs/W-000025-IMPLEMENTATION_PLAN.md`, `docs/W-000025-progress.txt`), else a short
+kebab-case feature slug (`docs/rate-limit-IMPLEMENTATION_PLAN.md`,
+`docs/rate-limit-progress.txt`). The plan and its progress file MUST share one prefix.
 On completion (all items `[x]` / shipping PR merged), move both into `docs/archive/`.
 
 ## Plan File
-Use `<ID>-IMPLEMENTATION_PLAN.md` (or a user-specified filename).
+Use `docs/<ID>-IMPLEMENTATION_PLAN.md` (or a user-specified filename under `docs/`).
 
 Required sections:
 1. Product goal and scope boundaries
@@ -25,7 +25,7 @@ Required sections:
 6. Immediate next steps
 
 ## Progress File
-Filename: `<ID>-progress.txt` in project root (same prefix as the plan) unless the user specifies otherwise.
+Filename: `docs/<ID>-progress.txt` (same prefix as the plan) unless the user specifies otherwise.
 
 Required format:
 - Plain text
@@ -47,7 +47,7 @@ On completion, move this file and the plan to docs/archive/.
     [ ] 2.1 - Task
 [ ] 3.0 - Ship & archive
     [ ] 3.1 - Verify / open shipping PR
-    [ ] 3.2 - On merge: move <ID>-IMPLEMENTATION_PLAN.md + <ID>-progress.txt to docs/archive/
+    [ ] 3.2 - On merge: move docs/<ID>-IMPLEMENTATION_PLAN.md + docs/<ID>-progress.txt to docs/archive/
 ```
 
 ## Quality Bar

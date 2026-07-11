@@ -7,7 +7,14 @@ if [[ $# -lt 1 || $# -gt 2 ]]; then
 fi
 
 PLAN_FILE="$1"
-PROGRESS_FILE="${2:-progress.txt}"
+PLAN_DIR="$(dirname "$PLAN_FILE")"
+PLAN_BASE="$(basename "$PLAN_FILE" .md)"
+if [[ "$PLAN_BASE" == *-IMPLEMENTATION_PLAN ]]; then
+  DEFAULT_PROGRESS="${PLAN_DIR}/${PLAN_BASE%-IMPLEMENTATION_PLAN}-progress.txt"
+else
+  DEFAULT_PROGRESS="${PLAN_DIR}/progress.txt"
+fi
+PROGRESS_FILE="${2:-$DEFAULT_PROGRESS}"
 
 if [[ ! -f "$PLAN_FILE" ]]; then
   echo "Plan file not found: $PLAN_FILE" >&2

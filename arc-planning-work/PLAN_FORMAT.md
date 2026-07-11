@@ -47,3 +47,7 @@ Brief summary of what needs to change and why, based on reading the actual code.
 - Map every source acceptance criterion or Gherkin scenario to tasks and verification.
 - Include specific test file paths and test names where possible.
 - Do not start implementation in this skill.
+
+## Docs artifacts
+
+When `arc-planning-work` runs, also write synchronized `docs/<ID>-IMPLEMENTATION_PLAN.md` and `docs/<ID>-progress.txt` per `arc-implementation-plan-progress/references/output-contract.md`. Map this format's sections (Analysis, Tasks, Test Strategy, Acceptance Criteria Mapping) into the contract's milestone and acceptance-criteria structure.

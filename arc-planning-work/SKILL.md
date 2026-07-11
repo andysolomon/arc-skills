@@ -1,12 +1,12 @@
 ---
 name: arc-planning-work
-description: Implementation planning for existing tracked work items. Use when asked to plan an existing GitHub issue, Agile Accelerator story, or PRD before coding begins. Produces ordered tasks, file-level changes, test strategy, and acceptance-criteria mapping. Do not use to create new user-story backlogs.
+description: Implementation planning for existing tracked work items. Use when asked to plan an existing GitHub issue, Agile Accelerator story, or PRD before coding begins. Produces ordered tasks, file-level changes, test strategy, acceptance-criteria mapping, and synchronized docs/<ID>-IMPLEMENTATION_PLAN.md plus docs/<ID>-progress.txt artifacts. Do not use to create new user-story backlogs.
 ---
 # Arc Planning Work
 
 Create implementation plans before coding. The leading word is **read-before-plan**: inspect the work item and relevant code before proposing tasks.
 
-For the shared plan template, load [PLAN_FORMAT.md](PLAN_FORMAT.md). For destination-specific commands, load [GITHUB_MODE.md](GITHUB_MODE.md), [AGILE_ACCELERATOR_MODE.md](AGILE_ACCELERATOR_MODE.md), or [PRD_MODE.md](PRD_MODE.md) after mode detection.
+For the shared plan template, load [PLAN_FORMAT.md](PLAN_FORMAT.md). For destination-specific commands, load [GITHUB_MODE.md](GITHUB_MODE.md), [AGILE_ACCELERATOR_MODE.md](AGILE_ACCELERATOR_MODE.md), or [PRD_MODE.md](PRD_MODE.md) after mode detection. For synchronized `docs/` plan and progress artifacts, follow `arc-implementation-plan-progress/references/output-contract.md`.
 
 ## Steps
 
@@ -47,6 +47,15 @@ For the shared plan template, load [PLAN_FORMAT.md](PLAN_FORMAT.md). For destina
    - Update sprint plan docs if the repo has a matching `docs/sprints/` plan.
 
    Completion criterion: the plan is posted/written to the requested destination, or the exact permission/tooling blocker is reported.
+
+6. **Create synchronized `docs/` plan and progress artifacts.**
+   - Resolve `<ID>` from the source work item: use the tracked ID when available (e.g. `W-000025`, `issue-42`), otherwise a short kebab-case slug from the work item title.
+   - Ensure `docs/` exists in the project root.
+   - Write `docs/<ID>-IMPLEMENTATION_PLAN.md` following `arc-implementation-plan-progress/references/output-contract.md` (map the drafted plan into required sections: product goal, baseline, milestones with acceptance criteria, risks, and immediate next steps).
+   - Create or update `docs/<ID>-progress.txt` with `arc-implementation-plan-progress/scripts/init_progress_txt.sh docs/<ID>-IMPLEMENTATION_PLAN.md docs/<ID>-progress.txt`, or follow the contract template manually when the script is unavailable.
+   - Keep both `docs/` artifacts synchronized with what was published in step 5.
+
+   Completion criterion: `docs/<ID>-IMPLEMENTATION_PLAN.md` and `docs/<ID>-progress.txt` exist with the same `<ID>` prefix and synchronized phase coverage.
 
 ## Boundaries
 

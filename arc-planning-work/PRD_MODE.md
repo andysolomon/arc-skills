@@ -29,6 +29,20 @@ Write to:
 
 unless the user specifies another path.
 
+Also create synchronized in-flight artifacts under `docs/` using a kebab-case slug from the feature name:
+
+- `docs/<feature-slug>-IMPLEMENTATION_PLAN.md`
+- `docs/<feature-slug>-progress.txt`
+
+Follow `arc-implementation-plan-progress/references/output-contract.md`. Initialize progress with:
+
+```bash
+mkdir -p docs
+arc-implementation-plan-progress/scripts/init_progress_txt.sh \
+  docs/<feature-slug>-IMPLEMENTATION_PLAN.md \
+  docs/<feature-slug>-progress.txt
+```
+
 ## Format
 
 ```markdown
