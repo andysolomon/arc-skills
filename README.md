@@ -30,8 +30,9 @@ flowchart TD
         WI[arc-work-issue<br/>one issue, worktree → merged PR]
         PI[arc-parallel-implement<br/>batch of planned stories]
         BX[arc-bug-fixer<br/>work a filed bug]
+        PRL[arc-pr-review-loop<br/>review → comment → iterate]
         CC[arc-conventional-commits]
-        PRC[arc-git-pr-check]
+        PRC[arc-git-pr-check<br/>--ship merge / auto / pr]
     end
 
     DW -->|GitHub + codebase/ideas| CUS
@@ -51,6 +52,8 @@ flowchart TD
     WI --> CC --> PRC
     PI --> CC
     BX --> CC
+    PRC -->|--ship pr| PRL
+    PRL -->|approved| PRC
 ```
 
 Support skills: `arc-gitlab-glab` (GitLab delivery), `arc-creating-skill` + `arc-creating-evals` (author/maintain skills), `arc-system-design`, `arc-contract-review`, `arc-ideabrowser-openclaw-flow`, `arc-project-deploy-portfolio-sync`, `arc-sf-jwt-bearer`.

@@ -15,6 +15,10 @@ TYPE=""
 SUMMARY=""
 BASE_OVERRIDE=""
 DRY_RUN=0
+SHIP="auto"
+PR_TITLE=""
+PR_BODY_FILE=""
+STAGED_ONLY=0
 
 usage() {
   cat <<'USAGE'
@@ -24,12 +28,18 @@ Idempotent workflow:
 1) Commit if needed
 2) Push if needed
 3) Create PR if missing
-4) Enable auto-merge (squash) if PR is open and not merged
+4) Ship per --ship mode
 
 Options:
   --type <type>          Conventional commit type (feat|fix|chore|docs|test|refactor|perf|ci)
   --summary <text>       Conventional commit summary (used for commit message and branch slug)
   --base <branch>        Override default base branch for PR creation
+  --ship <mode>          auto (default): enable squash auto-merge and stop
+                         merge: squash-merge the PR now (fails if checks/permissions block it)
+                         pr: stop after PR creation; do not merge or enable auto-merge
+  --title <text>         PR title override (defaults to the conventional commit message)
+  --body-file <path>     PR body file (e.g. to include 'Closes #N')
+  --staged-only          Commit only what is already staged; never run 'git add -A'
   --dry-run              Print planned actions without mutating git/GitHub state
   -h, --help             Show help
 USAGE
@@ -187,6 +197,37 @@ while [ $# -gt 0 ]; do
       fi
       shift 2
       ;;
+    --ship)
+      SHIP="${2:-}"
+      case "$SHIP" in
+        auto|merge|pr) ;;
+        *)
+          echo "--ship must be one of auto|merge|pr" >&2
+          exit 1
+          ;;
+      esac
+      shift 2
+      ;;
+    --title)
+      PR_TITLE="${2:-}"
+      if [ -z "$PR_TITLE" ]; then
+        echo "--title requires a value" >&2
+        exit 1
+      fi
+      shift 2
+      ;;
+    --body-file)
+      PR_BODY_FILE="${2:-}"
+      if [ -z "$PR_BODY_FILE" ] || [ ! -f "$PR_BODY_FILE" ]; then
+        echo "--body-file requires an existing file" >&2
+        exit 1
+      fi
+      shift 2
+      ;;
+    --staged-only)
+      STAGED_ONLY=1
+      shift
+      ;;
     --dry-run)
       DRY_RUN=1
       shift
@@ -235,6 +276,11 @@ fi
 
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 
+if [ "$STAGED_ONLY" -eq 1 ] && [ "$CURRENT_BRANCH" = "$DEFAULT_BRANCH" ] && has_changes; then
+  echo "--staged-only requires a feature branch; the stash-and-branch flow would drop the index. Create a branch first." >&2
+  exit 1
+fi
+
 if has_changes && [ "$CURRENT_BRANCH" = "$DEFAULT_BRANCH" ]; then
   ensure_type_and_summary
   NEXT_VERSION="$(next_version_from_type)"
@@ -276,7 +322,9 @@ if has_changes; then
     STEP_COMMIT="done"
     DETAIL_COMMIT="would commit '$COMMIT_MSG'"
   else
-    git add -A
+    if [ "$STAGED_ONLY" -eq 0 ]; then
+      git add -A
+    fi
     if git diff --cached --quiet; then
       STEP_COMMIT="skipped"
       DETAIL_COMMIT="no staged diff after add"
@@ -340,17 +388,28 @@ fi
 PR_EXISTS="$(gh pr list --head "$CURRENT_BRANCH" --state all --json number --limit 1 --jq 'length')"
 
 if [ "$PR_EXISTS" = "0" ]; then
-  ensure_type_and_summary
-  COMMIT_MSG="${TYPE}: ${SUMMARY}"
+  if [ -z "$PR_TITLE" ]; then
+    ensure_type_and_summary
+    PR_TITLE="${TYPE}: ${SUMMARY}"
+  fi
   if [ "$DRY_RUN" -eq 1 ]; then
     STEP_PR="done"
     DETAIL_PR="would create PR '$CURRENT_BRANCH' -> '$DEFAULT_BRANCH'"
-    STEP_MERGE="done"
-    DETAIL_MERGE="would enable squash auto-merge after PR creation"
+    case "$SHIP" in
+      auto) STEP_MERGE="done"; DETAIL_MERGE="would enable squash auto-merge after PR creation" ;;
+      merge) STEP_MERGE="done"; DETAIL_MERGE="would squash-merge after PR creation" ;;
+      pr) STEP_MERGE="skipped"; DETAIL_MERGE="--ship pr: PR left open for review" ;;
+    esac
     print_status_table
     exit 0
   else
-    if gh pr create --base "$DEFAULT_BRANCH" --head "$CURRENT_BRANCH" --title "$COMMIT_MSG" --body "Automated PR created by arc-git-pr-check." >/dev/null; then
+    PR_CREATE_ARGS=(--base "$DEFAULT_BRANCH" --head "$CURRENT_BRANCH" --title "$PR_TITLE")
+    if [ -n "$PR_BODY_FILE" ]; then
+      PR_CREATE_ARGS+=(--body-file "$PR_BODY_FILE")
+    else
+      PR_CREATE_ARGS+=(--body "Automated PR created by arc-git-pr-check.")
+    fi
+    if gh pr create "${PR_CREATE_ARGS[@]}" >/dev/null; then
       STEP_PR="done"
       DETAIL_PR="created PR '$CURRENT_BRANCH' -> '$DEFAULT_BRANCH'"
     else
@@ -373,22 +432,43 @@ if [ "$PR_STATE" = "MERGED" ]; then
 elif [ "$PR_STATE" = "CLOSED" ]; then
   fail_step merge "PR is closed (not merged): $PR_URL"
 elif [ "$PR_STATE" = "OPEN" ]; then
-  if [ "$HAS_AUTOMERGE" = "true" ]; then
-    STEP_MERGE="skipped"
-    DETAIL_MERGE="auto-merge already enabled on PR #$PR_NUMBER"
-  else
-    if [ "$DRY_RUN" -eq 1 ]; then
-      STEP_MERGE="done"
-      DETAIL_MERGE="would enable squash auto-merge on PR #$PR_NUMBER"
-    else
-      if gh pr merge "$PR_NUMBER" --auto --squash >/dev/null; then
+  case "$SHIP" in
+    pr)
+      STEP_MERGE="skipped"
+      DETAIL_MERGE="--ship pr: PR #$PR_NUMBER left open for review: $PR_URL"
+      ;;
+    merge)
+      if [ "$DRY_RUN" -eq 1 ]; then
         STEP_MERGE="done"
-        DETAIL_MERGE="enabled squash auto-merge on PR #$PR_NUMBER"
+        DETAIL_MERGE="would squash-merge PR #$PR_NUMBER"
       else
-        fail_step merge "failed to enable auto-merge on PR #$PR_NUMBER"
+        if gh pr merge "$PR_NUMBER" --squash >/dev/null; then
+          STEP_MERGE="done"
+          DETAIL_MERGE="squash-merged PR #$PR_NUMBER"
+        else
+          fail_step merge "failed to squash-merge PR #$PR_NUMBER (checks pending or blocked?)"
+        fi
       fi
-    fi
-  fi
+      ;;
+    auto)
+      if [ "$HAS_AUTOMERGE" = "true" ]; then
+        STEP_MERGE="skipped"
+        DETAIL_MERGE="auto-merge already enabled on PR #$PR_NUMBER"
+      else
+        if [ "$DRY_RUN" -eq 1 ]; then
+          STEP_MERGE="done"
+          DETAIL_MERGE="would enable squash auto-merge on PR #$PR_NUMBER"
+        else
+          if gh pr merge "$PR_NUMBER" --auto --squash >/dev/null; then
+            STEP_MERGE="done"
+            DETAIL_MERGE="enabled squash auto-merge on PR #$PR_NUMBER"
+          else
+            fail_step merge "failed to enable auto-merge on PR #$PR_NUMBER (repo may disallow auto-merge; use --ship merge)"
+          fi
+        fi
+      fi
+      ;;
+  esac
 else
   fail_step merge "unable to determine PR state for '$CURRENT_BRANCH'"
 fi
