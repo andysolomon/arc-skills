@@ -27,7 +27,7 @@ flowchart TD
     end
 
     subgraph execute [3 — Execute & ship]
-        WI[arc-work-issue<br/>one issue, worktree → merged PR]
+        WI[arc-work-issue<br/>one issue, worktree → PR per --ship]
         PI[arc-parallel-implement<br/>batch of planned stories]
         BX[arc-bug-fixer<br/>work a filed bug]
         PRL[arc-pr-review-loop<br/>review → comment → iterate]
@@ -54,7 +54,22 @@ flowchart TD
     BX --> CC
     PRC -->|--ship pr| PRL
     PRL -->|approved| PRC
+
+    classDef parent fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a;
+    classDef worker fill:#dcfce7,stroke:#15803d,color:#14532d;
+    classDef premium fill:#fef3c7,stroke:#b45309,color:#78350f;
+    class DW,CUS,PRD,LIN,AA,BF,PW,IPP,CC,PRC parent;
+    class WI,PI,BX worker;
+    class PRL premium;
 ```
+
+### Delegation strategy (arc-orchestrator)
+
+Colors mark who does the work when these skills run under [arc-orchestrator](https://github.com/andysolomon/arc-orchestrator):
+
+- **Blue — parent session (judgment & mechanics).** Defining, planning, routing, and every git/GitHub mutation (commit, push, PR, merge via `arc-git-pr-check`) stay in the premium parent session. Workers never commit, push, or merge.
+- **Green — delegated implementation.** Inside `arc-work-issue`, `arc-parallel-implement`, and `arc-bug-fixer`, the coding itself goes to cheaper workers (Cursor Composer 2.5 / Codex), shipped PR-first with `--ship pr` so nothing merges on a cheap model's judgment.
+- **Amber — premium review.** `arc-pr-review-loop` routes review rounds to a smart model (`opus-review` for taste-sensitive surfaces, `codex-check` otherwise), which posts PR comments the delegated workers then address; the loop runs until approval (max 3 rounds), and only then does the parent merge.
 
 Support skills: `arc-gitlab-glab` (GitLab delivery), `arc-creating-skill` + `arc-creating-evals` (author/maintain skills), `arc-system-design`, `arc-contract-review`, `arc-ideabrowser-openclaw-flow`, `arc-project-deploy-portfolio-sync`, `arc-sf-jwt-bearer`.
 
