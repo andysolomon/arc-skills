@@ -46,6 +46,6 @@ For story/body templates and acceptance-criteria rules, load [GHERKIN.md](GHERKI
 
 ## Boundaries
 
-- Use `arc-planning-work` or `arc-planning-github-issues` when the user asks to plan implementation of an existing issue.
+- Use `arc-planning-work` when the user asks to plan implementation of an existing issue.
 - Use `arc-defining-work` when the user wants work items created across a destination chosen at runtime.
 - Use this skill when the output is specifically GitHub Issues containing Gherkin user stories.
