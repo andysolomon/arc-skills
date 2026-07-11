@@ -1,12 +1,12 @@
 ---
 name: arc-creating-user-stories
-description: Gherkin user-story backlog creation for GitHub Issues. Use when asked to create development stories, write GitHub issues from a plan, build a feature backlog, or turn feature ideas into tracked user stories. Do not use for implementation planning after issues already exist.
+description: User-story backlog creation for GitHub Issues using job stories with verifiable checklist acceptance criteria. Use when asked to create development stories, write GitHub issues from a plan, build a feature backlog, or turn feature ideas into tracked user stories. Do not use for implementation planning after issues already exist.
 ---
 # Arc Creating User Stories
 
-Create a tracked backlog of independently deliverable user stories. The leading word is **Gherkin**: every story must be testable through Given/When/Then scenarios.
+Create a tracked backlog of independently deliverable user stories. The leading word is **verifiable**: every acceptance criterion must name the concrete method that proves it.
 
-For story/body templates and acceptance-criteria rules, load [GHERKIN.md](GHERKIN.md). For `gh` commands, labels, Projects, and auth details, load [GITHUB.md](GITHUB.md) when you are ready to create issues.
+This skill owns the canonical story format for the arc skill family. For the story-body template, numbering, and acceptance-criteria rules, load [STORY_FORMAT.md](STORY_FORMAT.md). For `gh` commands, labels, Projects, and auth details, load [GITHUB.md](GITHUB.md) when you are ready to create issues.
 
 ## Steps
 
@@ -22,7 +22,7 @@ For story/body templates and acceptance-criteria rules, load [GHERKIN.md](GHERKI
    - Assign priority (`P0`/`P1`/`P2`) and size (`S`/`M`/`L`/`XL`).
    - Use sequential `W-000001` IDs; inspect existing issues first and increment from the highest existing `W-` number.
 
-   Completion criterion: every story has an ID, title, epic, priority, size, user-story sentence, Gherkin acceptance criteria, and concrete context.
+   Completion criterion: every story has an ID, title, epic, priority, size, a job-story sentence, and checklist acceptance criteria where each criterion carries a `Verify:` method per [STORY_FORMAT.md](STORY_FORMAT.md).
 
 3. **Review the backlog with the user before mutation.**
    - Present the proposed epics and stories.
@@ -47,5 +47,6 @@ For story/body templates and acceptance-criteria rules, load [GHERKIN.md](GHERKI
 ## Boundaries
 
 - Use `arc-planning-work` when the user asks to plan implementation of an existing issue.
-- Use `arc-defining-work` when the user wants work items created across a destination chosen at runtime.
-- Use this skill when the output is specifically GitHub Issues containing Gherkin user stories.
+- Use `arc-defining-work` when the destination tracker has not been chosen yet; it routes here once the user picks GitHub Issues.
+- Use `arc-prd-to-issues` when the source is a PRD and the user wants tracer-bullet vertical slices.
+- Use `arc-linear-issue-creator` when the destination is Linear; it consumes this skill's [STORY_FORMAT.md](STORY_FORMAT.md).

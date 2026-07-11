@@ -17,7 +17,7 @@
           "id": "asks-destination",
           "kind": "output",
           "method": "judge",
-          "prompt": "The response should ask the user to choose GitHub Issues or Agile Accelerator before creating stories or doing deep analysis.",
+          "prompt": "The response should ask the user to choose a destination tracker (GitHub Issues, Linear, or Agile Accelerator) before creating stories or doing deep analysis.",
           "mustPass": true
         },
         {
@@ -31,8 +31,8 @@
       "metadata": { "tags": ["destination", "gating"], "difficulty": "easy", "intent": "destination-first" }
     },
     {
-      "id": "github-draft-after-destination",
-      "description": "After GitHub destination is chosen, draft work items for approval before mutation.",
+      "id": "routes-github-to-specialist",
+      "description": "After GitHub destination is chosen for a codebase/ideas source, the router hands off to arc-creating-user-stories and its story contract.",
       "prompt": "Destination: GitHub Issues. Draft tracked work items for `product-brief.md`, but do not create issues until I approve.",
       "setup": {
         "kind": "seeded",
@@ -42,17 +42,17 @@
       },
       "assertions": [
         {
-          "id": "drafts-gherkin-stories",
+          "id": "hands-off-to-user-stories-skill",
           "kind": "output",
-          "method": "regex",
-          "pattern": "User Story[\\s\\S]*Given[\\s\\S]*When[\\s\\S]*Then",
+          "method": "judge",
+          "prompt": "The response should state that it is continuing with the arc-creating-user-stories skill (or its STORY_FORMAT contract) for GitHub Issues backlog creation, rather than inventing its own story format.",
           "mustPass": true
         },
         {
-          "id": "includes-metadata",
+          "id": "drafts-verifiable-stories",
           "kind": "output",
           "method": "judge",
-          "prompt": "The draft should include useful work-item metadata such as epic/theme, priority, size, context, or dependencies.",
+          "prompt": "Any drafted work items should use a job-story sentence ('When ..., I want ..., so that ...') and checklist acceptance criteria where each criterion names a verification method (a test, command, or observable check). Given/When/Then Gherkin scenarios should not be used.",
           "mustPass": true
         },
         {
@@ -63,7 +63,7 @@
           "mustPass": true
         }
       ],
-      "metadata": { "tags": ["execution", "github", "draft"], "difficulty": "medium", "intent": "draft-work-items" }
+      "metadata": { "tags": ["routing", "github", "draft"], "difficulty": "medium", "intent": "route-to-specialist" }
     },
     {
       "id": "adjacent-negative-existing-issue-plan",

@@ -6,6 +6,55 @@ Portable repository for ARC skills (`arc-*`) so they can be shared and installed
 
 Each skill lives in its own directory and includes a `SKILL.md` entrypoint. Skills may also include an `evals/evals.json` suite consumable by [`arc-skill-eval`](https://github.com/andysolomon/arc-skill-eval).
 
+## Skill pipeline
+
+How the planning, creation, and execution skills fit together. `arc-defining-work` is the entry-point router when the destination tracker is open; go straight to a specialist when it is already fixed. The canonical story contract (job story + verifiable checklist acceptance criteria + `W-` numbering) lives in [`arc-creating-user-stories/STORY_FORMAT.md`](arc-creating-user-stories/STORY_FORMAT.md).
+
+```mermaid
+flowchart TD
+    subgraph define [1 — Define work]
+        DW[arc-defining-work<br/>destination router]
+        CUS[arc-creating-user-stories<br/>GitHub Issues backlog]
+        PRD[arc-prd-to-issues<br/>PRD → tracer-bullet slices]
+        LIN[arc-linear-issue-creator<br/>Linear bulk creation]
+        AA[Agile Accelerator path<br/>inline in arc-defining-work]
+        BF[arc-bug-finder<br/>defect intake]
+    end
+
+    subgraph plan [2 — Plan]
+        PW[arc-planning-work<br/>plan an existing item]
+        IPP[arc-implementation-plan-progress<br/>docs/ plan + progress artifacts]
+    end
+
+    subgraph execute [3 — Execute & ship]
+        WI[arc-work-issue<br/>one issue, worktree → merged PR]
+        PI[arc-parallel-implement<br/>batch of planned stories]
+        BX[arc-bug-fixer<br/>work a filed bug]
+        CC[arc-conventional-commits]
+        PRC[arc-git-pr-check]
+    end
+
+    DW -->|GitHub + codebase/ideas| CUS
+    DW -->|GitHub + PRD| PRD
+    DW -->|Linear| LIN
+    DW -->|Agile Accelerator| AA
+    BF -->|files ticket| BX
+
+    CUS --> PW
+    PRD --> PW
+    LIN --> PW
+    AA --> PW
+    PW -.->|shares the plan/progress artifact contract| IPP
+
+    PW --> WI
+    PW --> PI
+    WI --> CC --> PRC
+    PI --> CC
+    BX --> CC
+```
+
+Support skills: `arc-gitlab-glab` (GitLab delivery), `arc-creating-skill` + `arc-creating-evals` (author/maintain skills), `arc-system-design`, `arc-contract-review`, `arc-ideabrowser-openclaw-flow`, `arc-project-deploy-portfolio-sync`, `arc-sf-jwt-bearer`.
+
 ## Install (recommended: skills CLI)
 
 This follows the `vercel-labs/skills` README flow.

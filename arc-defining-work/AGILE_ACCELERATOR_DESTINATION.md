@@ -1,6 +1,6 @@
 # Agile Accelerator Destination
 
-Load this only after the user chooses Agile Accelerator.
+Load this only after the user chooses Agile Accelerator. Story bodies placed in `agf__Details__c` follow `arc-creating-user-stories/STORY_FORMAT.md`.
 
 ## Prerequisites
 
