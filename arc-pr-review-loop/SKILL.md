@@ -1,7 +1,6 @@
 ---
 name: arc-pr-review-loop
 description: Review a PR against its plan, post actionable PR comments, have a coding agent address them, and repeat until approved or a round limit is hit. Invoke with a PR number/URL, e.g. `/arc-pr-review-loop 27`.
-disable-model-invocation: true
 ---
 
 # PR Review Loop
