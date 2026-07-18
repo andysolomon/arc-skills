@@ -46,6 +46,35 @@ a work order.
   new ones via [arc-bug-finder](../arc-bug-finder/SKILL.md) rather than smuggling
   unrelated fixes into this PR.
 
+## Orchestrator Route Guidance
+
+When this skill runs under arc-orchestrator, the parent retains ticket judgment,
+fix selection, acceptance, review judgment, and approval. Route only bounded phases:
+
+- `codex-explore` for read-only reproduction, call-path tracing, and root-cause
+  evidence before the parent issues the review verdict.
+- `composer-implement` for a clear mechanical fix in an isolated worktree (the
+  Cursor/Composer implementation lane; there is no separate `cursor-implement`
+  route).
+- `codex-implement` for a non-obvious fix, debugging-heavy work, or escalation
+  after Composer misses the bar.
+- `codex-check` for independent regression, correctness, security, and
+  acceptance-criteria review; `opus-review` for taste-sensitive UI/UX, API,
+  architecture, copy, docs, prompt, or skill critique.
+- `opus-explore`, `opus-check`, and `opus-implement` are the matching availability
+  fallbacks when Codex is unavailable, not default routes.
+
+Before delegating a write-capable route, the parent creates or assigns an isolated
+worktree for the ticket. Workers edit and verify only there. They never commit,
+push, comment, merge, deploy, edit secrets, update tickets, or touch unrelated
+files. Review workers return findings rather than posting them. The parent inspects
+the evidence, delegates commit and push to `mechanical-commit-push`, opens the PR
+directly with `gh pr create`, delegates ticket and PR comments to
+`mechanical-post-comment`, and delegates merge or auto-merge to `mechanical-merge`
+only when the caller explicitly authorizes it. Otherwise, orchestrated fixes default
+to PR-first `--ship pr`. Outside orchestration, preserve the standalone workflow
+and `arc-git-pr-check` behavior below.
+
 ## Workflow Overview
 
 ```
@@ -163,6 +192,8 @@ defect prefer a `fix/` branch (see Step 7).
 4. For Salesforce repos, follow the `sf-2gp-pipeline` skill's conventions (virtual
    methods, DI, `@TestVisible` setters, `with sharing`); for web repos, follow the
    project's framework skill.
+5. Under an orchestrator, select the implementation route above and inspect the
+   worker's diff and verification before accepting the fix.
 
 ## Step 6: Verify the Fix
 
@@ -187,6 +218,10 @@ instead.
 
 ## Step 7: Ship
 
+Under orchestration, use the PR-first and mechanical-route policy above. The steps
+below describe standalone shipping; do not replace its existing behavior or
+explicit caller choices.
+
 1. **Commit** with Conventional Commits per
    [arc-conventional-commits](../arc-conventional-commits/SKILL.md):
    `fix: <summary> (W-XXXXXX)` — `fix:` for a defect (patch), `feat:` only if it was
@@ -206,6 +241,9 @@ instead.
 ## Step 8: Update the Ticket & Report
 
 Update the source ticket and then report to the user.
+
+Under orchestration, the parent decides the update content and delegates each
+ticket or PR comment to `mechanical-post-comment`; workers do not post updates.
 
 **On the ticket** (comment + state change):
 - Post the **review verdict** and the **resolution**: root cause confirmed, fix
@@ -229,7 +267,7 @@ Update the source ticket and then report to the user.
 | Fetch / research the bug if no ticket exists yet | [arc-bug-finder](../arc-bug-finder/SKILL.md) |
 | Implementation plan on GitHub / Linear / AA / PRD | [arc-planning-work](../arc-planning-work/SKILL.md) |
 | Commit message convention | [arc-conventional-commits](../arc-conventional-commits/SKILL.md) |
-| Commit + push + PR + auto-merge (GitHub) | [arc-git-pr-check](../arc-git-pr-check/SKILL.md) |
+| Standalone commit + push + PR + auto-merge (GitHub) | [arc-git-pr-check](../arc-git-pr-check/SKILL.md) |
 | GitLab MR + CI/CD mechanics (`glab`, `.gitlab-ci.yml`) | [arc-gitlab-glab](../arc-gitlab-glab/SKILL.md) |
 | Fixing several independent bugs at once | `arc-parallel-implement` skill (one branch/PR each) |
 | Salesforce deploy + test loop | `sf-2gp-pipeline` / `deploy-and-test` skills |
