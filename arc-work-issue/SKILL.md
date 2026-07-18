@@ -10,15 +10,38 @@ Open an isolated git worktree, implement one **open** GitHub issue, then ship it
 
 Load [WORKTREE.md](WORKTREE.md) before creating the worktree. Load `arc-conventional-commits` before committing for commit type and message format.
 
+## Orchestrator route guidance
+
+Standalone behavior remains unchanged: without an orchestrator, `--ship merge` is
+the default and `arc-git-pr-check` retains all of its ship modes. Under an
+orchestrator, omitted ship mode means PR-first `--ship pr`; honor an explicit
+caller request for `--ship auto` or `--ship merge`. The parent creates and owns the
+worktree, decides the approach, inspects worker evidence, and retains review
+judgment and approval.
+
+- Use `codex-explore` for bounded read-only repository investigation before the parent chooses an approach.
+- Use `composer-implement` for clear, mechanical implementation in the issue worktree. This is the Cursor/Composer implementation lane; there is no separate `cursor-implement` route.
+- Use `codex-implement` for difficult implementation, debugging-heavy work, or escalation after Composer misses the bar.
+- Use `codex-check` for independent correctness, regression, security, and acceptance-criteria review; use `opus-review` for taste-sensitive UI/UX, API, architecture, copy, docs, prompt, or skill review.
+- If Codex is unavailable, use the matching `opus-explore`, `opus-check`, or `opus-implement` availability fallback.
+
+Give each write-capable worker only the isolated issue worktree. Workers make
+scoped edits and run verification, but never commit, push, comment, merge, deploy,
+edit secrets, or touch unrelated files. Review workers return findings instead of
+posting them. After acceptance, the parent delegates commit and push to
+`mechanical-commit-push`, directly opens the PR with `gh pr create`, delegates PR
+comments to `mechanical-post-comment`, and delegates an explicitly authorized
+merge or auto-merge to `mechanical-merge`.
+
 ## Input
 
 The user invokes this skill with a work-item reference and an optional ship mode:
 
 - `#14` or `14` — GitHub issue number
 - `W-000014` — story ID in the issue title or body
-- `--ship merge` (default) — squash-merge the PR and clean up the worktree
+- `--ship merge` (standalone default) — squash-merge the PR and clean up the worktree
 - `--ship auto` — enable squash auto-merge, stop; worktree stays until merge completes
-- `--ship pr` — open the PR and stop; leave the worktree and branch alive so a reviewer (e.g. `arc-pr-review-loop` or an orchestrator's premium model) can comment and iteration can continue
+- `--ship pr` (orchestrated default) — open the PR and stop; leave the worktree and branch alive so `arc-pr-review-loop` or an orchestrated review worker can return findings for parent-led review and iteration
 
 If no reference is present, ask for one and stop.
 
@@ -52,23 +75,26 @@ If no reference is present, ask for one and stop.
 5. **Implement and verify in the worktree.**
    - Make the smallest correct change that satisfies acceptance criteria.
    - Run the repo's test/lint/typecheck commands from the worktree.
+   - Under an orchestrator, delegate through the route guidance above, then have the parent inspect the diff and verification before accepting it.
 
    Completion criterion: tests relevant to the change pass, or you report a concrete blocker before shipping.
 
 6. **Commit with Conventional Commits.**
    - Follow `arc-conventional-commits` for type and message format (`feat:`, `fix:`, etc.).
    - Use a subject that matches the issue; include `Closes #<number>` in the commit body.
-   - Stage only issue-scoped files; never commit on the default branch.
+   - Outside orchestration, stage and commit only issue-scoped files; never commit on the default branch.
+   - Under orchestration, the parent stages only the exact issue-scoped file allowlist, then supplies the conventional message to `mechanical-commit-push`; neither implementation nor review workers run git mutations.
 
    Completion criterion: the feature branch has at least one conventional commit on the worktree branch.
 
-7. **Ship via `arc-git-pr-check`.**
+7. **Ship with the selected mode.**
    - Write the PR body to a temp file; include `Closes #<number>` and a change summary.
-   - From the worktree, run the `arc-git-pr-check` script with the chosen mode:
+   - Outside orchestration, run the `arc-git-pr-check` script from the worktree with the chosen mode:
      `run.sh --ship <merge|auto|pr> --title "<conventional title>" --body-file <path> --staged-only`
-   - Do not push, create, or merge the PR with raw `gh` commands; the script owns those mechanics.
+   - Outside orchestration, do not push, create, or merge the PR with raw `gh` commands; the script owns those mechanics.
+   - Under orchestration, after `mechanical-commit-push` succeeds, the authorized parent opens the PR directly with `gh pr create`. Stop there for `--ship pr`; for an explicitly requested `--ship auto` or `--ship merge`, delegate the remaining action to `mechanical-merge`.
 
-   Completion criterion, by mode — `merge`: the PR is squash-merged and the linked issue closes; `auto`: auto-merge is enabled and the PR URL is reported; `pr`: the PR is open with its URL reported for review. Otherwise report the exact blocker from the script's status table.
+   Completion criterion, by mode — `merge`: the PR is squash-merged and the linked issue closes; `auto`: auto-merge is enabled and the PR URL is reported; `pr`: the PR is open with its URL reported for review. Otherwise report the exact blocker from the selected standalone or orchestrated mechanism.
 
 8. **Clean up the worktree (merge mode only).**
    - When the PR is merged: from the repository root, remove the worktree, prune stale entries, and delete the local feature branch per [WORKTREE.md](WORKTREE.md); return the shell to the main checkout.
@@ -80,7 +106,8 @@ If no reference is present, ask for one and stop.
 
 - Use `arc-planning-work` for plan-only requests; this skill implements and ships.
 - Use `arc-parallel-implement` for multiple issues at once.
-- Use `arc-git-pr-check` for all push/PR/merge mechanics; never inline them here.
+- Outside orchestration, use `arc-git-pr-check` for all push/PR/merge mechanics.
+- Under orchestration, use `mechanical-commit-push`, direct parent `gh pr create`, `mechanical-post-comment`, and `mechanical-merge` as specified above; workers never mutate git or GitHub.
 - Use `arc-pr-review-loop` to review and iterate on a PR opened with `--ship pr`.
 - Do not modify files in the main checkout or an unrelated worktree.
 - Do not start work on closed issues.

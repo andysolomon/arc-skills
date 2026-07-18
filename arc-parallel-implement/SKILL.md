@@ -5,206 +5,168 @@ description: "Implements multiple planned user stories in parallel using subagen
 
 # Parallel Story Implementation
 
-Spawns concurrent subagents via the Task tool to implement multiple user stories simultaneously, each on its own feature branch with isolated commits and PRs.
+Implement multiple independent planned stories concurrently. The leading words are
+**worktree-first**: each story gets its own feature branch and isolated worktree
+before any write-capable worker starts. The parent owns plans, route selection,
+acceptance, review judgment, and approval; workers only edit and verify their
+assigned worktree.
+
+## Input
+
+Accept the planned story or issue references plus an optional requested ship mode:
+
+- `--ship pr` (default) — open one PR per accepted story and stop for review.
+- `--ship auto` — enable auto-merge only when the caller explicitly requests it.
+- `--ship merge` — merge only when the caller explicitly requests it.
+
+Carry the requested mode into every story contract. Do not let an implementation
+worker choose or execute it.
 
 ## When to Use
 
-- User says "implement all plans", "build these stories", "execute issues #X, #Y, #Z"
-- Multiple independent stories/issues are ready for implementation (plans exist)
-- Stories touch different files or different layers with minimal overlap
+- The user asks to implement multiple issues or planned stories.
+- Each story has a plan and acceptance criteria.
+- File ownership is independent enough for concurrent work.
 
-## When NOT to Use
-
-- Stories have sequential dependencies (one must merge before the next can start)
-- Stories modify the same files heavily (merge conflicts are likely)
-- Only one story — just implement it directly, no subagent needed
+Use `arc-work-issue` for one story. Run dependent or heavily overlapping stories
+sequentially.
 
 ## Prerequisites
 
-Before spawning subagents, verify:
+1. **Plans exist.** Collect each issue number, `W-XXXXXX` ID, title, complete plan,
+   acceptance criteria, target files, and verification commands. If a plan is
+   missing, use `arc-planning-work` first.
+2. **Stories are independent.** Build a file map. Assign minor shared-file changes
+   to one story and record the dependency; serialize heavy overlap.
+3. **Baseline is known.** Confirm the main checkout is clean enough to create
+   worktrees and run the repository's baseline tests.
+4. **Branches are fixed.** Default to
+   `feat/W-XXXXXX-<short-description>` and preserve the repository's established
+   convention when it differs.
 
-1. **Plans exist** — Each story must have an implementation plan (issue comment, plan file, or inline spec). If not, use `arc-planning-work` first.
-2. **Stories are independent** — Review file overlap. If two stories edit the same file, implement them sequentially or plan non-overlapping edits.
-3. **Main is clean** — `git status` shows no uncommitted changes that would conflict.
-4. **Tests pass** — Run the project's test suite on main before starting.
+## Orchestrator Route Guidance
+
+Choose one bounded route per phase:
+
+- `codex-explore` — read-only repository mapping, dependency tracing, or evidence
+  gathering before the parent finalizes story boundaries.
+- `composer-implement` — default for clear, mechanical implementation. This is the
+  Cursor/Composer 2.5 implementation lane; there is no separate
+  `cursor-implement` route.
+- `codex-implement` — harder implementation, debugging-heavy work, or escalation
+  after Composer misses the bar.
+- `codex-check` — independent correctness, regression, security, and
+  acceptance-criteria review.
+- `opus-review` — high-taste UI/UX, API, architecture, copy, docs, prompt, or skill
+  critique.
+- `opus-explore`, `opus-check`, and `opus-implement` — matching availability
+  fallbacks when Codex is unavailable, not default routes.
+
+Concurrent read-only routes may share a checkout. Every concurrent write-capable
+route must receive a different story worktree. Workers never commit, push, merge,
+comment, deploy, edit secrets, update issues, or touch unrelated files. Review
+workers return findings to the parent rather than posting them; the parent retains
+judgment and approval.
 
 ## Workflow
 
-### Step 1: Gather Context
+### Step 1: Gather and Partition
 
-For each story, collect:
-- Issue number and title
-- Implementation plan (from issue comments or plan files)
-- Target branch name (e.g., `feat/W-XXXXXX-short-description`)
-- Files to modify/create
-- Test commands to verify
+Fetch each issue body and comments, then build the story/file map:
 
 ```bash
 gh issue view <number> --json title,body,labels
 gh issue view <number> --comments --json comments
 ```
 
-### Step 2: Check for File Conflicts
+Completion criterion: every story has a plan, acceptance criteria, owned files,
+branch name, and test commands, with dependencies and overlaps explicitly marked.
 
-Build a file map across all stories. Flag overlaps:
+### Step 2: Create Isolated Worktrees
 
-| Story | Files Modified |
-|-------|---------------|
-| #5    | useWeather.ts, weatherCache.ts (new), App.tsx, Dashboard.tsx |
-| #30   | MapView.tsx, MapView.test.tsx |
-| #17   | WeatherPanel.css, Dashboard.css, index.html |
+Load the [worktree rules](../arc-work-issue/WORKTREE.md) used by
+`arc-work-issue`. From the repository root, create one feature branch and worktree
+per story before launching write-capable workers. Treat each returned path as that
+story's sole directory for reads, edits, and tests.
 
-If overlap exists:
-- **Minor overlap** (e.g., adding a prop to a shared component): Include the shared change in only ONE task, note the dependency
-- **Heavy overlap**: Implement sequentially, not in parallel
+Completion criterion: `git worktree list` shows one distinct worktree and feature
+branch per story; no worker will write to the main checkout or another story's
+worktree.
 
-### Step 3: Spawn Subagents
+### Step 3: Delegate Bounded Story Work
 
-Use the `Task` tool to launch one subagent per story. Each task prompt must include:
+Launch independent story tasks concurrently when the runtime supports it. Each
+task contract must include:
 
-1. **Full context** — Don't assume the subagent has prior conversation history
-2. **The implementation plan** — Copy the complete task list from the plan
-3. **Branch name** — The exact branch to create
-4. **File contents or locations** — Tell the subagent which files to read
-5. **Test commands** — How to verify the implementation
-6. **Commit message** — The exact semantic commit message to use
-7. **Constraints** — Do NOT commit/push, do NOT modify files outside scope
+1. exact story outcome and complete plan;
+2. issue number, `W-XXXXXX` ID, branch, and absolute worktree path;
+3. files to read and files allowed to change;
+4. behavior and story/plan formats that must remain unchanged;
+5. verification commands and acceptance criteria;
+6. explicit prohibitions: no commits, pushes, comments, merges, deployments,
+   secret edits, issue updates, generated artifacts, other GitHub mutations, or
+   unrelated refactors;
+7. required report: changed files, tests added, command results, risks, and blockers.
 
-#### Task Prompt Template
+Use the route guidance above. Do not run two write-capable workers against the
+same checkout.
 
-```
-## Task: Implement Issue #<N> — <Title>
-**Branch:** `feat/W-XXXXXX-short-description`
+Completion criterion: every worker returns scoped changes and verification
+evidence from its assigned worktree, or a concrete blocker.
 
-### Context
-- [Project tech stack, test framework, conventions]
-- [Relevant architectural context the subagent needs]
+### Step 4: Inspect and Verify Each Story
 
-### Implementation Plan
-[Paste the full plan task list here]
+The parent reviews every story diff against its plan and acceptance criteria,
+checks that only story-owned files changed, and runs focused tests in that story's
+worktree. Use `codex-check` when an independent correctness review is worthwhile
+or `opus-review` for taste-sensitive review.
 
-### Files to Read First
-- [List key files the subagent should read before editing]
+Completion criterion: each story is accepted with relevant tests passing, or is
+reported blocked without being shipped. Worker output is evidence, not ground
+truth.
 
-### Verification
-- Run `<test command>` — all tests must pass
-- Run `<lint command>` — no new errors
-- Run `<typecheck command>` — clean
-- Run `<build command>` — builds successfully
+### Step 5: Commit and Ship Per Story
 
-### Commit
-Do NOT commit or push. Just make changes and verify tests pass.
+For each accepted story under orchestration, the parent:
 
-### Report
-When done, report: files changed, tests added, test results.
-```
+1. loads `arc-conventional-commits`, stages only the exact story-scoped file
+   allowlist, then supplies a conventional message with `Closes #<N>` to
+   `mechanical-commit-push` and inspects its result;
+2. directly opens the PR with `gh pr create` from the story branch;
+3. stops with the PR open for `--ship pr`, or delegates an explicitly requested
+   auto-merge or merge to `mechanical-merge`.
 
-Launch all tasks in a **single assistant message** so they run concurrently:
+If review findings need publication, the parent decides their disposition and
+delegates the resulting GitHub comments to `mechanical-post-comment`. Outside
+orchestration, preserve `arc-git-pr-check`'s standalone `--ship merge|auto|pr`
+behavior and the caller's explicit mode.
 
-```
-<Task prompt="...story A...">
-<Task prompt="...story B...">
-<Task prompt="...story C...">
-```
+Completion criterion: every accepted story has its own conventional commit and PR
+result for the chosen ship mode, and every blocked story has an explicit handoff.
 
-### Step 4: Verify Combined State
+### Step 6: Report and Clean Up
 
-After all subagents complete:
+Report one row per story:
 
-1. Run the full test suite: `npm run test:run` (or project equivalent)
-2. Run typecheck: `npx tsc --noEmit`
-3. Run build: `npm run build`
-4. Review `git status` to see all changed files
+| Branch | Issue | Tests | Files | PR / status |
+|--------|-------|-------|-------|-------------|
+| `feat/W-000005-...` | #5 | 149 (12 new) | 7 | #61 |
 
-### Step 5: Create Branches and Commits
+Remove a story worktree only after its PR is merged. Leave worktrees and branches
+in place for `--ship pr` and `--ship auto`, and report their paths for review or
+follow-up.
 
-For each story, isolate its files onto a dedicated branch:
-
-```bash
-# Stash everything
-git stash --include-untracked
-
-# For each story:
-git checkout main
-git checkout -b feat/W-XXXXXX-short-description
-git stash pop
-git add <story-specific-files>
-git commit -m "feat: <description>
-
-<body>
-
-Closes #<N>"
-git stash  # re-stash remaining files
-```
-
-**Important:** If subagent changes overlap (e.g., both modified App.tsx), handle the shared file carefully — include it in the story that owns the primary change.
-
-### Step 6: Push and Create PRs
-
-For each branch:
-
-```bash
-git push -u origin feat/W-XXXXXX-short-description
-
-gh pr create \
-  --base main \
-  --head feat/W-XXXXXX-short-description \
-  --title "feat: <short title>" \
-  --body "## Summary
-<what changed>
-
-## Related Issue
-Closes #<N>
-
-## Changes
-- <file1>: <what changed>
-- <file2>: <what changed>
-
-## Testing
-- <N> new tests added
-- All <total> tests passing"
-```
-
-### Step 7: Verify PRs
-
-```bash
-gh pr list --state open --json number,title,headRefName
-```
-
-## Branch Naming Convention
-
-Follow the project's convention. Default: `feat/W-XXXXXX-short-description`
-
-## Commit Convention
-
-Use semantic commits per `arc-conventional-commits`:
-- `feat:` for new features
-- `fix:` for bug fixes
-- `test:` for test-only changes
-
-Include `Closes #N` in the commit body to auto-close the issue on merge.
+Completion criterion: merged stories leave no stale worktrees; unmerged stories
+report their worktree paths, branches, and PR URLs or blockers.
 
 ## Rules
 
-- **Never modify files outside a story's scope** in a subagent
-- **Never commit on main** — always use feature branches
-- **Never use `git add .`** — only stage story-specific files
-- **Always verify tests pass** before and after subagent work
-- **Always include full context** in task prompts — subagents have no memory of the parent conversation
-- **Report back to the user** with a summary table of branches, test counts, and PR links after all work is complete
-
-## Error Handling
-
-- If a subagent fails tests: fix the failing story manually, don't re-run all subagents
-- If file conflicts exist after subagents: resolve manually, commit the resolution on the affected branch
-- If a story is more complex than expected: implement it directly instead of via subagent
-
-## Output Format
-
-After completion, report to the user:
-
-| Branch | Issue | Tests | Files | PR |
-|--------|-------|-------|-------|----|
-| `feat/W-000005-...` | #5 | 149 (12 new) | 7 files | #61 |
-| `feat/W-000027-...` | #30 | 141 (4 new) | 2 files | #62 |
-| `feat/W-000017-...` | #17 | 137 | 3 files | #63 |
+- Preserve one `W-XXXXXX` story, branch, commit, and PR per worktree.
+- Never implement in the main checkout or share a writeable worktree between
+  concurrent workers.
+- Stage only story-owned files; never use `git add .`.
+- The parent owns judgment and approval; workers only edit and verify within scope.
+- Under orchestration, use `mechanical-commit-push`, direct `gh pr create`,
+  `mechanical-post-comment`, and `mechanical-merge` for their respective mechanics.
+- Outside orchestration, preserve `arc-git-pr-check` and its standalone ship modes.
+- Keep dependent or heavily overlapping stories sequential.
