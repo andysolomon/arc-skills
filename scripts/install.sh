@@ -7,7 +7,7 @@ if [ "${1:-}" = "--copy" ]; then
 fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SRC_GLOB="$ROOT_DIR/arc-*"
+SRC_GLOB="$ROOT_DIR/arc-* $ROOT_DIR/*-mode"
 CLAUDE_DIR="${HOME}/.claude/skills"
 CODEX_DIR="${HOME}/.codex/skills"
 
