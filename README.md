@@ -77,6 +77,12 @@ Model tiers are routing guidance, not runner route names. **Premier parent/plann
 
 Support skills: `arc-gitlab-glab` (GitLab delivery), `arc-creating-skill` + `arc-creating-evals` (author/maintain skills), `arc-system-design`, `arc-contract-review`, `arc-ideabrowser-openclaw-flow`, `arc-project-deploy-portfolio-sync`, `arc-sf-jwt-bearer`.
 
+### Mode skills
+
+`andrew-mode` sets how work is done: reply shape, autonomy limits, what counts as verified, context hygiene, and prose discipline. It governs behavior only. Every workflow step defers to the arc skill that owns it, so the mode skill never routes work and never ships it.
+
+It is user-invoked (`disable-model-invocation: true`), so it applies only when called by name. Invoke it alongside a pipeline skill rather than instead of one.
+
 ## Install (recommended: skills CLI)
 
 This follows the `vercel-labs/skills` README flow.
