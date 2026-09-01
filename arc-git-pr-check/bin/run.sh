@@ -19,6 +19,18 @@ SHIP="auto"
 PR_TITLE=""
 PR_BODY_FILE=""
 STAGED_ONLY=0
+UPDATE_MAIN=0
+CURRENT_WORKTREE=""
+MAIN_WORKTREE=""
+DEFAULT_WORKTREE=""
+CURRENT_WORKTREE_FOUND=0
+CURRENT_WORKTREE_IS_PRIMARY=0
+UPDATE_ERROR=""
+UPDATE_DETAIL=""
+PR_BASE=""
+FEATURE_HEAD=""
+PR_HEAD=""
+PR_MERGE=""
 
 usage() {
   cat <<'USAGE'
@@ -37,6 +49,9 @@ Options:
   --ship <mode>          auto (default): enable squash auto-merge and stop
                          merge: squash-merge the PR now (fails if checks/permissions block it)
                          pr: stop after PR creation; do not merge or enable auto-merge
+  --update-main          after a confirmed merge, fast-forward the default branch and
+                         remove this clean linked worktree and its local feature branch
+                         (requires --ship merge)
   --title <text>         PR title override (defaults to the conventional commit message)
   --body-file <path>     PR body file (e.g. to include 'Closes #N')
   --staged-only          Commit only what is already staged; never run 'git add -A'
@@ -135,6 +150,243 @@ has_changes() {
   [ -n "$(git status --porcelain=v1)" ]
 }
 
+has_changes_at() {
+  [ -n "$(git -C "$1" status --porcelain=v1 --untracked-files=all 2>/dev/null)" ]
+}
+
+canonical_path() {
+  local path="$1"
+  [ -d "$path" ] || return 1
+  (cd -- "$path" 2>/dev/null && pwd -P)
+}
+
+load_worktree_context() {
+  local line path="" canonical first=1
+
+  MAIN_WORKTREE=""
+  DEFAULT_WORKTREE=""
+  CURRENT_WORKTREE_FOUND=0
+  CURRENT_WORKTREE_IS_PRIMARY=0
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      "worktree "*)
+        path="${line#worktree }"
+        if canonical="$(canonical_path "$path")"; then
+          path="$canonical"
+        else
+          path=""
+        fi
+
+        if [ "$first" -eq 1 ]; then
+          MAIN_WORKTREE="$path"
+          if [ "$path" = "$CURRENT_WORKTREE" ]; then
+            CURRENT_WORKTREE_IS_PRIMARY=1
+          fi
+          first=0
+        fi
+
+        if [ "$path" = "$CURRENT_WORKTREE" ]; then
+          CURRENT_WORKTREE_FOUND=1
+        fi
+        ;;
+      "branch refs/heads/"*)
+        if [ "${line#branch refs/heads/}" = "$DEFAULT_BRANCH" ]; then
+          DEFAULT_WORKTREE="$path"
+        fi
+        ;;
+    esac
+  done < <(git worktree list --porcelain)
+}
+
+load_pr_metadata() {
+  PR_STATE=""
+  PR_BASE=""
+  PR_HEAD=""
+  PR_MERGE=""
+
+  if ! PR_STATE="$(gh pr view "$PR_NUMBER" --json state --jq '.state')"; then
+    return 1
+  fi
+  if ! PR_BASE="$(gh pr view "$PR_NUMBER" --json baseRefName --jq '.baseRefName')"; then
+    return 1
+  fi
+  if ! PR_HEAD="$(gh pr view "$PR_NUMBER" --json headRefOid --jq '.headRefOid')"; then
+    return 1
+  fi
+  if ! PR_MERGE="$(gh pr view "$PR_NUMBER" --json mergeCommit --jq '.mergeCommit.oid // empty')"; then
+    return 1
+  fi
+}
+
+validate_update_main_context() {
+  UPDATE_ERROR=""
+
+  load_worktree_context
+
+  if [ "$CURRENT_WORKTREE_FOUND" -ne 1 ] || [ "$CURRENT_WORKTREE_IS_PRIMARY" -eq 1 ]; then
+    UPDATE_ERROR="--update-main requires the current path to be a linked worktree; refusing an unrelated or primary worktree"
+    return 1
+  fi
+
+  if [ "$CURRENT_BRANCH" = "HEAD" ] || [ "$CURRENT_BRANCH" = "$DEFAULT_BRANCH" ]; then
+    UPDATE_ERROR="--update-main requires a linked feature branch, not '$CURRENT_BRANCH'"
+    return 1
+  fi
+
+  if [ -z "$DEFAULT_WORKTREE" ]; then
+    UPDATE_ERROR="--update-main could not find a worktree checked out on default branch '$DEFAULT_BRANCH'"
+    return 1
+  fi
+
+  if [ "$DEFAULT_WORKTREE" = "$CURRENT_WORKTREE" ]; then
+    UPDATE_ERROR="--update-main found the default branch and current worktree at the same path; refusing cleanup"
+    return 1
+  fi
+
+  if [ "$(git -C "$DEFAULT_WORKTREE" symbolic-ref --quiet --short HEAD 2>/dev/null || true)" != "$DEFAULT_BRANCH" ]; then
+    UPDATE_ERROR="--update-main found '$DEFAULT_WORKTREE' is not checked out on '$DEFAULT_BRANCH'"
+    return 1
+  fi
+
+  if has_changes_at "$DEFAULT_WORKTREE"; then
+    UPDATE_ERROR="--update-main refuses to update dirty default worktree '$DEFAULT_WORKTREE'"
+    return 1
+  fi
+
+  if [ "$STAGED_ONLY" -eq 1 ] && { ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; }; then
+    UPDATE_ERROR="--update-main requires the current worktree to be clean after the staged commit; unstaged or untracked changes remain"
+    return 1
+  fi
+
+  return 0
+}
+
+update_main_after_merge() {
+  local default_head remote_head
+
+  UPDATE_ERROR=""
+  UPDATE_DETAIL=""
+
+  if ! load_worktree_context; then
+    UPDATE_ERROR="could not inspect git worktrees"
+    return 1
+  fi
+
+  if [ "$CURRENT_WORKTREE_FOUND" -ne 1 ] || [ "$CURRENT_WORKTREE_IS_PRIMARY" -eq 1 ]; then
+    UPDATE_ERROR="current path is no longer the same linked worktree; refusing cleanup"
+    return 1
+  fi
+
+  if [ -z "$DEFAULT_WORKTREE" ] || [ "$DEFAULT_WORKTREE" = "$CURRENT_WORKTREE" ]; then
+    UPDATE_ERROR="default branch '$DEFAULT_BRANCH' is not checked out in a separate worktree"
+    return 1
+  fi
+
+  if [ "$(git -C "$DEFAULT_WORKTREE" symbolic-ref --quiet --short HEAD 2>/dev/null || true)" != "$DEFAULT_BRANCH" ]; then
+    UPDATE_ERROR="default worktree '$DEFAULT_WORKTREE' is no longer checked out on '$DEFAULT_BRANCH'"
+    return 1
+  fi
+
+  if has_changes_at "$CURRENT_WORKTREE"; then
+    UPDATE_ERROR="current worktree '$CURRENT_WORKTREE' is dirty; refusing removal"
+    return 1
+  fi
+
+  if [ "$(git -C "$CURRENT_WORKTREE" symbolic-ref --quiet --short HEAD 2>/dev/null || true)" != "$CURRENT_BRANCH" ]; then
+    UPDATE_ERROR="current worktree branch changed from '$CURRENT_BRANCH'; refusing removal"
+    return 1
+  fi
+
+  if [ -z "$FEATURE_HEAD" ] || [ "$(git -C "$CURRENT_WORKTREE" rev-parse HEAD 2>/dev/null || true)" != "$FEATURE_HEAD" ]; then
+    UPDATE_ERROR="current worktree tip changed after the PR merge; refusing removal"
+    return 1
+  fi
+
+  if has_changes_at "$DEFAULT_WORKTREE"; then
+    UPDATE_ERROR="default worktree '$DEFAULT_WORKTREE' is dirty; refusing update"
+    return 1
+  fi
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    UPDATE_DETAIL="would fetch origin/$DEFAULT_BRANCH, fast-forward '$DEFAULT_BRANCH', remove '$CURRENT_WORKTREE', and delete local branch '$CURRENT_BRANCH'"
+    return 0
+  fi
+
+  if ! git -C "$DEFAULT_WORKTREE" fetch --no-tags origin "$DEFAULT_BRANCH" >/dev/null; then
+    UPDATE_ERROR="failed to fetch origin/$DEFAULT_BRANCH; left worktrees and branch untouched"
+    return 1
+  fi
+
+  if ! default_head="$(git -C "$DEFAULT_WORKTREE" rev-parse HEAD)" || ! remote_head="$(git -C "$DEFAULT_WORKTREE" rev-parse "origin/$DEFAULT_BRANCH")"; then
+    UPDATE_ERROR="could not resolve fetched origin/$DEFAULT_BRANCH; left worktrees and branch untouched"
+    return 1
+  fi
+
+  if [ -z "$PR_MERGE" ]; then
+    UPDATE_ERROR="the merged PR has no recorded merge commit; refusing cleanup"
+    return 1
+  fi
+
+  if ! git -C "$DEFAULT_WORKTREE" merge-base --is-ancestor "$PR_MERGE" "$remote_head"; then
+    UPDATE_ERROR="origin/$DEFAULT_BRANCH does not contain the confirmed PR merge commit; refusing cleanup"
+    return 1
+  fi
+
+  if ! git -C "$DEFAULT_WORKTREE" merge-base --is-ancestor "$default_head" "$remote_head"; then
+    UPDATE_ERROR="default branch '$DEFAULT_BRANCH' is ahead of or diverged from origin/$DEFAULT_BRANCH; refusing non-fast-forward cleanup"
+    return 1
+  fi
+
+  if ! git -C "$DEFAULT_WORKTREE" merge --ff-only "origin/$DEFAULT_BRANCH" >/dev/null; then
+    UPDATE_ERROR="could not fast-forward '$DEFAULT_BRANCH' from origin/$DEFAULT_BRANCH; left worktree and branch untouched"
+    return 1
+  fi
+
+  if has_changes_at "$DEFAULT_WORKTREE"; then
+    UPDATE_ERROR="default worktree '$DEFAULT_WORKTREE' became dirty during update; refusing cleanup"
+    return 1
+  fi
+
+  if ! cd -- "$DEFAULT_WORKTREE"; then
+    UPDATE_ERROR="could not enter default worktree '$DEFAULT_WORKTREE'; left linked worktree and branch untouched"
+    return 1
+  fi
+
+  if [ "$(git -C "$CURRENT_WORKTREE" symbolic-ref --quiet --short HEAD 2>/dev/null || true)" != "$CURRENT_BRANCH" ] || [ "$(git -C "$CURRENT_WORKTREE" rev-parse HEAD 2>/dev/null || true)" != "$FEATURE_HEAD" ]; then
+    UPDATE_ERROR="current worktree changed before cleanup; refusing removal"
+    return 1
+  fi
+
+  if ! git worktree remove -- "$CURRENT_WORKTREE" >/dev/null; then
+    UPDATE_ERROR="could not remove clean linked worktree '$CURRENT_WORKTREE'; local branch was preserved"
+    return 1
+  fi
+
+  # A squash merge does not make the feature tip an ancestor of the default
+  # branch. Detach at the already-confirmed feature tip so ordinary `branch
+  # -d` can remove exactly this local branch without a force delete.
+  if ! git switch --detach "$CURRENT_BRANCH" >/dev/null 2>&1; then
+    git switch "$DEFAULT_BRANCH" >/dev/null 2>&1 || true
+    UPDATE_ERROR="removed '$CURRENT_WORKTREE' but could not prepare safe local branch deletion; branch was preserved"
+    return 1
+  fi
+
+  if ! git branch -d -- "$CURRENT_BRANCH" >/dev/null 2>&1; then
+    git switch "$DEFAULT_BRANCH" >/dev/null 2>&1 || true
+    UPDATE_ERROR="removed '$CURRENT_WORKTREE' but local branch '$CURRENT_BRANCH' was not safely deletable"
+    return 1
+  fi
+
+  if ! git switch "$DEFAULT_BRANCH" >/dev/null 2>&1; then
+    UPDATE_ERROR="deleted local branch '$CURRENT_BRANCH' but could not return default worktree to '$DEFAULT_BRANCH'"
+    return 1
+  fi
+
+  UPDATE_DETAIL="fast-forwarded '$DEFAULT_BRANCH', removed linked worktree '$CURRENT_WORKTREE', and deleted local branch '$CURRENT_BRANCH'"
+  return 0
+}
+
 next_version_from_type() {
   local latest major minor patch
   latest="$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -n 1)"
@@ -228,6 +480,10 @@ while [ $# -gt 0 ]; do
       STAGED_ONLY=1
       shift
       ;;
+    --update-main)
+      UPDATE_MAIN=1
+      shift
+      ;;
     --dry-run)
       DRY_RUN=1
       shift
@@ -243,6 +499,11 @@ while [ $# -gt 0 ]; do
       ;;
   esac
 done
+
+if [ "$UPDATE_MAIN" -eq 1 ] && [ "$SHIP" != "merge" ]; then
+  echo "--update-main requires --ship merge" >&2
+  exit 1
+fi
 
 if [ -n "$TYPE" ]; then
   TYPE="$(printf '%s' "$TYPE" | tr '[:upper:]' '[:lower:]')"
@@ -275,6 +536,14 @@ if [ -z "$DEFAULT_BRANCH" ]; then
 fi
 
 CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+if [ "$UPDATE_MAIN" -eq 1 ]; then
+  CURRENT_WORKTREE="$(canonical_path "$(git rev-parse --show-toplevel)")"
+  if ! validate_update_main_context; then
+    echo "$UPDATE_ERROR" >&2
+    exit 1
+  fi
+fi
 
 if [ "$STAGED_ONLY" -eq 1 ] && [ "$CURRENT_BRANCH" = "$DEFAULT_BRANCH" ] && has_changes; then
   echo "--staged-only requires a feature branch; the stash-and-branch flow would drop the index. Create a branch first." >&2
@@ -397,7 +666,13 @@ if [ "$PR_EXISTS" = "0" ]; then
     DETAIL_PR="would create PR '$CURRENT_BRANCH' -> '$DEFAULT_BRANCH'"
     case "$SHIP" in
       auto) STEP_MERGE="done"; DETAIL_MERGE="would enable squash auto-merge after PR creation" ;;
-      merge) STEP_MERGE="done"; DETAIL_MERGE="would squash-merge after PR creation" ;;
+      merge)
+        STEP_MERGE="done"
+        DETAIL_MERGE="would squash-merge after PR creation"
+        if [ "$UPDATE_MAIN" -eq 1 ]; then
+          DETAIL_MERGE="$DETAIL_MERGE; would fetch origin/$DEFAULT_BRANCH, fast-forward '$DEFAULT_BRANCH', remove '$CURRENT_WORKTREE', and delete local branch '$CURRENT_BRANCH'"
+        fi
+        ;;
       pr) STEP_MERGE="skipped"; DETAIL_MERGE="--ship pr: PR left open for review" ;;
     esac
     print_status_table
@@ -426,7 +701,20 @@ PR_NUMBER="$(gh pr list --head "$CURRENT_BRANCH" --state all --json number --lim
 PR_URL="$(gh pr list --head "$CURRENT_BRANCH" --state all --json url --limit 1 --jq '.[0].url')"
 HAS_AUTOMERGE="$(gh pr list --head "$CURRENT_BRANCH" --state all --json autoMergeRequest --limit 1 --jq '.[0].autoMergeRequest != null')"
 
-if [ "$PR_STATE" = "MERGED" ]; then
+if [ "$UPDATE_MAIN" -eq 1 ] && [ "$DRY_RUN" -eq 0 ]; then
+  FEATURE_HEAD="$(git rev-parse HEAD)"
+  if ! load_pr_metadata; then
+    fail_step merge "could not inspect PR #$PR_NUMBER metadata; --update-main stopped"
+  elif [ "$PR_BASE" != "$DEFAULT_BRANCH" ]; then
+    fail_step merge "PR #$PR_NUMBER targets '$PR_BASE', not '$DEFAULT_BRANCH'; --update-main stopped"
+  elif [ -z "$PR_HEAD" ] || [ "$PR_HEAD" != "$FEATURE_HEAD" ]; then
+    fail_step merge "PR #$PR_NUMBER head does not match current feature tip; --update-main stopped"
+  fi
+fi
+
+if [ "$UPDATE_MAIN" -eq 1 ] && [ "$FAILED" -ne 0 ]; then
+  :
+elif [ "$PR_STATE" = "MERGED" ]; then
   STEP_MERGE="skipped"
   DETAIL_MERGE="PR already merged: $PR_URL"
 elif [ "$PR_STATE" = "CLOSED" ]; then
@@ -471,6 +759,30 @@ elif [ "$PR_STATE" = "OPEN" ]; then
   esac
 else
   fail_step merge "unable to determine PR state for '$CURRENT_BRANCH'"
+fi
+
+if [ "$UPDATE_MAIN" -eq 1 ] && [ "$DRY_RUN" -eq 0 ] && [ "$STEP_MERGE" = "done" ] && [ "$PR_STATE" = "OPEN" ]; then
+  if ! load_pr_metadata; then
+    fail_step merge "could not confirm that PR #$PR_NUMBER was merged; --update-main stopped"
+  elif [ "$PR_STATE" != "MERGED" ]; then
+    fail_step merge "PR #$PR_NUMBER did not confirm as merged; --update-main stopped"
+  elif [ "$PR_BASE" != "$DEFAULT_BRANCH" ]; then
+    fail_step merge "PR #$PR_NUMBER base changed to '$PR_BASE'; --update-main stopped"
+  elif [ -z "$PR_HEAD" ] || [ "$PR_HEAD" != "$FEATURE_HEAD" ]; then
+    fail_step merge "PR #$PR_NUMBER head changed after merge; --update-main stopped"
+  fi
+fi
+
+if [ "$UPDATE_MAIN" -eq 1 ] && [ "$DRY_RUN" -eq 1 ] && [ "$SHIP" = "merge" ] && { [ "$STEP_MERGE" = "done" ] || [ "$PR_STATE" = "MERGED" ]; }; then
+  DETAIL_MERGE="$DETAIL_MERGE; would fetch origin/$DEFAULT_BRANCH, fast-forward '$DEFAULT_BRANCH', remove '$CURRENT_WORKTREE', and delete local branch '$CURRENT_BRANCH'"
+fi
+
+if [ "$UPDATE_MAIN" -eq 1 ] && [ "$DRY_RUN" -eq 0 ] && [ "$PR_STATE" = "MERGED" ] && [ "$FAILED" -eq 0 ]; then
+  if update_main_after_merge; then
+    DETAIL_MERGE="$DETAIL_MERGE; $UPDATE_DETAIL"
+  else
+    fail_step merge "PR is merged, but --update-main was not completed: $UPDATE_ERROR"
+  fi
 fi
 
 print_status_table
