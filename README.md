@@ -63,15 +63,35 @@ flowchart TD
     class PRL premium;
 ```
 
-### Delegation strategy (arc-orchestrator)
+### Delegation strategy (non-Pi arc-orchestrator)
 
-Colors mark who does the work when these skills run under [arc-orchestrator](https://github.com/andysolomon/arc-orchestrator):
+Colors mark who does the work when these skills run under the non-Pi external [arc-orchestrator](https://github.com/andysolomon/arc-orchestrator) path:
 
 - **Blue — parent session (judgment & approval).** Defining, planning, routing, review judgment, acceptance, and approval stay in the premium parent session. Under orchestration, implementation and review workers never mutate git or GitHub.
-- **Green — delegated implementation.** Inside `arc-work-issue`, `arc-parallel-implement`, and `arc-bug-fixer`, route bounded coding to `composer-implement` (the Cursor/Composer 2.5 implementation lane) by default, or `codex-implement` for difficult fixes and escalation. There is no separate `cursor-implement` route. Orchestrated work is PR-first with `--ship pr` unless the caller explicitly authorizes `--ship auto` or `--ship merge`; standalone skill defaults and ship modes remain unchanged.
-- **Amber — premium review.** `arc-pr-review-loop` routes review rounds to a smart model (`opus-review` for taste-sensitive surfaces, `codex-check` otherwise). Review workers return findings to the parent; they do not post them. The parent judges the findings and delegates publication through `mechanical-post-comment`. The loop runs until approval (max 3 rounds), and merge happens only when authorized.
+- **Green — delegated implementation.** On the non-Pi external path, inside `arc-work-issue`, `arc-parallel-implement`, and `arc-bug-fixer`, route bounded coding through an implementation capability advertised by the installed `arc-orchestrator` surface. Do not assume a particular runner alias is installed or is the default. Orchestrated work is PR-first with `--ship pr` unless the caller explicitly authorizes `--ship auto` or `--ship merge`; standalone skill defaults and ship modes remain unchanged.
+- **Amber — premium review.** `arc-pr-review-loop` routes review rounds through the review capability advertised by the installed external orchestrator. Review workers return findings to the parent; they do not post them. The parent judges the findings and delegates publication through `mechanical-post-comment`. The loop runs until approval (max 3 rounds), and merge happens only when authorized.
 
-The route map is phase-specific: use `codex-explore` for read-only repository investigation, `composer-implement` for clear mechanical implementation, `codex-implement` for harder implementation, `codex-check` for independent correctness/security/acceptance-criteria review, and `opus-review` for high-taste UI/UX, API, architecture, copy, docs, prompt, or skill critique. When Codex is unavailable, the matching `opus-explore`, `opus-check`, or `opus-implement` route is an availability fallback, not the default. Every write-capable worker gets an isolated worktree; workers return evidence and never commit, push, comment, merge, deploy, edit secrets, or touch unrelated files. After accepting a diff, the parent delegates the conventional commit and push to `mechanical-commit-push`, directly opens the PR with `gh pr create`, delegates GitHub comments to `mechanical-post-comment`, and delegates an explicitly authorized merge or auto-merge to `mechanical-merge`. `arc-git-pr-check` and its full `--ship` behavior remain the standalone path outside orchestration.
+The non-Pi external route map is phase-specific: use the route IDs advertised by the installed `arc-orchestrator` capability surface for repository investigation, implementation, verification, and review. Every write-capable worker gets an isolated worktree; workers return evidence and never commit, push, comment, merge, deploy, edit secrets, or touch unrelated files. After accepting a diff, the parent delegates the conventional commit and push to `mechanical-commit-push`, directly opens the PR with `gh pr create`, delegates GitHub comments to `mechanical-post-comment`, and delegates an explicitly authorized merge or auto-merge to `mechanical-merge`. `arc-git-pr-check` and its full `--ship` behavior remain the standalone path outside orchestration. Any legacy external route alias is external-only and must not be presented as a native Arc Pi route.
+
+### Arc Pi native parallel compatibility
+
+`arc-parallel-implement` selects its runtime by capability: in Arc Pi, use the
+native `subagent_spawn` plus `subagent_wait` surface only when both tools are
+exposed; otherwise use the non-Pi external `arc-orchestrator` fallback only
+when its advertised parallel capability surface is usable. If neither runtime
+is usable, stop and report the blocker instead of simulating fan-out. The
+native surface is nonblocking, session-scoped, and limited to four active
+children. Batch larger sets, record each `arc-sub-...` ID, wait and inspect each
+wave, and use `subagent_check`, `subagent_list`, `subagent_cancel`, or the
+`/subagents`/`/sub` dashboard for lifecycle control. Native children use a
+relative existing cwd inside the current project, so parallel worktrees belong
+under `.arc/worktrees/` and that path belongs in clone-local `.git/info/exclude`.
+
+Native children are isolated coding sessions without nested delegation,
+extensions, or GitHub/shipping authority. The parent still owns planning,
+acceptance, review, commit, PR, merge, and deploy decisions. External runner
+aliases are not native Pi routes and must never be passed as a
+`subagent_spawn` model value.
 
 Model tiers are routing guidance, not runner route names. **Premier parent/planning:** Fable and Sol. **Smart reasoning/review:** GPT 5.5, Opus, Terra, Grok 4.5, GLM 5.2, and Luna. **Dumb/mechanical:** Composer 2.5, Sonnet 5, Haiku 4.5, Qwen 3 235B, MiniMax M3, Kimi 2.6, 5.4 nano/mini, and Deepseek variants. Prefer the cheapest tier that reliably fits the bounded phase while keeping planning, acceptance, review judgment, and approval with the parent and routing mutations through the required mechanical lanes.
 

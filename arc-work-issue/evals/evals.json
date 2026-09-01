@@ -5,7 +5,7 @@
     {
       "id": "work-issue-in-worktree",
       "description": "Golden path: resolve #14, create a worktree, and implement from the seeded issue fixture.",
-      "prompt": "arc-work-issue #14. Use `issue-14.md` as the GitHub issue source. Create the worktree at `../wt/issue-14`, implement the plan, and report the branch path. Stop before commit/PR because this is a local fixture run.",
+      "prompt": "arc-work-issue #14. Use `issue-14.md` as the GitHub issue source. Create the worktree at `.arc/worktrees/W-000014`, implement the plan, and report the branch path. Stop before commit/PR because this is a local fixture run.",
       "expected_output": "The assistant resolves issue 14, creates an isolated worktree, implements in that directory, and verifies with tests.",
       "setup": {
         "kind": "seeded",
@@ -41,7 +41,7 @@
     {
       "id": "ship-and-cleanup",
       "description": "After implementation, commit with conventional commits, merge the PR, and remove the worktree.",
-      "prompt": "arc-work-issue #14 is implemented in worktree `../wt/issue-14` on branch `feat/W-000014-add-queue-retry`. Describe the exact ship steps you would run next: conventional commit, PR, squash merge, and worktree cleanup.",
+      "prompt": "arc-work-issue #14 is implemented in worktree `.arc/worktrees/W-000014` on branch `feat/W-000014-add-queue-retry`. Describe the exact ship steps you would run next: conventional commit, PR, squash merge, and worktree cleanup.",
       "setup": {
         "kind": "seeded",
         "sources": [
