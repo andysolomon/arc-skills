@@ -97,6 +97,8 @@ Model tiers are routing guidance, not runner route names. **Premier parent/plann
 
 Support skills: `arc-gitlab-glab` (GitLab delivery), `arc-creating-skill` + `arc-creating-evals` (author/maintain skills), `arc-system-design`, `arc-contract-review`, `arc-ideabrowser-openclaw-flow`, `arc-project-deploy-portfolio-sync`, `arc-sf-jwt-bearer`.
 
+Response skill: `arc-html-response` answers structured replies (explanations, comparisons, plans, reviews, work reports) as a small HTML page instead of terminal prose. It renders the page inline in T3 Code, publishes keepable write-ups to Postplan, and ends work reports with a review packet (revision, changes, evidence, PASS / FAIL / NOT_RUN checks, open items). It sits beside the pipeline rather than in it: any skill's final report can go through it.
+
 ### Mode skills
 
 `andrew-mode` sets how work is done: reply shape, autonomy limits, what counts as verified, context hygiene, and prose discipline. It governs behavior only. Every workflow step defers to the arc skill that owns it, so the mode skill never routes work and never ships it.

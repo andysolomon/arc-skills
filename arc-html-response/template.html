@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two To Four Words</title>
+<meta name="color-scheme" content="dark light">
+<style>
+/* Tokens fall back to standalone colors; inside T3 Code html_render they pick up the thread theme. */
+:root{
+  --bg:#0b0b0d; --fg:var(--foreground,#f2f2f2); --dim:var(--muted-foreground,#9a9aa3);
+  --line:var(--border,#26262c); --surface:var(--card,#131317);
+  --hi:#ff2e93; --ok:var(--success,#3ddc84); --bad:var(--destructive,#ff5a5f); --warn:var(--warning,#ffd23f);
+  --mono:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace);
+  --sans:var(--font-sans,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#fbfaf7; --fg:var(--foreground,#141416); --dim:var(--muted-foreground,#5d5d66);
+    --line:var(--border,#e4e2dc); --surface:var(--card,#ffffff);
+    --hi:#d1006b; --ok:var(--success,#14884a); --bad:var(--destructive,#c62f34); --warn:var(--warning,#a87700);
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg)} /* standalone — delete this line for html_render */
+body{color:var(--fg);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+main{max-width:820px;margin:0 auto;padding:48px 16px 64px}
+.kicker{font-family:var(--mono);font-size:13px;color:var(--hi)}
+h1{font-size:clamp(34px,7vw,60px);line-height:1;letter-spacing:-.03em;margin:8px 0 16px}
+h1 em{font-style:normal;color:var(--hi)}
+h2{font-size:clamp(22px,3.6vw,28px);letter-spacing:-.02em;line-height:1.2;margin:0 0 8px}
+.lede{font-size:clamp(17px,2.3vw,19px);color:var(--dim);max-width:620px;margin:0}
+section{margin-top:64px}
+.sub{color:var(--dim);margin:0 0 20px;max-width:620px}
+code{font-family:var(--mono);font-size:.9em;border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card b{display:block;font-size:18px;margin-bottom:6px}
+.card p{margin:0;color:var(--dim);font-size:15px}
+.row{display:grid;grid-template-columns:1fr 24px 1fr;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:8px}
+.row .from{font-family:var(--mono);font-size:13px;color:var(--dim)}
+.row .arrow{color:var(--hi);text-align:center}
+.packet{font-family:var(--mono);font-size:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;overflow-x:auto;line-height:1.75}
+.packet .key{color:var(--warn);display:inline-block;min-width:92px}
+.pass{color:var(--ok)} .fail{color:var(--bad)} .nr{color:var(--dim)}
+svg{width:100%;height:auto;display:block}
+svg text{font-family:var(--mono)}
+@media (max-width:720px){.row{grid-template-columns:1fr;gap:4px}.row .arrow{display:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">topic · context</div>
+  <h1>The answer, <em>in one line</em>.</h1>
+  <p class="lede">One or two sentences: what's true, and what to do about it.</p>
+
+  <section>
+    <h2>A section states its point</h2>
+    <p class="sub">Then shows the evidence.</p>
+    <div class="cards">
+      <div class="card"><b>Option or idea</b><p>Why it matters, in a sentence or two.</p></div>
+      <div class="card"><b>Option or idea</b><p>Why it matters, in a sentence or two.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Before → after</h2>
+    <div class="row"><div class="from">what happens now</div><div class="arrow">→</div><div>what should happen</div></div>
+  </section>
+
+  <section>
+    <h2>What was checked</h2>
+    <div class="packet">
+<span class="key">revision</span> abc1234<br>
+<span class="key">changed</span> path/to/file.ts<br>
+<span class="key">evidence</span> pnpm test → 42 passed<br>
+<span class="key">checks</span> <span class="pass">PASS</span> unit · <span class="fail">FAIL</span> e2e · <span class="nr">NOT_RUN</span> iOS<br>
+<span class="key">open</span> what still needs a decision or a run
+    </div>
+  </section>
+</main>
+</body>
+</html>

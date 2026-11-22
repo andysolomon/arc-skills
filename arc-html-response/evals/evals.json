@@ -1,0 +1,195 @@
+{
+  "version": "1",
+  "skill_name": "arc-html-response",
+  "evals": [
+    {
+      "id": "recommendation-becomes-page",
+      "description": "Golden path: an opinion with structure is answered as a rendered HTML page with a short chat reply.",
+      "prompt": "Compare SQLite, Postgres, and Durable Objects storage for this side project's sync backend and tell me which one you'd pick and why.",
+      "expected_output": "The assistant writes a small self-contained HTML page comparing the three options, and the chat reply gives the pick plus the page location in at most three sentences.",
+      "assertions": [
+        {
+          "id": "makes-a-page",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should produce an HTML page (written to a file and rendered or published) rather than a long markdown answer in chat.",
+          "mustPass": true
+        },
+        {
+          "id": "reply-leads-with-pick",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The first sentence of the chat reply should name the recommended option rather than restating the question or the topic.",
+          "mustPass": true
+        },
+        {
+          "id": "short-chat-reply",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The chat reply should be at most three sentences and should not include the per-option comparison (that belongs on the page).",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "golden-path"
+        ],
+        "difficulty": "easy",
+        "intent": "page-for-structured-answer"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "work-report-ends-with-packet",
+      "description": "Golden path: a finished-work report ends with a review packet that marks unrun checks honestly.",
+      "prompt": "You just fixed the flaky login e2e test and ran the unit suite (all passed) but did not run e2e on CI. Report back on what you did. Save the page as report/index.html in the current directory.",
+      "expected_output": "report/index.html ends with a packet listing revision, what changed, commands and results, checks marked PASS / FAIL / NOT_RUN, and open items, with CI e2e marked NOT_RUN; the chat reply says CI e2e wasn't verified.",
+      "assertions": [
+        {
+          "type": "file-exists",
+          "path": "report/index.html"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "NOT_RUN",
+          "target": {
+            "file": "report/index.html"
+          }
+        },
+        {
+          "type": "regex-match",
+          "pattern": "revision",
+          "target": {
+            "file": "report/index.html"
+          },
+          "flags": "i"
+        },
+        {
+          "id": "reply-flags-unverified",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The chat reply should say the CI e2e run was not done or not verified, and should not claim the flaky test is proven fixed on CI.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "reporting",
+          "golden-path"
+        ],
+        "difficulty": "medium",
+        "intent": "work-report-packet"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "publishes-keepable-writeup",
+      "description": "Golden path: a write-up the user wants to share is published to Postplan and the link is reported.",
+      "prompt": "Write up the migration plan for moving our auth to passkeys so I can send it to the team. Save the page as plan/index.html in the current directory.",
+      "expected_output": "The assistant writes plan/index.html, publishes it with npx postplan upload, and reports the URL from the receipt.",
+      "assertions": [
+        {
+          "type": "file-exists",
+          "path": "plan/index.html"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "evalmock1\\.postplan\\.dev",
+          "target": "assistant-text"
+        },
+        {
+          "id": "short-reply-with-link",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The chat reply should give the Postplan link in at most three sentences and should not paste the plan's content into chat.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "publishing"
+        ],
+        "difficulty": "easy",
+        "intent": "publish-writeup"
+      },
+      "sandbox": "just-bash",
+      "sandboxMocks": [
+        {
+          "command": "npx",
+          "stdout": "{\"draftId\":\"evalmock1\",\"url\":\"https://evalmock1.postplan.dev\"}\n",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
+      "id": "negative-one-line-answer",
+      "description": "Negative: a one-fact question stays in plain text.",
+      "prompt": "What port does the Vite dev server use by default?",
+      "assertions": [
+        {
+          "id": "does-not-overtrigger",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should answer in one short line of plain text and should not build, render, or publish an HTML page.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "negative"
+        ],
+        "difficulty": "easy",
+        "intent": "avoid-overtrigger"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "negative-command-to-copy",
+      "description": "Negative: a command the user will copy stays in chat.",
+      "prompt": "Give me the git command to undo my last commit but keep the changes staged.",
+      "assertions": [
+        {
+          "id": "command-in-chat",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should give the command (git reset --soft HEAD~1) directly in chat without making an HTML page.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "negative"
+        ],
+        "difficulty": "easy",
+        "intent": "avoid-overtrigger"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "negative-user-asks-for-chat",
+      "description": "Negative: an explicit request for a short chat answer overrides the page default.",
+      "prompt": "Just tell me in chat, short answer: should I use pnpm or npm for this repo?",
+      "assertions": [
+        {
+          "id": "respects-in-chat",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should answer briefly in chat and should not build or render an HTML page.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "negative"
+        ],
+        "difficulty": "easy",
+        "intent": "respect-user-format"
+      },
+      "sandbox": "just-bash"
+    }
+  ]
+}
