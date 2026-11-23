@@ -80,6 +80,9 @@ expect 0 remote-img PASS
 page unguarded-motion '@keyframes grow{from{transform:scaleX(0)}} .b{animation:grow 1s}' '<p>x</p>'
 expect 1 unguarded-motion 'prefers-reduced-motion'
 
+page leftover-keyframes '@keyframes rise{from{opacity:0}} .still{animation:none!important}' '<p>x</p>'
+expect 0 leftover-keyframes PASS
+
 page guarded-motion '@media (prefers-reduced-motion: no-preference){.b{animation:grow 1s backwards}} @keyframes grow{from{transform:scaleX(0)}}' '<p>x</p>'
 expect 0 guarded-motion PASS
 
@@ -91,6 +94,15 @@ expect 0 prose-mentions-css PASS
 
 page em-dash '' '<p>One — two</p>'
 expect 0 em-dash 'WARN em dash'
+
+page transition-all '.b{transition:all .2s}' '<p>x</p>'
+expect 0 transition-all 'WARN transition: all'
+
+page ease-in '.b{transition:opacity .2s ease-in}' '<p>x</p>'
+expect 0 ease-in 'WARN ease-in'
+
+page ease-in-out-ok '.b{transition:transform .3s ease-in-out}' '<p>x</p>'
+expect 0 ease-in-out-ok '(0 warning(s)'
 
 head -c 600000 /dev/zero | tr '\0' 'a' > "$work/big-body.txt"
 page too-big '' "<p>$(cat "$work/big-body.txt")</p>"
@@ -107,6 +119,11 @@ DIAGRAM_DESIGN_DIR="$stub" expect 0 clean PASS
 page no-svg '' '<p>No diagram here</p>'
 printf 'import sys\nprint("  - stub finding")\nsys.exit(1)\n' > "$stub/scripts/self_check.py"
 DIAGRAM_DESIGN_DIR="$stub" expect 0 no-svg PASS
+
+# The worst-case page (template + kit with worst data) builds and passes the lint.
+if node "$skill/tests/worst-case.mjs" "$work/worst.html" >/dev/null && bash "$lint" "$work/worst.html" >/dev/null 2>&1; then
+  echo "ok      worst-case page passes lint"; pass=$((pass + 1))
+else echo "not ok  worst-case page passes lint"; bash "$lint" "$work/worst.html" | sed 's/^/        /'; fail=$((fail + 1)); fi
 
 # The skill's own pages must pass.
 for f in template components; do
