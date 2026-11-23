@@ -43,7 +43,7 @@ The top of an upside-down pyramid. Each layer below builds one kind of thing; th
 - **Answer first.** A page's headline says the main point, not the topic. An app's first screen shows the user's own data and the main action, not a welcome.
 - **Real data only.** A value you don't have is written as unknown, never invented.
 - **Draw the mechanism, not decoration.** No stock icons, ornamental gradients or card chrome.
-- **A picture of one of our own apps comes from the real app**: its static render, or a capture of its running screen. A hand-built or faux UI is only for an interface that doesn't exist yet.
+- **A picture of one of our own apps comes from the real app**: a screenshot of it running. A hand-built or faux UI (Stageshow) is only for an interface that doesn't exist yet or isn't ours.
 - **Every state has a screen.** Loading, empty, failure and stale each show something specific. Empty says how to add the first item. Failure says what to do next, or, when the app retries by itself, that it is retrying. Stale keeps the last good data visible.
 - **Plain words.** Error text is a sentence a non-engineer can act on. Technical causes go to logs and tests.
 - **Every control has a label**, and tests find controls by role and label.
@@ -59,9 +59,8 @@ The top of an upside-down pyramid. Each layer below builds one kind of thing; th
 - **Use the timing tokens**: `--t-micro` for hover, `--t-state` for a state change, `--t-enter` for an entrance, `--stagger` between items, with `--ease`.
 - **Inside `@media (prefers-reduced-motion: no-preference)`**, always: every animation and every transition, hover included.
 - **Animate from the start state** (`animation-fill-mode: backwards`), on `transform` and `opacity`, each animation under one second. The resting frame, which is what a screenshot or reduced motion shows, must tell the story on its own.
-- **In an app, give each state its own `@keyframes` name.** A class change restarts an animation only when the animation name changes. One shared name plays once and never again.
-- **On a page, one entrance moment**, and never on the headline or the first paragraph.
-- **No scroll-driven animation.**
+
+Each layer adds its own motion rules on top: a page has one entrance moment and no scroll-driven animation (`arc-html-response`); an app gives each state its own `@keyframes` name (`arc-web-production`).
 
 ## How this skill grows
 

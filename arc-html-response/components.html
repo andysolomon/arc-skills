@@ -208,7 +208,7 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
 /* component: tabs (radio + label, no script; ids must be unique per page) */
 .tabs > input{position:absolute;opacity:0;pointer-events:none}
 .tablist{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line);margin-bottom:16px}
-.tablist label{font-family:var(--mono);font-size:13px;padding:8px 12px;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;color:var(--dim);margin-bottom:-1px;transition:color var(--t-micro) var(--ease)}
+.tablist label{font-family:var(--mono);font-size:13px;padding:8px 12px;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;cursor:pointer;color:var(--dim);margin-bottom:-1px}
 .tablist label:hover{color:var(--fg)}
 .tabs > input:focus-visible ~ .tablist{outline:2px solid var(--hi);outline-offset:4px;border-radius:8px}
 .panel{display:none}
@@ -221,17 +221,19 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
 /* feedback: the new panel fades in at the state-change timing */
 @media (prefers-reduced-motion: no-preference){
   .panel{animation:statein var(--t-state) var(--ease) backwards}
+  .tablist label{transition:color var(--t-micro) var(--ease)}
 }
 
 /* component: details */
 details{border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:var(--surface);margin-top:12px}
-summary{cursor:pointer;font-weight:600;font-size:14px;transition:color var(--t-micro) var(--ease)}
+summary{cursor:pointer;font-weight:600;font-size:14px}
 summary:hover{color:var(--hi)}
 summary::marker{color:var(--hi)}
 details table{margin-top:10px;font-size:14px}
 /* feedback: opened content fades in at the state-change timing */
 @media (prefers-reduced-motion: no-preference){
   details[open] > :not(summary){animation:statein var(--t-state) var(--ease) backwards}
+  summary{transition:color var(--t-micro) var(--ease)}
 }
 
 /* component: spot (one illustration card per page, opt-in only; the card is a 480x360 SVG from an
