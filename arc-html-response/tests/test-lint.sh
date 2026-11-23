@@ -119,6 +119,9 @@ DIAGRAM_DESIGN_DIR="$stub" expect 0 clean PASS
 page no-svg '' '<p>No diagram here</p>'
 printf 'import sys\nprint("  - stub finding")\nsys.exit(1)\n' > "$stub/scripts/self_check.py"
 DIAGRAM_DESIGN_DIR="$stub" expect 0 no-svg PASS
+# A captured still's icons are all aria-hidden: self_check (which wants an accessible SVG) is skipped.
+page still-icons '' '<figure class="stage"><div class="stage-frame" role="img" aria-label="A still"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M0 0h24"/></svg></div></figure>'
+DIAGRAM_DESIGN_DIR="$stub" expect 0 still-icons PASS
 
 # The worst-case page (template + kit with worst data) builds and passes the lint.
 if node "$skill/tests/worst-case.mjs" "$work/worst.html" >/dev/null && bash "$lint" "$work/worst.html" >/dev/null 2>&1; then

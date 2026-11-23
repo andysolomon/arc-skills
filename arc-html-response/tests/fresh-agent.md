@@ -7,12 +7,14 @@ The idea comes from MengTo/Skills: after writing each illustration skill, its au
 ## How to run it
 
 0. Build the worst-case page (`node tests/worst-case.mjs <out.html>`) and preview it at 390 (light) and 728 (dark) with animations off. Nothing may widen the page, overlap, or get cut off. It feeds every kit component realistic worst data: an unbreakable German compound, a 64-character email, a 100-character path, zero, exactly one, 1,284,000, right-to-left text. The method comes from break-ui in emilkowalski/skills.
+0b. Capture a gold still. In an installed stageshow folder run `npm install` and `npm run dev`, then `node scripts/stage.mjs --stageshow <dir> --url "<playground>/?capture=static-card&still=1" --slug card --label "Illustrative: a customers list" --theme both --out <scratch>/card`. Paste the kit's `stage` block and the two outputs into the template. The page must pass the lint and show the wide design at 728 (dark) and the compact one at 390 (light), with no page-level horizontal scroll. Do it again with `hero-demo`, which has icons and is wider than T3's frame.
 1. Start one fresh agent per prompt below, in parallel. No conversation history, no hints beyond the brief.
 2. Give each the same brief: the absolute path to this skill folder, the prompt, and an output path in a scratch folder. Tell it to read `SKILL.md` first and to follow it, to skip publishing and inline rendering, and to report which skill instructions were unclear or missing.
 3. When they finish, check every page yourself; don't trust the agents' own reports:
    - `bash scripts/lint.sh <page>` prints `PASS`.
    - `cd ~ && npx -y postplan@0.0.6 check <page>` prints `Ready.`
    - Preview at 728 and at 390 (light): no page-level horizontal scroll, nothing clipped, readable in both themes.
+   - A page with an entrance: the agent ran `scripts/frames.mjs` and previewed the sheet, and the poster frame shows the finished visual.
    - Score it with the rubric below.
 4. Fix the skill for every gap a run exposed, then run that prompt again with a new fresh agent.
 

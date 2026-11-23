@@ -1,6 +1,6 @@
 ---
 name: arc-html-response
-description: Answer with an HTML page instead of terminal prose. Use for replies that explain, compare, plan, review, recommend, or report finished work, or that have structure (steps, options, numbers, a flow). Renders inline in T3 Code and publishes keepable write-ups to Postplan as static, JavaScript-free pages with SVG/CSS charts, diagrams, and motion. Asks the user's own choices through the harness's native question dialog, not as typed codes. Routes requests that need state (a vote, a shared checklist, live numbers) to a Lakebed app instead. Skip for one-liners, yes/no, commands to copy, and clarifying questions.
+description: Answer with an HTML page instead of terminal prose. Use for replies that explain, compare, plan, review, recommend, or report finished work, or that have structure (steps, options, numbers, a flow). Renders inline in T3 Code and publishes keepable write-ups to Postplan as static, JavaScript-free pages with SVG/CSS charts, diagrams, and motion. Shows a product UI as a static Stageshow still when a page is about an interface. Asks the user's own choices through the harness's native question dialog, not as typed codes. Routes requests that need state (a vote, a shared checklist, live numbers) to a Lakebed app instead. Skip for one-liners, yes/no, commands to copy, and clarifying questions.
 ---
 
 # HTML response
@@ -71,6 +71,7 @@ Build the page from [template.html](template.html), which holds every shared tok
 | Views of one thing | `tabs` (radio and label, no script) |
 | Evidence and raw data | `details` |
 | An illustration, only when asked | `spot` (one card per page, see Illustrations) |
+| A product UI, only when the page is about one | `stage` (one captured Stageshow still per page, see Product UI stills) |
 
 Charts:
 - Plot real numbers from this session. Don't compute coordinates by hand: [scripts/chart.mjs](scripts/chart.mjs) prints ready markup for `bars` (scaled widths, an aria-label, a raw-numbers table), `line` (nice axis ticks, title, desc, a raw-numbers table) and `donut` (title, desc, the share with its denominator). It prints markup only, so also copy the matching CSS block from the kit. `node <skill-dir>/scripts/chart.mjs --help` lists every flag. Show the scale (axis labels or a value on each mark).
@@ -100,9 +101,10 @@ Motion (CSS only):
 - Reading order: never animate the headline or the lede, so the answer shows at once. One entrance moment per page, on the main chart or diagram; supporting rows may follow in a stagger. Put `class="still"` on any other chart so it doesn't animate. Feedback on tabs and `<details>` doesn't count as a moment.
 - Use the template's timing tokens, not one-off numbers: `--t-micro` 160ms for hover, `--t-state` 220ms for a state change, `--t-enter` 500ms for entrances, `--stagger` 60ms between items.
 - Put every animation inside `@media (prefers-reduced-motion: no-preference)`.
-- Animate *from* the start state (`animation-fill-mode: backwards`), so a screenshot, a still frame, or reduced motion still shows the finished page.
+- **The poster frame.** Animate *from* the start state (`animation-fill-mode: backwards`), so a screenshot, a thumbnail, or reduced motion shows the finished page. That resting frame must tell the story on its own: the result left on screen, nothing caught mid-change. (The rule comes from Stageshow, which calls that frame the poster.)
 - No scroll-driven animation (`animation-timeline: view()`). T3's frame sizes to the content and never scrolls, so the content stays invisible.
-- Keep it under 1s, on `transform` and `opacity`, with the template's `--ease`.
+- Keep each animation under 1s, on `transform` and `opacity`, with the template's `--ease`.
+- **Rehearse it.** A page with an entrance gets filmed before it is shown. `node <skill-dir>/scripts/frames.mjs <file.html> --select "<main visual>"` writes `<file>.frames.html` next to it: the page frozen at 0, 120, 240, 360 and 500 ms, then the poster, each frame labelled with what is moving. `html_preview` that one file at the width the script prints, and read every frame: the stagger runs in order, nothing jumps between frames, and the poster holds up alone. A label in red means one animation runs past 1s. The sheet runs a script to freeze the frames, so it is for preview only: never render, lint or publish it. (Also from Stageshow, which films every demo as a contact sheet before handing it over.)
 
 ## Illustrations (opt-in)
 
@@ -114,6 +116,26 @@ Pages are spec-like, so they carry no illustrations by default. Add one only whe
 - **Budget:** one-line cards run about 20 to 40 KB. Keep the whole page within the 512 KiB budget.
 - **Caption:** name the card and its style in a `figcaption`.
 
+## Product UI stills (opt-in)
+
+A page about an interface (a report on a UI change, a design proposal, a feature walkthrough) may show one still of that interface. Like an illustration it is opt-in: add one only when the page's subject is a UI or the user asks for one.
+
+- **Where stills come from:** the `stageshow` skill ([benjitaylor/skills](https://github.com/benjitaylor/skills/tree/main/stageshow), MIT; `npx skills add benjitaylor/skills --skill stageshow`). Load it and follow its own workflow through its rehearsal (`film.mjs --gate`, ending in `rehearsal passed`). Build a still, or a demo with a `poster`: the poster is the frame that gets captured. If it isn't installed, say so and skip the still. Never hand-build a faux UI.
+- **Capture:** Stageshow's output is a React component, which a page can't run, so [scripts/stage.mjs](scripts/stage.mjs) renders it in headless Chrome and copies out the laid-out result. Start Stageshow's playground (`npm run dev` in its folder; it needs `npm install` there first), or the host app's own route, then:
+
+  ```sh
+  node <skill-dir>/scripts/stage.mjs --stageshow <stageshow-dir> \
+    --url "<playground>/?capture=<example>&still=1" --slug <slug> \
+    --label "<what the still shows>" --theme both --out <scratchpad>/<slug>
+  ```
+
+  It writes `<slug>.css` and `<slug>.html`: the DOM with only the CSS rules it uses (Stageshow's `@layer` kept), scoped to `.stage-<slug>`, local images inlined as `data:` URIs, icons marked `aria-hidden`, no script. It needs Chrome (`CHROME_PATH`, else the installed Chrome) and loads `playwright-core` from the stageshow folder. `--help` lists every flag.
+- **Embedding:** copy the kit's `stage` CSS block, paste `<slug>.css` after it inside the page's one `<style>`, and put `<slug>.html` where the still goes. Don't edit the captured markup: change the still in Stageshow and capture it again.
+- **Fit:** the size follows the frame's own width (a container query), so one still fits T3's thread and a full-width Postplan page. It steps the zoom down to 75% before it swaps to the compact design. `--theme both` captures the light and dark themes and swaps them with the page's color scheme. A still with no compact design scrolls inside its frame on phones. The script warns when this happens; give the still a compact design in Stageshow (Stageshow asks for one anyway).
+- **Budget:** with both themes and both sizes, Stageshow's `static-card` came to 35 KiB and `hero-demo` to 71 KiB. The script prints the size and warns past 150 KiB.
+- **Caption:** `--label` becomes both the frame's `aria-label` and its `figcaption`. A still is illustrative: its names and numbers are filler unless you put real ones in, so say so in the label ("Illustrative: …").
+- **Stills only:** one per page, and it doesn't move. A demo with a moving cursor goes off the page (see When a page isn't enough).
+
 ## When a page isn't enough
 
 A page is static: no script, no fetch, no forms. A request that needs state is an app, not a page: a vote or poll, a sign-up sheet, a shared checklist, live numbers, sign-in, anything one person types into and others see.
@@ -124,6 +146,7 @@ Still a page: a checklist the user prints or ticks off alone, numbers you alread
 - **Lakebed first.** Build it as a Lakebed capsule, following [lakebed.md](lakebed.md): where the code goes, guests and caps, server-side permission checks, secrets that fail closed, a two-person test, and the hand-over (URL, expiry, claim). Report the URL, the checks you ran, and the expiry if the deploy is unclaimed.
 - **Move to Cloudflare** (Workers with static assets, Durable Objects for state, an Alchemy stack) when the app outgrows Lakebed: it must not expire or must be production-ready, needs a custom domain or npm packages, or would pass Lakebed's free limits (10,000 requests and 1,000 writes a day per deploy, 1 MiB of stored data).
 - Keep the write-up on Postplan and link the app with an ordinary link. A Postplan page can't embed or call it (no iframes, no fetch).
+- **An animated product demo** (a Stageshow demo with its cursor, or any React component) needs a script, so it never goes on a page, not even rebuilt as CSS keyframes. Put its poster on the page as a still (see Product UI stills) and link the running demo with an ordinary link. It needs npm packages, so it is hosted the Cloudflare way described above. Confirm before deploying it.
 
 ## When the user must choose
 
@@ -155,14 +178,14 @@ Run the lint from this skill's base directory, and fix every `FAIL` before showi
 bash <skill-dir>/scripts/lint.sh <file.html>
 ```
 
-The lint enforces the contract plus the motion rules (scripts, `<link>`, handlers, blocked tags, local paths, size, animation without a reduced-motion guard, scroll-driven animation), fails any `<svg>` without a title and a desc, and warns on a missing page title or viewport and on em dashes. When diagram-design is installed it also runs that skill's `self_check.py --offline` on pages with an SVG.
+The lint enforces the contract plus the motion rules (scripts, `<link>`, handlers, blocked tags, local paths, size, animation without a reduced-motion guard, scroll-driven animation), fails any `<svg>` without a title and a desc, and warns on a missing page title or viewport and on em dashes. When diagram-design is installed it also runs that skill's `self_check.py --offline` on pages with an accessible SVG (one not marked `aria-hidden`, so a captured still's icons alone don't trigger it).
 
-Changing the skill itself? Run `bash <skill-dir>/tests/test-lint.sh` and `bash <skill-dir>/tests/test-chart.sh`, then the release gate in [tests/fresh-agent.md](tests/fresh-agent.md), which includes previewing the kit with worst-case data (`node <skill-dir>/tests/worst-case.mjs <out.html>`).
+Changing the skill itself? Run `bash <skill-dir>/tests/test-lint.sh`, `bash <skill-dir>/tests/test-chart.sh` and `bash <skill-dir>/tests/test-capture.sh`, then the release gate in [tests/fresh-agent.md](tests/fresh-agent.md), which includes previewing the kit with worst-case data (`node <skill-dir>/tests/worst-case.mjs <out.html>`).
 
 ## Show it
 
 **In T3 Code** (the `mcp__t3-code__html_preview` / `html_render` tools exist; load them with ToolSearch):
-1. `html_preview` the file at width 728, and again at 390 with `appearance: "light"`. Fix overflow, cramped diagrams, or unreadable contrast. The screenshot can catch entrance animations mid-flight; a half-drawn bar in the preview is timing, not a bug.
+1. `html_preview` the file at width 728, and again at 390 with `appearance: "light"`. Fix overflow, cramped diagrams, or unreadable contrast. The screenshot can catch entrance animations mid-flight; a half-drawn bar in the preview is timing, not a bug. The frame check (see Motion) shows the motion itself.
 2. `html_render` it with the `contentHeight` from the preview (capped at 2000; content past that scrolls). Write the page once with the template's `/* standalone */` block: that file is the one to publish. For the inline render, render a copy with that block deleted (`inline.html` next to it), because the thread supplies the background and the side gutter. The template's `var(--foreground, …)` fallbacks pick up T3's theme.
 3. Don't restate the page in the reply.
 

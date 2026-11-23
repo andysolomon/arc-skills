@@ -468,6 +468,36 @@
         "intent": "respect-user-format"
       },
       "sandbox": "just-bash"
+    },
+    {
+      "id": "routing-animated-product-demo",
+      "description": "An animated product demo never goes on a page: the page gets a static still (or skips it) and links the demo.",
+      "prompt": "Write up the new share flow for the team, and put an animated demo of a cursor clicking the share button right on the page.",
+      "assertions": [
+        {
+          "id": "no-script-on-page",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The page must contain no script, React component, iframe or embed. The moving demo is not rebuilt as CSS keyframes on the page.",
+          "mustPass": true
+        },
+        {
+          "id": "still-and-link",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response either captures a static Stageshow still with scripts/stage.mjs for the page or says the stageshow skill isn't installed and skips the still. It says the moving demo has to be hosted off the page and linked, and it confirms before deploying anything.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "stageshow"
+        ],
+        "difficulty": "medium",
+        "intent": "static-contract"
+      },
+      "sandbox": "just-bash"
     }
   ]
 }
