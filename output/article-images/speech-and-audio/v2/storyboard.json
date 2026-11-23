@@ -1,0 +1,112 @@
+{
+  "audience": "Developers learning speech and audio AI",
+  "revision": 2,
+  "style": "Editorial field notes with subject-specific art",
+  "source_mapping": "sources.md",
+  "dimensions": [
+    1080,
+    1350
+  ],
+  "cards": [
+    {
+      "id": "01-cover",
+      "copy_verbatim": [
+        "SPEECH / AUDIO",
+        "FIELD NOTES \u2014 00",
+        "From sound",
+        "to conversation.",
+        "01 / CAPTURE",
+        "Sound",
+        "02 / REPRESENT",
+        "Samples",
+        "03 / TRANSCRIBE",
+        "\u201cHello.\u201d",
+        "ILLUSTRATIVE",
+        "Build the parts. Connect the system.",
+        "Signals. Turn-taking. Voice systems.",
+        "SOURCE / AI ENGINEERING FROM SCRATCH",
+        "aiengineeringfromscratch.com",
+        "00 / 03"
+      ],
+      "editable_diagram": "01-cover.svg",
+      "render_route": "Generated transparent art + SVG"
+    },
+    {
+      "id": "02-filter-before-downsampling",
+      "copy_verbatim": [
+        "SPEECH / AUDIO",
+        "FIELD NOTES \u2014 01",
+        "01 / AUDIO FUNDAMENTALS",
+        "Filter before",
+        "you downsample.",
+        "Protect the signal before reducing its rate.",
+        "01   RECORDED SIGNAL",
+        "02   AFTER LOW-PASS FILTER",
+        "03   FEWER SAMPLES",
+        "Remove the fast component.",
+        "Keep the same slow wave.",
+        "SCHEMATIC / NOT MEASURED AUDIO",
+        "ENGINEERING NOTE",
+        "High frequencies can fold into lower ones.",
+        "Filter first to avoid aliasing.",
+        "SOURCE / AI ENGINEERING FROM SCRATCH",
+        "aiengineeringfromscratch.com",
+        "01 / 03"
+      ],
+      "editable_diagram": "02-filter-before-downsampling.svg",
+      "render_route": "SVG"
+    },
+    {
+      "id": "03-turn-taking",
+      "copy_verbatim": [
+        "SPEECH / AUDIO",
+        "FIELD NOTES \u2014 02",
+        "02 / TURN-TAKING",
+        "A pause is not",
+        "a finished thought.",
+        "Use timing and context before replying.",
+        "\u201cCould you\u2026",
+        "move it to Friday?\u201d",
+        "PAUSE",
+        "Still thinking.",
+        "One thought can contain silence.",
+        "SPEECH DETECTION",
+        "\u201cIs this speech?\u201d",
+        "TURN DETECTION",
+        "\u201cAre they done?\u201d",
+        "ENGINEERING NOTE",
+        "Combine speech activity with timing and context.",
+        "Respond too early, and you cut the speaker off.",
+        "SOURCE / AI ENGINEERING FROM SCRATCH",
+        "aiengineeringfromscratch.com",
+        "02 / 03"
+      ],
+      "editable_diagram": "03-turn-taking.svg",
+      "render_route": "SVG"
+    },
+    {
+      "id": "04-interruptions",
+      "copy_verbatim": [
+        "SPEECH / AUDIO",
+        "FIELD NOTES \u2014 03",
+        "03 / VOICE SYSTEMS",
+        "Let the user",
+        "interrupt.",
+        "A conversation needs a way to stop.",
+        "ASSISTANT PLAYBACK",
+        "Playback stops.",
+        "USER STARTS SPEAKING",
+        "Cancel generation.",
+        "Return to listening.",
+        "ENGINEERING NOTE",
+        "Stop playback and cancel the pending response.",
+        "Listen to the next user turn.",
+        "SOURCE / AI ENGINEERING FROM SCRATCH",
+        "aiengineeringfromscratch.com",
+        "03 / 03"
+      ],
+      "editable_diagram": "04-interruptions.svg",
+      "render_route": "SVG"
+    }
+  ]
+}
