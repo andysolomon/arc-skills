@@ -123,6 +123,174 @@
       ]
     },
     {
+      "id": "chart-page-is-static",
+      "description": "Golden path: a chart request is drawn in SVG or CSS with no JavaScript, so it publishes to Postplan and renders the same inline.",
+      "prompt": "Benchmark results for our three image resizers: sharp 38 ms, jimp 412 ms, squoosh 121 ms (median of 50 runs). Make me a chart comparing them and say which to use. Save the page as bench/index.html in the current directory.",
+      "expected_output": "bench/index.html draws the three values as an inline SVG or CSS chart with no <script> or <link> tags, labels each value, and the chat reply names sharp in at most three sentences.",
+      "assertions": [
+        {
+          "type": "file-exists",
+          "path": "bench/index.html"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "^(?![\\s\\S]*<script)(?![\\s\\S]*<link[\\s>/])[\\s\\S]*(<svg|--v\\s*:)",
+          "target": {
+            "file": "bench/index.html"
+          },
+          "flags": "i"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "(?=[\\s\\S]*\\b38\\b)(?=[\\s\\S]*\\b412\\b)(?=[\\s\\S]*\\b121\\b)",
+          "target": {
+            "file": "bench/index.html"
+          }
+        },
+        {
+          "id": "reply-picks-sharp",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The chat reply should recommend sharp in its first sentence and stay within three sentences, without repeating the per-library numbers as a list.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "charts",
+          "postplan-contract",
+          "golden-path"
+        ],
+        "difficulty": "medium",
+        "intent": "static-chart"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "motion-respects-reduced-motion",
+      "description": "Golden path: an animated diagram uses CSS-only motion guarded by prefers-reduced-motion and avoids scroll-driven animation.",
+      "prompt": "Explain our deploy pipeline (build, then test, then deploy to Workers, then a smoke check on /health) as an animated diagram so the direction of flow is obvious. Save the page as pipeline/index.html in the current directory.",
+      "expected_output": "pipeline/index.html contains an inline SVG flow of the four steps with CSS @keyframes motion inside a prefers-reduced-motion media query, no scripts, and no animation-timeline.",
+      "assertions": [
+        {
+          "type": "file-exists",
+          "path": "pipeline/index.html"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "(?=[\\s\\S]*@keyframes)(?=[\\s\\S]*prefers-reduced-motion)(?=[\\s\\S]*<svg)",
+          "target": {
+            "file": "pipeline/index.html"
+          },
+          "flags": "i"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "^(?![\\s\\S]*<script)(?![\\s\\S]*animation-timeline)[\\s\\S]*smoke",
+          "target": {
+            "file": "pipeline/index.html"
+          },
+          "flags": "i"
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "diagrams",
+          "motion",
+          "postplan-contract"
+        ],
+        "difficulty": "medium",
+        "intent": "css-motion"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "branching-diagram-is-accessible-and-orthogonal",
+      "description": "Golden path: a diagram with a fork is drawn as an inline SVG with a title and a desc, right-angle connectors, and no external fonts or scripts.",
+      "prompt": "Draw how a request moves through our system: the browser calls the API gateway, which sends reads to the cache and writes to the orders service; the orders service writes to Postgres and publishes to a queue that the email worker consumes. Save the page as arch/index.html in the current directory.",
+      "expected_output": "arch/index.html contains one inline SVG diagram of the named components with a <title> and <desc>, connectors drawn as horizontal and vertical segments, no <script> or <link> tags, and a short chat reply.",
+      "assertions": [
+        {
+          "type": "file-exists",
+          "path": "arch/index.html"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "^(?![\\s\\S]*<script)(?![\\s\\S]*<link[\\s>/])[\\s\\S]*<svg[\\s\\S]*<title[\\s\\S]*<desc",
+          "target": {
+            "file": "arch/index.html"
+          },
+          "flags": "i"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "(?=[\\s\\S]*gateway)(?=[\\s\\S]*cache)(?=[\\s\\S]*Postgres)(?=[\\s\\S]*queue)",
+          "target": {
+            "file": "arch/index.html"
+          },
+          "flags": "i"
+        },
+        {
+          "id": "connectors-orthogonal",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "In arch/index.html, the connectors between diagram nodes should be made of horizontal and vertical segments (optionally with small rounded corners); there should be no diagonal connector lines between nodes, and each branch out of the API gateway should carry a short label.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "diagrams",
+          "accessibility",
+          "postplan-contract"
+        ],
+        "difficulty": "hard",
+        "intent": "branching-diagram"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "published-page-has-no-local-paths",
+      "description": "Edge: a published work report names files by repo-relative path, never by absolute local path.",
+      "prompt": "You just fixed token refresh in src/auth/session.ts in the repo checked out at /home/dev/projects/acme, and the unit suite passed. Write a report of the work and publish it to Postplan so I can share it. Save the page as report/index.html in the current directory.",
+      "expected_output": "report/index.html names src/auth/session.ts but never /home/dev/projects/acme, it is published with npx postplan, and the chat reply gives the Postplan link.",
+      "assertions": [
+        {
+          "type": "file-exists",
+          "path": "report/index.html"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "^(?![\\s\\S]*/home/)[\\s\\S]*src/auth/session\\.ts",
+          "target": {
+            "file": "report/index.html"
+          }
+        },
+        {
+          "type": "regex-match",
+          "pattern": "evalmock2\\.postplan\\.dev",
+          "target": "assistant-text"
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "publishing",
+          "privacy",
+          "postplan-contract"
+        ],
+        "difficulty": "medium",
+        "intent": "no-local-paths"
+      },
+      "sandbox": "just-bash",
+      "sandboxMocks": [
+        {
+          "command": "npx",
+          "stdout": "{\"ok\":true,\"draftId\":\"evalmock2\",\"url\":\"https://evalmock2.postplan.dev\"}\n",
+          "exitCode": 0
+        }
+      ]
+    },
+    {
       "id": "negative-one-line-answer",
       "description": "Negative: a one-fact question stays in plain text.",
       "prompt": "What port does the Vite dev server use by default?",

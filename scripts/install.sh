@@ -39,6 +39,19 @@ for src in $SRC_GLOB; do
   done
 done
 
+# diagram-design profile: lets any project select the arc-html-response skin
+# with a `.diagram-design` marker (`profile: arc-postplan`). Profiles live in the
+# home library, never inside a skill install. This repo's copy is the source.
+PROFILE_SRC="$ROOT_DIR/arc-html-response/diagram-profile.md"
+PROFILE_DIR="${HOME}/.diagram-design/profiles"
+if [ -f "$PROFILE_SRC" ]; then
+  mkdir -p "$PROFILE_DIR"
+  if ! cmp -s "$PROFILE_SRC" "$PROFILE_DIR/arc-postplan.md"; then
+    cp "$PROFILE_SRC" "$PROFILE_DIR/arc-postplan.md"
+    echo "profile: $PROFILE_DIR/arc-postplan.md"
+  fi
+fi
+
 # Prune stale installs: any arc-* entry in a target dir that no longer maps to a
 # skill in this repo (renamed/removed). Broken symlinks are caught here too —
 # their name won't be in VALID. Only arc-* entries are touched, so unrelated
