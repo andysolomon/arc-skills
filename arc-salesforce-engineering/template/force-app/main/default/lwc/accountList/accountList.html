@@ -1,0 +1,30 @@
+<template>
+    <section class="panel" aria-labelledby="account-list-title">
+        <header class="head">
+            <h2 id="account-list-title" class="title">Recent accounts</h2>
+            <lightning-button label="Refresh" onclick={handleRefresh} disabled={refreshing}></lightning-button>
+        </header>
+
+        <template lwc:if={isLoading}>
+            <p class="note" role="status">Loading accounts…</p>
+        </template>
+        <template lwc:elseif={isFailed}>
+            <p class="note bad" role="alert">{errorText}</p>
+            <lightning-button variant="brand" label="Try again" onclick={handleRefresh} disabled={refreshing}></lightning-button>
+        </template>
+        <template lwc:elseif={isEmpty}>
+            <p class="note">No accounts yet. Create one from the Accounts tab and it shows up here.</p>
+        </template>
+        <template lwc:else>
+            <p lwc:if={isStale} class="note warn" role="status">Couldn't refresh. This is the last list that loaded.</p>
+            <ul class="rows">
+                <template for:each={rows} for:item="row">
+                    <li key={row.id} class="row">
+                        <a class="name" href={row.url}>{row.name}</a>
+                        <span class={row.industryClass}>{row.industry}</span>
+                    </li>
+                </template>
+            </ul>
+        </template>
+    </section>
+</template>
