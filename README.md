@@ -109,7 +109,16 @@ It is user-invoked (`disable-model-invocation: true`), so it applies only when c
 
 ## Install (recommended: skills CLI)
 
-This follows the `vercel-labs/skills` README flow.
+These are open agent skills ([agentskills.io](https://agentskills.io) `SKILL.md` format), so any harness that reads skills can use them. The `vercel-labs/skills` CLI installs them into the universal folder `~/.agents/skills` (read by Codex, Pi, Cline, Warp, Zed and others) and links them into harnesses with their own folders (Claude Code, Cursor, OpenCode, Copilot and others).
+
+### Install all ARC skills globally, for every harness you use
+
+```bash
+npx skills add andysolomon/arc-skills -g --skill '*'
+npx skills update -g      # after new commits land on main
+```
+
+Without `-a`, the CLI asks which harnesses to link (and remembers the answer).
 
 ### List available skills in this repo
 
@@ -147,17 +156,19 @@ npx skills add andysolomon/arc-skills -g -a claude-code -a codex --skill arc-imp
 npx skills add andysolomon/arc-skills -g -a claude-code -a codex --skill '*' --copy
 ```
 
-## Local installer (fallback)
-
-You can also use the repo script:
+## Local installer (for working on the skills)
 
 ```bash
 ./scripts/install.sh
 ```
 
-This symlinks all `arc-*` skill folders into:
-- `~/.claude/skills`
-- `~/.codex/skills`
+This installs the same layout as the CLI, but links each skill to this checkout so edits are live:
+- `~/.agents/skills/<name>` links to the checkout (the universal folder)
+- `~/.claude/skills/<name>` links to `~/.agents/skills/<name>`
+
+It also removes the `~/.codex/skills` links that older versions made, since Codex reads `~/.agents/skills`. Use the CLI or this script, not both: `npx skills update` replaces the links with copies.
+
+Changing a `SKILL.md`? Run `bash scripts/check-skills.sh`: the CLI silently skips a skill whose frontmatter isn't valid YAML (an unquoted `: ` in the description is enough), and this check fails when that happens.
 
 Use `--copy` to copy instead of symlink:
 
