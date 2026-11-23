@@ -11,7 +11,7 @@ Each level has a UI side, which is what the browser has to run, and an architect
 
 | Level | UI side | Architecture side | Layer skill |
 |---|---|---|---|
-| 1 Page | Static HTML, SVG and CSS: answers, reports, write-ups. No script. | Nothing runs. A file is published. | `arc-html-response` |
+| 1 Page | HTML, SVG and CSS: answers, reports, write-ups. Two rungs: a static page with no script, and a scripted page whose one inline script handles clicks CSS can't. Neither keeps or sends anything. | Nothing runs. A file is published. | `arc-html-response` |
 | 2 App | State, a server and tests: a Lakebed prototype first, then Foldkit on Effect. | A server that keeps state: Lakebed for a try, then a Worker with a Durable Object. | `arc-web-production` |
 | 3 Interaction | Drag, swipe, springs and layout moves, where CSS keyframes stop being enough. | Nothing new. It all runs in the browser. | `arc-interaction` |
 | 4 Realtime | Live connections: WebSockets, presence, WebRTC. | A server that holds connections open. WebRTC media also needs a TURN or media server. | `arc-realtime` |
@@ -29,7 +29,7 @@ A tool that outputs a file is a maker, not a level: a diagram, an illustration, 
 ## Steps
 
 1. **Pick the layer skill.** Ask in order; the first yes wins.
-   1. Is it an answer, a report or a write-up that nobody types into? Level 1, `arc-html-response`.
+   1. Is it an answer, a report or a write-up that nobody types into? Level 1, `arc-html-response`. If a click must change what it shows and CSS can't do it (a step-through, a sortable table), take level 1's scripted rung.
    2. Does someone type into it, or must it keep working after today? Level 2, `arc-web-production`. It picks its own rung (static render, Lakebed prototype, full app). Then load the skill of every higher level the request needs:
       - a drag, a swipe, a spring or a layout move: level 3, `arc-interaction`.
       - a live connection (a WebSocket, presence, WebRTC): level 4, `arc-realtime`.
@@ -75,7 +75,7 @@ A tool that outputs a file is a maker, not a level: a diagram, an illustration, 
 ## Motion, every layer
 
 - **Motion shows meaning**: a state changed, an order, a direction, a size. No decorative loops, no text effects.
-- **CSS first.** A page is CSS only, because it runs no script. From level 3 up, Motion's plain JavaScript `animate()` is allowed for three cases CSS can't do: a drag or swipe that carries its velocity, a layout move (an element changes place or size), and a spring the user can interrupt. Name the case before adding it. Everything else stays CSS. GSAP and every other animation library stay out of pages and apps, and Motion's React API can't run in Foldkit. A Motion animation still rests under reduced motion and still moves only `transform` and `opacity`. `animate()` does not check the reduced-motion setting by itself, so the code that calls it must. `arc-interaction` holds the pattern, proven through a Foldkit Mount on `motion` 14.14.0, and its tests.
+- **CSS first.** Motion on a page is CSS only: a scripted page's script switches classes and attributes, and CSS does the moving. From level 3 up, Motion's plain JavaScript `animate()` is allowed for three cases CSS can't do: a drag or swipe that carries its velocity, a layout move (an element changes place or size), and a spring the user can interrupt. Name the case before adding it. Everything else stays CSS. GSAP and every other animation library stay out of pages and apps, and Motion's React API can't run in Foldkit. A Motion animation still rests under reduced motion and still moves only `transform` and `opacity`. `animate()` does not check the reduced-motion setting by itself, so the code that calls it must. `arc-interaction` holds the pattern, proven through a Foldkit Mount on `motion` 14.14.0, and its tests.
 - **Use the timing tokens**: `--t-micro` for hover, `--t-state` for a state change, `--t-enter` for an entrance, `--stagger` between items, with `--ease`.
 - **Inside `@media (prefers-reduced-motion: no-preference)`**, always: every animation and every transition, hover included.
 - **Animate from the start state** (`animation-fill-mode: backwards`), on `transform` and `opacity`, each animation under one second. The resting frame, which is what a screenshot or reduced motion shows, must tell the story on its own.
