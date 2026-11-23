@@ -1,0 +1,35 @@
+/* arc-interaction styles: the swipe row, the list that moves its rows, the empty-state figure.
+   Loaded from entry.ts. Linted like styles.css: node scripts/check-styles.mjs src/interaction.css
+   Nothing here animates. The spring and the layout move run in script (src/interaction/), and
+   their numbers live in src/interaction/constants.ts, because a spring has no duration to tokenise. */
+
+/* The list is the offset parent, so layout.ts measures each row's top from it. It clips
+   sideways, so a row on its way out can't widen the page at 390 px. */
+.items{position:relative;overflow-x:clip}
+
+/* A swipe row. With pan-y the browser keeps vertical scroll and hands sideways movement to
+   the Mount. 44 px tall, so the row and its button are touch targets. */
+.item:has(> .swipe){padding:4px 0}
+.swipe{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:44px;touch-action:pan-y;cursor:grab}
+.swipe[data-dragging]{cursor:grabbing;user-select:none;-webkit-user-select:none}
+
+/* A second-rank button: Remove on a row, Keep on a failed removal. The accent stays on the main action. */
+button.quiet{background:transparent;color:var(--dim);border:1px solid var(--line);font-weight:400;margin-right:4px}
+
+/* The empty state is the figure above the sentence that says how to add the first note. */
+.empty{display:grid;justify-items:center;gap:12px;padding:24px 0}
+/* The figure takes its six colours from the app's tokens, so it follows dark and light. The
+   plate is the page colour, because the plate hides the lines drawn behind it. */
+.figure{
+  width:200px;
+  --hairline-plate:var(--bg);
+  --hairline-hi:var(--fg);
+  --hairline-edge:var(--dim);
+  --hairline-mid:var(--dim);
+  --hairline-lo:var(--line);
+  --hairline-stroke:0.9;
+}
+/* The figure answers the pointer. Under reduced motion it gets no pointer, so it rests. */
+@media (prefers-reduced-motion: reduce){
+  .figure{pointer-events:none}
+}

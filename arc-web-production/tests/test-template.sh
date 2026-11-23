@@ -26,6 +26,7 @@ step "typecheck (app and Worker)" npm run typecheck
 step "tests (Story, Scene, update, Commands)" npm test
 step "style lint (tokens only, motion guarded)" npm run lint:styles
 step "vite build" npm run build
+step "build ships the Geist files" bash -c 'ls dist/assets/Geist-Variable-*.woff2 dist/assets/GeistMono-Variable-*.woff2'
 step "static render has no script" npm run static
 if [ -f "$REPO_DIR/arc-html-response/scripts/lint.sh" ]; then
   step "static page passes the page lint" bash "$REPO_DIR/arc-html-response/scripts/lint.sh" "$WORK/dist/static.html"

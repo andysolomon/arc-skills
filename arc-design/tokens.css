@@ -16,7 +16,7 @@
 @media (prefers-color-scheme: light){
   :root:not([data-theme="dark"]){
     --bg:#fbfaf7; --fg:#141416; --dim:#5d5d66; --line:#e4e2dc; --surface:#ffffff;
-    --hi:#d1006b; --on-hi:#fff; --link:#1a62bd; --ok:#14884a; --bad:#c62f34; --warn:#946800;
+    --hi:#d1006b; --on-hi:#fff; --link:#1a62bd; --ok:#127f45; --bad:#c62f34; --warn:#946800;
     --c1:#d1006b; --c2:#1f6fd1; --c3:#0f8a7e; --c4:#b86e00;
   }
 }

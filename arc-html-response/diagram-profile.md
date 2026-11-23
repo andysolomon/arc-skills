@@ -4,7 +4,7 @@ slug: arc-postplan
 source-url: none
 created: 2026-11-22
 updated: 2026-11-22
-notes: arc-html-response page tokens; system fonts; passes the Postplan 0.0.4 contract
+notes: arc-html-response page tokens; no font files (the page stacks name Geist first, then system fonts); passes the Postplan 0.0.4 contract
 -->
 <!-- Adapted from diagram-design v2.6 references/style-guide.md. MIT License, Copyright (c) 2025 Cathryn Lavery. https://github.com/cathrynlavery/diagram-design -->
 # Style Guide
@@ -14,7 +14,7 @@ notes: arc-html-response page tokens; system fonts; passes the Postplan 0.0.4 co
 
 **The single source of truth for colors, typography, and tokens.** Every diagram draws from this — not from hex values inlined in other reference files. If you want to change the visual skin of Diagram Design, change this file.
 
-Current skin: **Arc Postplan**. True black paper in dark and warm off-white in light, one pink accent, system fonts only. It matches the page tokens in arc-html-response (`template.html`), so a diagram drawn with this guide sits inside an HTML response page and passes the Postplan contract (no `<link>`, no web fonts, no script).
+Current skin: **Arc Postplan**. True black paper in dark and warm off-white in light, one pink accent, and no font files: text uses the page's `--sans` and `--mono` stacks, which name Geist first and fall back to system fonts. It matches the page tokens in arc-html-response (`template.html`), so a diagram drawn with this guide sits inside an HTML response page and passes the Postplan contract (no `<link>`, no web fonts, no script).
 
 To generate your own from a website URL, see [`onboarding.md`](onboarding.md).
 

@@ -10,7 +10,7 @@
 :root{
   --bg:#000; --fg:var(--foreground,#fff); --dim:var(--muted-foreground,#a1a1aa);
   --line:var(--border,#27272a); --surface:var(--card,#0e0e11);
-  --hi:#ff2e93; --link:var(--info,#4f9dff); --paper:var(--background,var(--bg)); --ok:var(--success,#3ddc84); --bad:var(--destructive,#ff5a5f); --warn:var(--warning,#ffd23f);
+  --hi:#ff2e93; --on-hi:#000; --link:var(--info,#4f9dff); --paper:var(--background,var(--bg)); --ok:var(--success,#3ddc84); --bad:var(--destructive,#ff5a5f); --warn:var(--warning,#ffd23f);
   --mono:var(--font-mono,"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace);
   --sans:var(--font-sans,"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif);
   --ease:cubic-bezier(.2,.7,.2,1);
@@ -24,7 +24,7 @@
     --bg:#fbfaf7; --fg:var(--foreground,#141416); --dim:var(--muted-foreground,#5d5d66);
     --line:var(--border,#e4e2dc); --surface:var(--card,#ffffff);
     --c1:var(--chart-1,#d1006b); --c2:var(--chart-2,#1f6fd1); --c3:var(--chart-3,#0f8a7e); --c4:var(--chart-4,#b86e00);
-    --hi:#d1006b; --link:var(--info,#1a62bd); --ok:var(--success,#14884a); --bad:var(--destructive,#c62f34); --warn:var(--warning,#946800);
+    --hi:#d1006b; --on-hi:#fff; --link:var(--info,#1a62bd); --ok:var(--success,#127f45); --bad:var(--destructive,#c62f34); --warn:var(--warning,#946800);
   }
 }
 *{box-sizing:border-box}
@@ -52,7 +52,7 @@ svg:not(.spot svg, .stage svg) text{font-family:var(--sans)} /* illustration car
 table{width:100%;border-collapse:collapse;font-size:15px}
 /* numbers line up and don't jitter; body text stays near 65 characters a line */
 table,.packet,.bar .val,.changes td.n{font-variant-numeric:tabular-nums}
-main p{max-width:65ch}
+main p,main :where(ul,ol):not([class]) > li{max-width:65ch}
 th,td{text-align:left;vertical-align:top;padding:10px 12px 10px 0;border-top:1px solid var(--line)}
 th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);border-top:none}
 /* table.stack-sm: each row becomes a block under 560px instead of squeezing columns */
@@ -61,6 +61,7 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
   table.stack-sm tr{display:block;border-top:1px solid var(--line);padding:10px 0}
   table.stack-sm td{display:block;border:0;padding:2px 0;white-space:normal;overflow-wrap:anywhere}
   table.stack-sm td:first-child{font-weight:600}
+  table.stack-sm td[data-label]::before{content:attr(data-label) ": ";font-family:var(--mono);font-size:12px;color:var(--dim)} /* name the column when a stacked cell means nothing without it */
 }
 .row{display:grid;grid-template-columns:1fr 24px 1fr;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
 .row:last-child{border-bottom:1px solid var(--line)}
@@ -98,7 +99,7 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
 </head>
 <body>
 <main>
-  <div class="kicker">topic · context</div>
+  <div class="kicker">project · topic</div>
   <h1>The answer, <em>in one line</em>.</h1>
   <p class="lede">One or two sentences: what's true, and what to do about it.</p>
 
@@ -120,7 +121,7 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
     <div class="row" style="--i:1"><div class="from">another current behavior</div><div class="arrow">→</div><div>its replacement</div></div>
   </section>
 
-  <!-- Packet: only for reports of work you did. Delete it for analysis, plans and explanations.
+  <!-- Packet: only for reports of work, yours or work the user describes as yours. Delete it for analysis, plans and explanations.
        The heading is the tally, worst first. One check per line, in the same order: FAIL, NOT_RUN, PASS. -->
   <section>
     <h2>Checked: 1 FAIL, 1 NOT_RUN, 1 PASS</h2>

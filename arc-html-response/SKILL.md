@@ -7,7 +7,7 @@ description: Answer with an HTML page instead of terminal prose. Use for replies
 
 The user reads pages better than terminal scrollback. When a reply has shape (steps, options, a comparison, a flow, numbers, evidence), make it a small HTML page, show it, and keep the chat reply to a line or two.
 
-This is the base layer under `arc-design`, which holds the look every layer shares and routes a request that needs a lasting app to `arc-web-production`.
+This skill builds level 1 of `arc-design`'s pyramid, a page. `arc-design` holds the look every level shares and routes a request that needs a lasting app to level 2, `arc-web-production`.
 
 ## Decide: page or plain text?
 
@@ -32,29 +32,29 @@ When unsure, make the page. It costs little and reads better.
 Start from [template.html](template.html), next to this file; open it with your file-read tool. Write the file to the scratchpad (or the location the user names), e.g. `<scratchpad>/<topic-slug>/index.html`.
 
 Content:
-- **Kicker:** the small line above the headline names the project and topic in a few words (`arc-skills · auth`).
-- **Lead with the answer.** The headline is the verdict or main point, not the topic. The first paragraph says what to do or what's true.
+- **Kicker:** the small line above the headline names the project and topic in a few words (`arc-skills · auth`). When the request names no project, name the subject and the topic (`auth · session refresh`); never invent a project name.
+- **Lead with the answer.** The headline is the verdict or main point, not the topic. Its `<em>` marks the few words that carry the verdict. The `<title>` is a name of two to four words. Replace both template placeholders, and the kicker's. The first paragraph says what to do or what's true.
 - **One idea per section.** A short `h2` that states the point, then the evidence.
 - **Draw the mechanism, not decoration.** A visual earns its place only when it carries meaning: a flow, a chart of real numbers, a from → to table, a ranking, a stat with its denominator. No stock icons, no ornamental gradients.
-- **Real data only.** Numbers, file paths, commands and results come from this session. Numbers derived from them (a total, a projected saving) are fine if the page shows the arithmetic or calls them estimates. Label anything illustrative as illustrative. Write dates as absolute dates, never "3 days ago", and only when you know them. A value you don't have is written as unknown ("revision: unknown", "exact command not recorded"), never invented.
+- **Real data only.** Numbers, file paths, commands and results come from this session. Numbers derived from them (a total, a projected saving) are fine if the page shows the arithmetic or calls them estimates. Label anything illustrative as illustrative. Write dates as absolute dates, never "3 days ago", and only when you know them. A relative date in the user's own data ("last week") is quoted as given, next to the date it was said; don't guess its bounds. A value you don't have is written as unknown ("revision: unknown", "exact command not recorded"), never invented.
 - **Plain words.** Short sentences. No jargon the user hasn't used. Name files by repo-relative path (`src/auth/session.ts`).
-- **End reports of work with a packet**, whether you did the work or the user describes it as yours. Analyses of data, plans and explanations get no packet; delete the template's. The packet: revision, what changed, commands run and results, checks, open questions. With a `changes` table above it, the packet's changed line is just the total (`3 files, +83 −39`), and open items live only in its open line, not in a second list. Several commands go as a list under the one evidence key. Give each check its own line, worst first (`FAIL`, then `NOT_RUN`, then `PASS`), and make the section's heading the tally in the same order (`Checked: 1 FAIL, 2 NOT_RUN, 5 PASS`). Label every check with the literal word `PASS`, `FAIL`, or `NOT_RUN` (a review's `findings` may also use `WARN`), never prose like "not run yet", so the status can be scanned and grepped. Write the packet in plain words, with `<code>` only around literal values (a revision, a command, a path). A check only proves what it exercised; anything that wasn't run is `NOT_RUN`.
-- **Keep it short.** Most pages are 3–6 sections. Cut anything the user won't act on.
+- **End reports of work with a packet**, whether you did the work or the user describes it as yours. Analyses of data, plans and explanations get no packet; delete the template's. The packet: revision, what changed, commands run and results (its `evidence` lines), checks, open questions. With a `changes` table above it, the packet's changed line is just the total (`4 files, +120 −31`), and open items live only in its open line, not in a second list. Several commands go as a list under the one evidence key. Give each check its own line, worst first (`FAIL`, then `NOT_RUN`, then `PASS`), and make the section's heading the tally in the same order (`Checked: 1 FAIL, 2 NOT_RUN, 5 PASS`). Label every check with the literal word `PASS`, `FAIL`, or `NOT_RUN` (a review's `findings` may also use `WARN`), never prose like "not run yet", so the status can be scanned and grepped. A check with no record of its result is `NOT_RUN`, with "not recorded" as the reason. Write the packet in plain words, with `<code>` only around literal values (a revision, a command, a path). A check only proves what it exercised; anything that wasn't run is `NOT_RUN`.
+- **Keep it short.** Most pages are 3–6 sections. A small work report may be two: the changes and the packet. Cut anything the user won't act on.
 
 ## The Postplan contract
 
 Every page follows Postplan 0.0.4's rules, even pages that are only rendered in T3. One static page then looks the same inline in T3, on Postplan, and when another agent fetches it raw.
 
 - **No JavaScript.** No `<script>` (inline or `src`), no `on*=` handler attributes, no `javascript:` URLs. Postplan rejects `<script src>` at upload and serves pages with `script-src 'none'`, so inline scripts never run either. Charts, tabs and motion are SVG and CSS.
-- **One inline `<style>`.** No `<link>` (blocked tag), no `@import`, no `@font-face` or web fonts (CSP `default-src 'none'`). Use the template's system font stacks.
+- **One inline `<style>`.** No `<link>` (blocked tag), no `@import`, no `@font-face` or web fonts (CSP `default-src 'none'`). Use the template's font stacks: they name Geist first, so a reader who has it installed sees it, and everyone else sees the system fonts behind it.
 - **No forms, iframes, embeds, objects, `<base>`, or meta refresh.** `<input>` and `<label>` outside a `<form>` are fine (the kit's tabs use them).
 - **Images from `https:` or `data:` only.** A local `chart.png` will not load.
 - **Budget 512 KiB per page**, the 0.0.4 server default. `postplan check` reports the real limit for the account.
-- **Nothing private.** No secrets, tokens, private URLs, or absolute local paths (`/home/…`, `/Users/…`, `/tmp/…`, the scratchpad). Postplan links are viewable by anyone who has them.
+- **Nothing private.** No secrets, tokens, private URLs, or absolute local paths (`/home/…`, `/Users/…`, `/tmp/…`, the scratchpad). Name a local folder relative to the project, or from `~`. Postplan links are viewable by anyone who has them.
 
 ## Charts, diagrams, and motion
 
-Build the page from [template.html](template.html), which holds every shared token and base rule, then open [components.html](components.html) and copy the blocks you need. Each block is marked `/* component: name */` in the CSS and `<!-- component: name -->` in the markup, and already follows the contract. Delete template blocks you don't use (the `.row` before/after rows, the packet). For a part the kit lacks, build it from the page tokens. (Maintainers: a part joins the kit once it has been hand-built on two pages. Diagram types never do; they stay in diagram-design.)
+Build the page from [template.html](template.html), which holds every shared token and base rule, then open [components.html](components.html) and copy the blocks you need. Each block is marked `/* component: name */` in the CSS and `<!-- component: name -->` in the markup, and already follows the contract. Delete the markup of template blocks you don't use (the `.row` before/after rows, the packet). Their CSS may stay: an unused rule is harmless and the lint ignores it. For a part the kit lacks, build it from the page tokens. (Maintainers: a part joins the kit once it has been hand-built on two pages. Diagram types never do; they stay in diagram-design.)
 
 | Need | Component |
 |---|---|
@@ -76,10 +76,10 @@ Build the page from [template.html](template.html), which holds every shared tok
 | A product UI, only when the page is about one | `stage` (one captured Stageshow still per page, see Product UI stills) |
 
 Charts:
-- Plot real numbers from this session. Don't compute coordinates by hand: [scripts/chart.mjs](scripts/chart.mjs) prints ready markup for `bars` (scaled widths, an aria-label, a raw-numbers table), `line` (nice axis ticks, title, desc, a raw-numbers table) and `donut` (title, desc, the share with its denominator). It prints markup only, so also copy the matching CSS block from the kit. `node <skill-dir>/scripts/chart.mjs --help` lists every flag. Show the scale (axis labels or a value on each mark).
+- Plot real numbers from this session. Don't compute coordinates by hand: [scripts/chart.mjs](scripts/chart.mjs) prints ready markup for `bars` (scaled widths, an aria-label, a raw-numbers table), `line` (nice axis ticks, title, desc, a raw-numbers table) and `donut` (title, desc, the share with its denominator). It prints markup only, so also copy the matching CSS block from the kit, and the `details` block for the raw-numbers table it adds. `node <skill-dir>/scripts/chart.mjs --help` lists every flag. Show the scale (axis labels or a value on each mark).
 - `stats` or `donut`? A single share with a small denominator ("3 of 40 runs") reads better as a `stats` tile. Use a donut when the share itself is the headline.
 - Every `<svg>` gets `role="img"`, a `<title>` and a `<desc>`, with ids prefixed by a slug (`aria-labelledby="deploy-title deploy-desc"`). CSS charts get `role="img"` and an `aria-label`. Put the raw numbers in a `<details>` table under the chart.
-- For chart form and color choices, load the `dataviz` skill when it is available.
+- For chart form and color choices, load the `dataviz` skill when it is available. Take its advice on form and colour only: anything of its that needs script, such as a hover tooltip, has no place on a page, and this kit's colours stay the tokens.
 - A chart the kit lacks (waterfall, scatter, Sankey, Gantt, radar, treemap) goes to `diagram-design` under the same overrides as a diagram, below. Without that skill, use the closest kit chart or a table.
 
 Diagrams:
@@ -88,12 +88,13 @@ Diagrams:
   - **Style guide:** read [diagram-profile.md](diagram-profile.md) directly as the effective style guide; its first paragraph says which parts apply. Don't run diagram-design's `load` or `switch` profile commands (they overwrite the user's own skin), and skip its first-run style gate.
   - **Who wins:** diagram-design decides the type, layout, what to cut, connector routing and the complexity budget. The kit's `diagram` shell decides the markup: its classes, markers and stroke widths, and its sizes below.
   - **Output:** no standalone file. Write the `<svg>` into the page inside the kit's `diagram` shell (`.dd-wrap` > `svg.dd`), using the shell's classes and page tokens instead of hex colors, so one SVG serves dark and light. The profile lists the role-to-token map.
-  - **Size:** viewBox 680 wide (720 at most), with `min-width` equal to that width. Type: names 13px sans 600, sublabels 11px mono, arrow labels 10px mono capitals.
-  - **Legend:** only when the diagram uses two or more kinds of node or line. Put it in a bottom strip inside the viewBox, above a `.rule` line, with `.legend` text.
-  - **Fonts:** system stacks only. No font `<link>`.
-  - **Motion:** modes `none`, `loop`, or CSS-only `reveal`. Never `step`; it needs a script.
+  - **Size:** viewBox 680 wide and no wider, with `min-width` equal to that width: a 728 preview with its side gutters leaves 696 px. A node with no technical detail has no sublabel and may be 48 high. Type: names 13px sans 600, sublabels 11px mono, arrow labels 10px mono capitals.
+  - **Legend:** required when the diagram uses two or more kinds of node or line, and left out otherwise. Put it in a bottom strip inside the viewBox, under a `.rule` line that separates it from the diagram, with `.legend` text.
+  - **Fonts:** the page's `--sans` and `--mono` stacks only. No font `<link>`.
+  - **Motion:** modes `none`, `loop`, or CSS-only `reveal`. Never `step`; it needs a script. `loop` means one thing only: dashes flowing along a wire to show direction, as the kit's `flow` does. It is the one loop a page may run. For a `reveal`, give each element `animation-delay: calc(var(--i) * var(--stagger))` in drawing order, wires before boxes.
   - **No pause:** skip its confirm-before-drawing question. If you cut something from the user's description, say what in plain words in the section text ("The retry path is left out."). Don't describe the diagram itself.
-  - **Unchecked rules:** the installed diagram-design has no `verify-geometry.py`, so check connector rules 2 (label gap), 4 (separate attach points) and 6 (mask before node) by eye in the preview.
+  - **Geometry:** run `python3 <diagram-design>/scripts/verify_geometry.py <file.html>` when the installed diagram-design has it, and fix what it reports. It checks rule 6 (mask before node) and connector routing. Check rules 2 (label gap) and 4 (separate attach points) by eye in the preview.
+  - **Phones:** the diagram keeps its width and scrolls sideways under 680 px, so put the focal node in the first 340 px.
 - **Without diagram-design:** use the `diagram` shell and its rules by hand (right-angle elbows, arrows drawn before boxes, a masked label on every branch, names in sans and mono only for technical sublabels, one accent path, 9 nodes at most), or split the idea into two simpler figures.
 - **Mermaid, draw.io, Excalidraw sources:** never embed them live or paste a renderer's layout. With diagram-design, use its import (it redraws and reports what it merged or dropped). Without it, redraw by hand in the `diagram` shell.
 
@@ -102,7 +103,7 @@ Motion (CSS only):
 - On a page, meaning looks like this: dashes flowing along an arrow show direction, bars growing show size, a stagger shows order, a panel fading in confirms that a tab or `<details>` opened.
 - Motion is optional. A page with no chart or diagram needs none.
 - Reading order: never animate the headline or the lede, so the answer shows at once. One entrance moment per page, on the main chart or diagram; supporting rows may follow in a stagger. Put `class="still"` on any other chart so it doesn't animate. Feedback on tabs and `<details>` doesn't count as a moment.
-- No scroll-driven animation (`animation-timeline: view()`). T3's frame sizes to the content and never scrolls, so the content stays invisible.
+- No scroll-driven animation (`animation-timeline: view()`). T3's frame sizes to the content, so the page inside it doesn't scroll and a scroll-driven entrance never plays.
 - **Rehearse it.** A page with an entrance gets filmed before it is shown. `node <skill-dir>/scripts/frames.mjs <file.html> --select "<main visual>"` writes `<file>.frames.html` next to it: the page frozen at 0, 120, 240, 360 and 500 ms, then the poster, each frame labelled with what is moving. `html_preview` that one file at the width the script prints, and read every frame: the stagger runs in order, nothing jumps between frames, and the poster holds up alone. A label in red means one animation runs past 1s. The sheet runs a script to freeze the frames, so it is for preview only: never render, lint or publish it. (Also from Stageshow, which films every demo as a contact sheet before handing it over.)
 
 ## Illustrations (opt-in)
@@ -177,7 +178,7 @@ The page can't take an answer: a card, button, or CSS radio on it never reaches 
 
 - **On the page:** the `decisions` block is the record. Give each option its trade-off, put the recommended option first as A, and say why. It must still read on its own on Postplan, where there's no dialog.
 - **Then ask:** after the page is rendered and the short reply is written, make the dialog your last call. Ask the same questions with the same option names as the page's bold names, the recommended one first with "(Recommended)" at the end of its label. Write each question so it stands alone: the dialog may cover the page. Don't add an "Other" option; the dialog adds one for typed answers.
-- **Act on the answer** in the same turn. Don't stop to repeat the choices back.
+- **Act on the answer** in the same turn. Don't stop to repeat the choices back. When nothing follows from the answer, mark the chosen option on the page (class `chosen` on its `<li>`, and `CHOSEN` in its `.rec` label), lint it, publish it again, and stop.
 - **Limits:** at most 4 questions with 2 to 4 options each. With more, ask the ones that block the next step and leave the rest on the page.
 - **No dialog tool** (another harness): end the reply with "Answer like 1A, 2B."
 - A choice for several people (a vote, a team pick) needs shared state: see When a page isn't enough.
@@ -185,19 +186,21 @@ The page can't take an answer: a card, button, or CSS radio on it never reaches 
 ## Design
 
 The template sets this up:
+- **This section is the page's look step.** `arc-design`'s steps 3 and 4 apply here; its steps 1 and 2 are routing, already done once you are in this skill. The template's token block is the page's copy of the tokens, because a page can't copy a stylesheet. Its reviews are optional for a page. Name one only when you ran it, in the packet or in a `.note`, never in the chat reply.
 - **Spec-like, not a landing page.** A plain headline sized as a heading, not a hero. Tables and lists over decorative card chrome. No marketing voice, no em dashes.
-- **The look is `arc-design`'s:** dark first, one pink accent, green, red and yellow for status only, system fonts. The template's token block holds its values, and `node <arc-design>/scripts/check-tokens.mjs <page.html>` checks a page still matches. Don't change a token's value on a page.
+- **The look is `arc-design`'s:** dark first, one pink accent, green, red and yellow for status only, Geist first with system fonts behind it. The template's token block holds its values, and `node <arc-design>/scripts/check-tokens.mjs <page.html>` checks a page still matches. Don't change a token's value on a page.
 - Colors as tokens on `:root`. Don't name your own tokens after T3's theme variables (`--card`, `--muted`, `--accent`, `--border`…): `--card: var(--card, …)` is a cycle and silently breaks, and overriding them restyles the thread. Read T3's values as fallbacks instead, like the template's `--surface: var(--card, #0e0e11)`.
-- Readable at 390px wide: single column under 720px, no horizontal page scroll, 16px side gutter. Give tables of three or more columns `class="stack-sm"` so rows stack on phones instead of squeezing.
+- Readable at 390px wide: single column under 720px, no horizontal page scroll, 16px side gutter. Give tables of three or more columns `class="stack-sm"` so rows stack on phones instead of squeezing. The header row is hidden when rows stack, so a cell that means nothing without its column gets `data-label="<column>"`.
 - External links get `target="_blank" rel="noopener noreferrer"`.
 - Numbers use tabular figures, body text stays near 65 characters a line, and long words wrap instead of widening the page. The template does all three.
 
 ## Check it
 
-Run the lint from this skill's base directory, and fix every `FAIL` before showing or publishing:
+Run the lint and the token check, from any directory, and fix every `FAIL` before showing or publishing. `<skill-dir>` is this skill's folder and `<arc-design>` is the `arc-design` skill's folder, its sibling:
 
 ```sh
 bash <skill-dir>/scripts/lint.sh <file.html>
+node <arc-design>/scripts/check-tokens.mjs <file.html>
 ```
 
 The lint enforces the contract plus the motion rules (scripts, `<link>`, handlers, blocked tags, local paths, size, animation without a reduced-motion guard, scroll-driven animation), fails any `<svg>` without a title and a desc, and warns on a missing page title or viewport and on em dashes. When diagram-design is installed it also runs that skill's `self_check.py --offline` on pages with an accessible SVG (one not marked `aria-hidden`, so a captured still's icons alone don't trigger it).
@@ -207,7 +210,7 @@ Changing the skill itself? Run `bash <skill-dir>/tests/test-lint.sh`, `bash <ski
 ## Show it
 
 **In T3 Code** (the `mcp__t3-code__html_preview` / `html_render` tools exist; load them with ToolSearch):
-1. `html_preview` the file at width 728, and again at 390 with `appearance: "light"`. Fix overflow, cramped diagrams, or unreadable contrast. The screenshot can catch entrance animations mid-flight; a half-drawn bar in the preview is timing, not a bug. The frame check (see Motion) shows the motion itself.
+1. `html_preview` the file at width 728, and again at 390 with `appearance: "light"`. Fix overflow, cramped diagrams, or unreadable contrast. The screenshot can catch entrance animations mid-flight; a half-drawn bar in the preview is timing, not a bug. The frame check (see Motion) shows the motion itself. With only a headless browser and no `html_preview`, take the same two screenshots yourself and set the colour scheme explicitly (Playwright: `colorScheme: "dark"` or `"light"`), because a headless browser defaults to light.
 2. `html_render` it with the `contentHeight` from the preview (capped at 2000; content past that scrolls). Write the page once with the template's `/* standalone */` block: that file is the one to publish. For the inline render, render a copy with that block deleted (`inline.html` next to it), because the thread supplies the background and the side gutter. The template's `var(--foreground, …)` fallbacks pick up T3's theme.
 3. Don't restate the page in the reply.
 

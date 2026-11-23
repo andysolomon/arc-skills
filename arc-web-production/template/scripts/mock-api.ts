@@ -4,7 +4,7 @@
  * It keeps the one rule a real API must keep: POST is idempotent on the note's id, so a
  * retried save answers 200 and stores nothing new.
  *
- * Switches, to put the app in each state for step 8 ("Look at it"):
+ * Switches, to put the app in each state for step 9 ("Look at it"):
  *   DELAY_MS=1500        every reply waits, so Loading and Saving stay on screen
  *   FAIL_SAVES=1         every save answers 500: after its retries the row shows "not saved"
  *   FAIL_FIRST_SAVE=1    stores the first save, then drops its reply (a lost reply)
@@ -34,7 +34,8 @@ function handle(req: import("node:http").IncomingMessage, res: import("node:http
   req.on("end", () => {
     let body: { id?: unknown; text?: unknown }
     try { body = JSON.parse(raw) } catch { return json(400, { error: "invalid JSON" }) }
-    if (typeof body.id !== "string" || typeof body.text !== "string" || body.text.trim() === "") return json(400, { error: "id and text are required" })
+    if (typeof body.id !== "string" || body.id.length === 0 || body.id.length > 64) return json(400, { error: "id must be a string of 1 to 64 characters" })
+    if (typeof body.text !== "string" || body.text.trim() === "" || body.text.length > 2000) return json(400, { error: "text must be 1 to 2000 characters" })
     if (!notes.some((n) => n.id === body.id)) notes.unshift({ id: body.id, text: body.text })
     if (dropNext) { dropNext = false; return res.destroy() } // stored, but the reply is lost
     json(200, { id: body.id })

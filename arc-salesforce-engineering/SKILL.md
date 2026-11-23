@@ -7,6 +7,8 @@ description: Builds screens and configuration inside a Salesforce org, as source
 
 Work in an org is source in a Salesforce DX project: every change is a file in `force-app`, retrieved before it is edited and deployed by the `sf` CLI. A builder (Lightning App Builder, Flow Builder) is fine in a scratch org or sandbox when its result is retrieved as source; nothing is clicked together in production. [template/](template) is a small working project in that shape: an `accountList` component with every state and its Jest tests, Apex behind it with its tests, a permission set, the org's token module, and the checks. Start from it for a new project.
 
+In `arc-design`'s pyramid an org is a host, not a level: a screen here follows the same rules as a level 2 app and takes the host exception for its accent and theme.
+
 `sf` below means `npx -y @salesforce/cli@2.159.7` (see Pins).
 
 ## Steps

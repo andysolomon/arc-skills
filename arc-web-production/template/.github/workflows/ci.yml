@@ -1,0 +1,38 @@
+# Checks the app on each pull request and on main: types, tests, style lint, build, the static
+# render, and the API contract against the mock. It never deploys. A deploy stays a manual
+# step (npm run cf:deploy -- --stage <name>) until the stack has a shared state store.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run check
+      - run: npm run build
+      - run: npm run static
+      - name: API contract against the mock
+        run: |
+          PORT=8787 node scripts/mock-api.ts &
+          mock=$!
+          for _ in $(seq 1 30); do curl -sf http://127.0.0.1:8787/api/notes > /dev/null && break; sleep 0.3; done
+          node scripts/api-check.ts http://127.0.0.1:8787
+          kill "$mock"

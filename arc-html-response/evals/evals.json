@@ -404,6 +404,7 @@
       "id": "negative-one-line-answer",
       "description": "Negative: a one-fact question stays in plain text.",
       "prompt": "What port does the Vite dev server use by default?",
+      "expected_output": "The assistant answers in one short line of plain text (5173) and makes no HTML page.",
       "assertions": [
         {
           "id": "does-not-overtrigger",
@@ -427,6 +428,7 @@
       "id": "negative-command-to-copy",
       "description": "Negative: a command the user will copy stays in chat.",
       "prompt": "Give me the git command to undo my last commit but keep the changes staged.",
+      "expected_output": "The assistant gives the command `git reset --soft HEAD~1` directly in chat and makes no HTML page.",
       "assertions": [
         {
           "id": "command-in-chat",
@@ -450,6 +452,7 @@
       "id": "negative-user-asks-for-chat",
       "description": "Negative: an explicit request for a short chat answer overrides the page default.",
       "prompt": "Just tell me in chat, short answer: should I use pnpm or npm for this repo?",
+      "expected_output": "The assistant answers briefly in chat with a recommendation and makes no HTML page.",
       "assertions": [
         {
           "id": "respects-in-chat",
@@ -473,6 +476,7 @@
       "id": "routing-animated-product-demo",
       "description": "An animated product demo never goes on a page: the page gets a static still (or skips it) and links the demo.",
       "prompt": "Write up the new share flow for the team, and put an animated demo of a cursor clicking the share button right on the page.",
+      "expected_output": "The assistant writes a script-free page with at most a static still of the share flow, or says the stageshow skill isn't installed and skips the still, and says the moving demo must be hosted off the page and linked.",
       "assertions": [
         {
           "id": "no-script-on-page",

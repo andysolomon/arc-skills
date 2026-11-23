@@ -40,7 +40,7 @@ Keep that split. Everything except `entry.ts` must import cleanly in Node, or th
 
 - **`Command.define(name, { args?, messages, execute })`.** `execute` is an Effect that ends in one of the declared Messages.
 - **The error channel is `never`.** End every `execute` with `Effect.catch` that returns a `Failed…` Message. The compiler then proves no failure is dropped.
-- **Decode every response** with a Schema (`HttpClientResponse.schemaBodyJson`). Server data is untrusted.
+- **Decode every response body you read** with a Schema (`HttpClientResponse.schemaBodyJson`). Server data is untrusted. A write that needs only the status, as the template's save does, reads no body.
 - **Retry a write only when its body carries the key.** `HttpClient.retryTransient` re-sends the same body on transient failures such as a network error or a 5xx.
 - **Use relative URLs.** The app talks to whatever served it, so there is no CORS and no base-URL setting.
 
@@ -57,6 +57,18 @@ Keep that split. Everything except `entry.ts` must import cleanly in Node, or th
 
 - **`Subscription.make<Model, Message>()`** maps the Model to streams of Messages. `Subscription.persistentEntry` runs for the app's whole life. An `entry` with dependencies restarts whenever those dependencies change, and stops when its stream is empty.
 - **Polling is a tick Message**, and `update` decides whether a request is due.
+- **A Subscription may need a service**, such as a socket: `Subscription.make<Model, Message, Services>()`. `arc-realtime`'s overlay shows one, with an entry that restarts when its dependencies change.
+
+## Mounts (`src/main.ts`)
+
+A Mount is the one way imperative DOM code enters a view: a gesture library, a canvas, a figure that draws itself. The levels above this one use it (`arc-interaction`, `arc-3d`).
+
+- **`Mount.define(name, { args, messages, execute })`** runs once when its element enters the DOM and returns one Message. **`Mount.defineStream`** returns a stream of Messages for as long as the element lives. Attach either with the `OnMount(Definition(args))` attribute.
+- **Build the resource inside `Effect.acquireRelease`**, never before it, so the release runs when the element leaves.
+- **Args are read once, at mount.** A later render doesn't re-run `execute`. A Model change that must reach the element goes through a Command from `update`.
+- **Scene tests have no DOM**, so a Mount stays pending until the test resolves it: `Scene.Mount.resolveAll([Definition, ResultMessage])`, `Scene.Mount.expectHas(Definition)`. A scene throws at its end on any Mount it never resolved, a streaming one included. One resolver settles one Mount, and `expectHas` alone settles none. What the Mount does to the element needs a browser test. A Mount whose element leaves during a scene is acknowledged with `Scene.Mount.expectEnded(Definition)`.
+- **A view's `HtmlBuilder` is tied to one Message set.** A second view with its own Messages is embedded with `h.submodel` and `Submodel.defineView`; `arc-3d`'s overlay shows the pattern.
+- The full contract is in `node_modules/foldkit/dist/mount/index.d.ts`.
 
 ## Tests (`test/app.test.ts`)
 

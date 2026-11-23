@@ -44,6 +44,10 @@ const parse = (text) => {
   return { dark: decls(css.slice(0, start) + css.slice(end + 1)), light: decls(css.slice(start, end + 1)) };
 };
 
+if (process.argv.slice(2).some((a) => a === '--help' || a === '-h')) {
+  console.log('usage: node check-tokens.mjs [file.css|file.html ...]   with no file, checks the known copies in this repo');
+  process.exit(0);
+}
 const source = parse(readFileSync(SOURCE, 'utf8'));
 const files = process.argv.slice(2).length > 0 ? process.argv.slice(2) : KNOWN.map((f) => join(repo, f));
 let failed = 0;

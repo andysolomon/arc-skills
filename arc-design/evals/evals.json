@@ -23,7 +23,14 @@
           "mustPass": true
         }
       ],
-      "metadata": { "tags": ["routing", "golden-path"], "difficulty": "easy", "intent": "route-to-web-app" },
+      "metadata": {
+        "tags": [
+          "routing",
+          "golden-path"
+        ],
+        "difficulty": "easy",
+        "intent": "route-to-web-app"
+      },
       "sandbox": "just-bash"
     },
     {
@@ -47,7 +54,14 @@
           "mustPass": true
         }
       ],
-      "metadata": { "tags": ["routing", "host-exception"], "difficulty": "medium", "intent": "host-accent" },
+      "metadata": {
+        "tags": [
+          "routing",
+          "host-exception"
+        ],
+        "difficulty": "medium",
+        "intent": "host-accent"
+      },
       "sandbox": "just-bash"
     },
     {
@@ -71,20 +85,27 @@
           "mustPass": true
         }
       ],
-      "metadata": { "tags": ["motion", "negative"], "difficulty": "medium", "intent": "motion-shows-meaning" },
+      "metadata": {
+        "tags": [
+          "motion",
+          "negative"
+        ],
+        "difficulty": "medium",
+        "intent": "motion-shows-meaning"
+      },
       "sandbox": "just-bash"
     },
     {
       "id": "names-level-for-swipe-gesture",
-      "description": "A gesture request is placed at level 3, built with arc-web-production because arc-interaction does not exist, and Motion is limited to its named cases.",
+      "description": "A gesture request is placed at level 3 and routed to arc-interaction on top of arc-web-production, and Motion is limited to its named cases.",
       "prompt": "Add swipe-to-dismiss to the notification cards in our Foldkit dashboard. The card should follow my finger and fly off at the speed I flick it.",
-      "expected_output": "The assistant names level 3 (Interaction), says the arc-interaction skill is not built and builds with arc-web-production, and either stays in CSS and pointer events or uses Motion's animate() and names the case that allows it, with a test that it mounts in Foldkit first.",
+      "expected_output": "The assistant names level 3 (Interaction), loads arc-interaction on top of arc-web-production, and either stays in CSS and pointer events or uses Motion's animate() and names the case that allows it. It keeps a button that dismisses the card without the gesture.",
       "assertions": [
         {
           "id": "names-level-3",
           "kind": "output",
           "method": "judge",
-          "prompt": "The response should place the request at level 3 (Interaction), say that the arc-interaction skill does not exist yet, and build the change with arc-web-production.",
+          "prompt": "The response should place the request at level 3 (Interaction) and name arc-interaction as the skill to load, built on arc-web-production's app.",
           "mustPass": true
         },
         {
@@ -93,9 +114,133 @@
           "method": "judge",
           "prompt": "The response should either stay in CSS and pointer events, or use Motion's plain JavaScript animate() and name the case that allows it (a swipe that carries its velocity). It should not add GSAP or Motion's React API.",
           "mustPass": true
+        },
+        {
+          "id": "gesture-has-a-button",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should keep or add a labelled button that dismisses the card without the swipe, because a gesture is never the only way.",
+          "mustPass": true
         }
       ],
-      "metadata": { "tags": ["routing", "levels", "motion"], "difficulty": "medium", "intent": "level-3-interaction" },
+      "metadata": {
+        "tags": [
+          "routing",
+          "levels",
+          "motion"
+        ],
+        "difficulty": "medium",
+        "intent": "level-3-interaction"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "realtime-names-both-sides",
+      "description": "A live-connection request is placed at level 4, routed to arc-realtime, and its server is left to arc-system-architecture.",
+      "prompt": "Our notes dashboard should show a teammate's new note the moment they add it, without anyone reloading. Where does this sit in our design system and what do I load?",
+      "expected_output": "The assistant names level 4 (Realtime), loads arc-realtime on top of arc-web-production, and says the server that holds the connections open is the architecture side, placed by arc-system-architecture.",
+      "assertions": [
+        {
+          "id": "names-level-4",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should place the request at level 4 (Realtime) and name arc-realtime as the skill to load, built on arc-web-production's app.",
+          "mustPass": true
+        },
+        {
+          "id": "names-architecture-side",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that a server has to hold the connections open and that arc-system-architecture decides where it runs. It should not pick a hosting platform from memory without that skill.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "levels",
+          "architecture"
+        ],
+        "difficulty": "medium",
+        "intent": "level-4-realtime"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "film-is-a-maker-not-a-page-rule",
+      "description": "A film request goes to film.md and HyperFrames, bundles Geist, and is not refused because of the page and app ban on GSAP.",
+      "prompt": "Make a ten second launch film for our notes app in our house style. I'll link it from the release notes page.",
+      "expected_output": "The assistant treats the film as a maker's output, reads film.md, uses HyperFrames with the token values and bundled Geist, and says the release notes page links the film. It does not refuse HyperFrames' timeline on the grounds that GSAP is banned.",
+      "assertions": [
+        {
+          "id": "uses-film-rules",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say a film is made with HyperFrames under arc-design's film rules (film.md), with the design tokens as its colours and the Geist font files bundled.",
+          "mustPass": true
+        },
+        {
+          "id": "no-gsap-refusal",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not refuse or rewrite HyperFrames' own timeline because arc-design bans GSAP. That ban covers pages and apps.",
+          "mustPass": true
+        },
+        {
+          "id": "page-links-the-film",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say the page links the film as a file. It should not put script on the page to play it.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "makers",
+          "film"
+        ],
+        "difficulty": "medium",
+        "intent": "film-maker"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "negative-review-finding-against-a-token",
+      "description": "Negative: a review finding that contradicts a token is dismissed with the rule named, not applied.",
+      "prompt": "I ran review-animations on our dashboard. It says the 500 ms entrance on the notes list is too slow and should be under 300 ms, and that reduced motion should keep a gentle fade. Apply its findings.",
+      "expected_output": "The assistant keeps the 500 ms entrance because it is the --t-enter token and keeps all motion inside the no-preference guard. It names both rules as the reason, and applies only findings that do not contradict arc-design.",
+      "assertions": [
+        {
+          "id": "keeps-the-entrance-token",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not shorten the entrance below the --t-enter token (500 ms). It should say the token settles it.",
+          "mustPass": true
+        },
+        {
+          "id": "keeps-the-motion-guard",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should keep every animation and transition inside the prefers-reduced-motion no-preference guard, and should not add a fade that plays under reduced motion.",
+          "mustPass": true
+        },
+        {
+          "id": "names-the-rule",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that arc-design's rules win over a review's finding and name the rule or token behind each dismissal.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "reviews",
+          "negative",
+          "motion"
+        ],
+        "difficulty": "medium",
+        "intent": "rules-win-over-reviews"
+      },
       "sandbox": "just-bash"
     }
   ]

@@ -4,6 +4,20 @@ Read at step 3. Each component gets three choices: where it **runs**, how it is 
 
 A Salesforce org is a place of its own: anything that runs inside one goes to `arc-salesforce-engineering`. Something outside it reads org data through a JWT bearer flow (`arc-sf-jwt-bearer`).
 
+## What each UI level needs
+
+`arc-design` orders UI work in five levels. Each needs this much behind it, and no more:
+
+| Level | Needs | Rung |
+|---|---|---|
+| 1 Page | Nothing running. A published file. | 0 |
+| 2 App | A server that keeps state. | 1 while developing, 2 for a try, 3 to last |
+| 3 Interaction | Nothing new. Gestures and springs run in the browser. | the app's own rung |
+| 4 Realtime | A server that holds connections open: one Durable Object per room. WebRTC media also needs a TURN or media server. | 3, plus the media service `arc-realtime` names |
+| 5 3D | Storage for models and textures (R2). An offline render needs a GPU. | 3 for the files, 5 for a render host |
+
+Rungs 4, 5 and 6 have no UI level of their own: a scheduled job, a container and a cluster sit behind any level that needs them.
+
 ## Runs on
 
 | Rung | Fits when | Lasts |
