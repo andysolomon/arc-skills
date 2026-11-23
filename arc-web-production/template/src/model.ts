@@ -42,7 +42,7 @@ export const Model = Schema.Struct({
 })
 export type Model = typeof Model.Type
 
-/** Messages are facts in the past tense: who did what, or what came back. */
+/** Messages are facts in the past tense, grouped below by their source: the user, a Command, a Subscription. */
 export const Message = defineMessageUnion({
   // From the user
   ChangedDraft: { text: Schema.String },

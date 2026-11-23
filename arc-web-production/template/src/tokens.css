@@ -1,5 +1,6 @@
-/* arc-design tokens. Source of truth: arc-design/tokens.css. Don't edit this copy;
-   re-copy it, and run `node <arc-design>/scripts/check-tokens.mjs <this file>` to confirm it matches. */
+/* arc-design tokens: the one look every layer shares. Source: arc-design/tokens.css.
+   Copy this file byte for byte (cp); never edit a copy. App-specific extra tokens go in the
+   app's own stylesheet. Check a copy: node <arc-design>/scripts/check-tokens.mjs <copy> */
 :root{
   color-scheme:dark light;
   --bg:#000; --fg:#fff; --dim:#a1a1aa; --line:#27272a; --surface:#0e0e11;

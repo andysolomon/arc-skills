@@ -11,6 +11,8 @@ Read this before writing a Model. Each rule has the file in `template/` that sho
 | `src/main.ts` | `update`, `init`, `subscriptions`, `view`. Definitions only. |
 | `src/entry.ts` | Boots the Runtime. The only file that touches `document`. |
 | `test/app.test.ts` | Story and Scene tests. Run with `node`, no browser. |
+| `test/commands.test.ts` | Each Command's Effect against a stub HTTP client. |
+| `scripts/mock-api.ts`, `cloudflare/worker.ts` | The same API twice: a memory mock and the real Worker. |
 
 Keep that split. Everything except `entry.ts` must import cleanly in Node, or the tests and the static render stop working.
 
@@ -19,8 +21,10 @@ Keep that split. Everything except `entry.ts` must import cleanly in Node, or th
 - **One Model, one Schema.** No state lives in the view or in module variables.
 - **A remote value is an `AsyncData`**, never a nullable plus a loading flag. Its Refreshing and Stale cases keep the last good data on screen.
 - **A write the user starts gets a phase union** (`defineTaggedUnion`): for example Saving, Saved, Failed. The view matches on it.
-- **The idempotency key lives in the Model.** Mint it before the user can submit, keep it with the pending item, and reuse it on every retry. The server uses the same key to dedupe. This is what makes a double-click or a lost reply harmless.
-- **Messages are past-tense facts** (`ChangedDraft`, `SubmittedNote`, `SucceededSaveNote`, `FailedSaveNote`), made with `defineMessageUnion`. Name who caused them: the user, a Command, or a Subscription.
+- **The idempotency key lives in the Model.** For a create, mint it before the user can submit, keep it with the pending item, and reuse it on every retry. The server uses the same key to dedupe. This is what makes a double-click or a lost reply harmless.
+- **A write on an existing item uses the item's id as its key**, and the request sets a value rather than toggling one ("mark finished", not "flip finished"), so a repeat changes nothing. Keep a pending list keyed by that id, with the same phase union as a create.
+- **The key travels in the body or the URL** (`POST /api/books/:id/finish` is fine). What matters is that a retry sends the same key.
+- **Messages are past-tense facts** (`ChangedDraft`, `SubmittedNote`, `SucceededSaveNote`, `FailedSaveNote`), made with `defineMessageUnion`. Group them in the union by source with a comment: the user, a Command, a Subscription.
 
 ## `update` (`src/main.ts`)
 
@@ -28,6 +32,8 @@ Keep that split. Everything except `entry.ts` must import cleanly in Node, or th
 - **Type it with its requirements**: `Update.Return<Model, Message, HttpClient.HttpClient>` when Commands need an HTTP client. Provide the client once, through `resources` in `entry.ts`.
 - **Guard every transition.** A reply for an item that is no longer in the phase it was sent from is ignored. A submit with no key, or with an empty draft, returns the Model unchanged.
 - **Don't stack requests.** `AsyncData.revalidateOrLoad` returns `None` while a load is in flight; send nothing then.
+- **After a write succeeds, wait for the next list load.** The row shows "saved" until a load includes it, then becomes an ordinary row. Loading straight after the write can remove the row in the same frame, so "saved" never shows.
+- **A list load settles every non-saving row it contains.** A row that failed because its reply was lost, while the server kept the item, would otherwise show "not saved" and a pointless Retry forever.
 - **Change fields with `modifyFields`** from `foldkit/struct`.
 
 ## Commands (`src/commands.ts`)
@@ -55,16 +61,29 @@ Keep that split. Everything except `entry.ts` must import cleanly in Node, or th
 ## Tests (`test/app.test.ts`)
 
 - **Story** drives `update`: `Story.given(model)`, `Story.message(…)`, `Story.Command.expectExact(…)`, `Story.Command.resolve(Definition, ResultMessage)`, `Story.model((m) => …)`, `Story.Command.expectNone()`.
-- **Scene** drives `view`: `Scene.role("button", { name })`, `Scene.label("…")`, `Scene.text("…")`, `Scene.type`, `Scene.click`, `Scene.expect(…).toHaveText / toBeDisabled / toExist`, `Scene.Command.resolveAll([Definition, Message], …)`, `Scene.Subscription.emit(Message)`.
+- **Scene** drives `view`: `Scene.role("button", { name })`, `Scene.label("…")`, `Scene.text("…")`, `Scene.type`, `Scene.click`, `Scene.expect(…).toHaveText / toBeDisabled / toBeEnabled / toExist / toBeAbsent`, `Scene.Command.resolveAll([Definition, Message], …)`, `Scene.Subscription.emit(Message)`. The full list is in `node_modules/foldkit/dist/test/scene.d.ts`.
+- **Command tests** run `Definition(args).effect` with a stub `HttpClient` from `HttpClient.make`, provided through a `Layer`. Prefix relative URLs with `HttpClient.mapRequest(HttpClientRequest.prependUrl("http://app.test"))`, because Node has no page origin. `test/commands.test.ts` shows a retried 503, a 400 that isn't retried, and a malformed response.
 - **Story does not run `init`.** Assert `init().commands` directly, and start stories from a Model you build.
 - **Both refuse a new Message while a Command is unresolved.** That is the point: no side effect goes unaccounted for. So test "two requests in flight" by calling `update` twice yourself.
 - **Wait on conditions, not durations**, in anything that involves a timer.
+- **A test only proves what it exercised.** Story and Scene never run a Command's body; the Command tests do. Neither sees CSS; the style lint and step 9 do.
 
 ## Static render (`scripts/render-static.ts`)
 
 - `Server.renderToString(app, { flags, isHydratable: false })` from `foldkit/experimental` returns `{ title, html }` with no hydration stamps and no script. Wrap it in a document with one inline `<style>`.
 - A static page has nothing to click, so its Message type is `never`, and it has no `<form>`. Write a separate small view over the same Schemas; don't reuse the app's view.
 - With hydration (not used in the template), `renderToString` needs a `buildId`, and the view must be pure or the browser's render won't match.
+
+## Pitfalls
+
+Each of these cost a fresh agent time.
+
+- **A client built at module level loses its type.** `const retrying = HttpClient.retryTransient({ … })` outside a Command makes the Command's requirement `unknown`, and the 40-line error points at `update`, not `commands.ts`. Build the client inside `execute`, as the template does.
+- **Story doesn't run `init`.** Assert `init().commands` directly.
+- **Two requests in flight can't be a Story.** Call `update` twice by hand.
+- **A shared `@keyframes` name plays once.** A class change restarts an animation only when its name changes, so each state gets its own name. `npm run lint:styles` catches this.
+- **`cf:dev` outlives npm.** Stop it with Ctrl-C and wait for the port to close.
+- **The static render imports the Model.** Rename it with the Model, or delete it.
 
 ## Version notes
 

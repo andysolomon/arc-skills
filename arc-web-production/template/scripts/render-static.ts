@@ -6,6 +6,10 @@
  * meets the Postplan contract (no script, one inline <style>). Nothing on a static page is
  * clickable, so its Message type is `never` and it has no form: the app's own `view` has
  * one, which is why this is a separate view over the same Schemas.
+ *
+ * When you rename the Model (Notes -> Books), rename this import and view too, or the
+ * typecheck fails. If the app will never need a static page, delete this file and the
+ * `static` script instead.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"

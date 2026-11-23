@@ -63,6 +63,17 @@ Story.story(
 )
 console.log("ok  story: a submit without a key sends nothing")
 
+// A lost reply: the save failed on the client, but the server stored the note. The next
+// list load shows it, so the Failed row goes away instead of offering a pointless Retry.
+Story.story(
+  update,
+  Story.given({ ...loaded, pending: [{ requestId: KEY, text: "buy milk", phase: Phase.Failed({ error: "Transport error" }) }] }),
+  Story.message(Message.TickedRefresh()),
+  Story.Command.resolve(FetchNotes, Message.SucceededFetchNotes({ notes: [{ id: KEY, text: "buy milk" }] })),
+  Story.model((m) => assert.equal(m.pending.length, 0))
+)
+console.log("ok  story: a failed save the server kept is cleared by the next load")
+
 Scene.scene(
   { update, view },
   Scene.given(loaded),

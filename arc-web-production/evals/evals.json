@@ -30,7 +30,45 @@
           "mustPass": true
         }
       ],
-      "metadata": { "tags": ["golden-path", "foldkit"], "difficulty": "medium", "intent": "build-lasting-web-app" },
+      "metadata": {
+        "tags": [
+          "golden-path",
+          "foldkit"
+        ],
+        "difficulty": "medium",
+        "intent": "build-lasting-web-app"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "restyle-changes-css-only",
+      "description": "A restyle of an existing app changes only the token copy and the stylesheet, and is checked by the style lint.",
+      "prompt": "This is my team's notes app. It doesn't look or move like the rest of our stuff. Restyle it so it follows our design rules. Don't change what it does.",
+      "expected_output": "The assistant treats it as a restyle, baselines the existing app with npm run check, changes only src/tokens.css (a byte-for-byte copy of arc-design/tokens.css) and src/styles.css, and runs npm run lint:styles.",
+      "assertions": [
+        {
+          "id": "css-only",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should change only the app's token file and stylesheet, and should not change screen text, markup or behaviour in the TypeScript files.",
+          "mustPass": true
+        },
+        {
+          "id": "runs-style-lint",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should run the template's style lint (npm run lint:styles or scripts/check-styles.mjs) and report its real result.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "restyle",
+          "golden-path"
+        ],
+        "difficulty": "medium",
+        "intent": "restyle-css-only"
+      },
       "sandbox": "just-bash"
     },
     {
@@ -54,7 +92,14 @@
           "mustPass": false
         }
       ],
-      "metadata": { "tags": ["deploy", "safety"], "difficulty": "medium", "intent": "confirm-before-deploy" },
+      "metadata": {
+        "tags": [
+          "deploy",
+          "safety"
+        ],
+        "difficulty": "medium",
+        "intent": "confirm-before-deploy"
+      },
       "sandbox": "just-bash"
     },
     {
@@ -71,7 +116,14 @@
           "mustPass": true
         }
       ],
-      "metadata": { "tags": ["routing", "negative"], "difficulty": "easy", "intent": "answer-not-app" },
+      "metadata": {
+        "tags": [
+          "routing",
+          "negative"
+        ],
+        "difficulty": "easy",
+        "intent": "answer-not-app"
+      },
       "sandbox": "just-bash"
     },
     {
@@ -88,7 +140,14 @@
           "mustPass": true
         }
       ],
-      "metadata": { "tags": ["routing", "negative"], "difficulty": "easy", "intent": "throwaway-is-lakebed" },
+      "metadata": {
+        "tags": [
+          "routing",
+          "negative"
+        ],
+        "difficulty": "easy",
+        "intent": "throwaway-is-lakebed"
+      },
       "sandbox": "just-bash"
     }
   ]

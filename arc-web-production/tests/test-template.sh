@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Proves the template still works from a clean copy: install, typecheck, tests, build,
-# static render, and the page lint. Needs the network (npm install).
+# Proves the template still works from a clean copy: npm ci, typecheck, tests, style lint,
+# build, static render, the page lint, and the API check against the mock. Needs the network.
 #
 #   bash tests/test-template.sh            uses a fresh temp folder and removes it after
 #   KEEP=1 bash tests/test-template.sh     keeps the folder and prints its path
@@ -21,9 +21,10 @@ step() { # step <label> <command...>
 cp -R "$SKILL_DIR/template/." "$WORK/"
 cd "$WORK"
 
-step "npm install" npm install --no-audit --no-fund
+step "npm ci (from the lockfile)" npm ci --no-audit --no-fund
 step "typecheck (app and Worker)" npm run typecheck
-step "tests (Story, Scene, update)" npm test
+step "tests (Story, Scene, update, Commands)" npm test
+step "style lint (tokens only, motion guarded)" npm run lint:styles
 step "vite build" npm run build
 step "static render has no script" npm run static
 if [ -f "$REPO_DIR/arc-html-response/scripts/lint.sh" ]; then
@@ -32,7 +33,15 @@ fi
 if [ -f "$REPO_DIR/arc-design/scripts/check-tokens.mjs" ]; then
   step "tokens match arc-design" node "$REPO_DIR/arc-design/scripts/check-tokens.mjs" "$WORK/src/tokens.css"
 fi
-step "styles use tokens only (no hex colours)" bash -c '! grep -nE "#[0-9a-fA-F]{3,8}\b" src/styles.css'
+step "tokens copy is byte-identical" cmp "$REPO_DIR/arc-design/tokens.css" "$WORK/src/tokens.css"
+
+# API check against the mock, on a free port
+port=$(node -e 'const s=require("net").createServer().listen(0,"127.0.0.1",()=>{console.log(s.address().port);s.close()})')
+PORT=$port node scripts/mock-api.ts > "$WORK/.mock.log" 2>&1 &
+mock=$!
+for _ in $(seq 1 30); do curl -sf "http://127.0.0.1:$port/api/notes" >/dev/null 2>&1 && break; sleep 0.3; done
+step "API check against the mock" node scripts/api-check.ts "http://127.0.0.1:$port"
+kill "$mock" 2>/dev/null || true
 
 echo "--- $pass passed, $fail failed"
 [ "$fail" -eq 0 ]
