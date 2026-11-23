@@ -321,6 +321,43 @@
       "sandbox": "just-bash"
     },
     {
+      "id": "negative-printed-checklist-stays-a-page",
+      "description": "Negative: a checklist one person prints and ticks off by hand needs no shared state, so it stays a static page and does not route to Lakebed.",
+      "prompt": "Make me a release checklist page for shipping the iOS app that I can print and tick off by hand. Save it as checklist/index.html in the current directory.",
+      "expected_output": "checklist/index.html is a static page with the checklist (no form, no script), and the reply does not propose building a Lakebed or other hosted app.",
+      "assertions": [
+        {
+          "type": "file-exists",
+          "path": "checklist/index.html"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "^(?![\\s\\S]*<script)(?![\\s\\S]*<form)[\\s\\S]*<(ul|ol|table)",
+          "target": {
+            "file": "checklist/index.html"
+          },
+          "flags": "i"
+        },
+        {
+          "id": "no-app-for-printed-list",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should deliver a static checklist page and should not propose or start building a Lakebed, Cloudflare or other hosted app, since one person ticks the list off on paper.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "lakebed",
+          "negative"
+        ],
+        "difficulty": "easy",
+        "intent": "avoid-app-overtrigger"
+      },
+      "sandbox": "just-bash"
+    },
+    {
       "id": "negative-one-line-answer",
       "description": "Negative: a one-fact question stays in plain text.",
       "prompt": "What port does the Vite dev server use by default?",

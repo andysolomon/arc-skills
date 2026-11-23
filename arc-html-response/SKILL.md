@@ -118,8 +118,10 @@ Pages are spec-like, so they carry no illustrations by default. Add one only whe
 
 A page is static: no script, no fetch, no forms. A request that needs state is an app, not a page: a vote or poll, a sign-up sheet, a shared checklist, live numbers, sign-in, anything one person types into and others see.
 
-- Say so in one line. Confirm before building or deploying anything; a deploy creates a public URL.
-- **Lakebed first.** Build it as a Lakebed capsule: read `https://lakebed.dev/agents.md` and follow it (`npx --yes lakebed new <name>`, `npx lakebed dev`, then `npx lakebed deploy`). Report the URL, the checks you ran, and the expiry if the deploy is unclaimed.
+Still a page: a checklist the user prints or ticks off alone, numbers you already have, a plan or report about an app. Only reach for an app when people must write to it or see each other's changes.
+
+- If the user asked for a page and it turns out to need state, say so in one line and confirm before building. If they asked for the app itself, build it. Either way, a deploy creates a public URL.
+- **Lakebed first.** Build it as a Lakebed capsule, following [lakebed.md](lakebed.md): where the code goes, guests and caps, server-side permission checks, secrets that fail closed, a two-person test, and the hand-over (URL, expiry, claim). Report the URL, the checks you ran, and the expiry if the deploy is unclaimed.
 - **Move to Cloudflare** (Workers with static assets, Durable Objects for state, an Alchemy stack) when the app outgrows Lakebed: it must not expire or must be production-ready, needs a custom domain or npm packages, or would pass Lakebed's free limits (10,000 requests and 1,000 writes a day per deploy, 1 MiB of stored data).
 - Keep the write-up on Postplan and link the app with an ordinary link. A Postplan page can't embed or call it (no iframes, no fetch).
 
