@@ -1,6 +1,6 @@
 ---
 name: arc-html-response
-description: Answer with an HTML page instead of terminal prose. Use for replies that explain, compare, plan, review, recommend, or report finished work, or that have structure (steps, options, numbers, a flow). Renders inline in T3 Code and publishes keepable write-ups to Postplan as static, JavaScript-free pages with SVG/CSS charts, diagrams, and motion. Routes requests that need state (a vote, a shared checklist, live numbers) to a Lakebed app instead. Skip for one-liners, yes/no, commands to copy, and clarifying questions.
+description: Answer with an HTML page instead of terminal prose. Use for replies that explain, compare, plan, review, recommend, or report finished work, or that have structure (steps, options, numbers, a flow). Renders inline in T3 Code and publishes keepable write-ups to Postplan as static, JavaScript-free pages with SVG/CSS charts, diagrams, and motion. Asks the user's own choices through the harness's native question dialog, not as typed codes. Routes requests that need state (a vote, a shared checklist, live numbers) to a Lakebed app instead. Skip for one-liners, yes/no, commands to copy, and clarifying questions.
 ---
 
 # HTML response
@@ -67,7 +67,7 @@ Build the page from [template.html](template.html), which holds every shared tok
 | Options side by side | `compare` (table) |
 | Review or audit results | `findings` (literal status word first) |
 | Files the work touched | `changes` (table, above the packet) |
-| A choice the user must make | `decisions` (numbered questions, lettered options, one pick) |
+| A choice the user must make | `decisions` (numbered questions, lettered options, recommended first), then ask in the dialog (see When the user must choose) |
 | Views of one thing | `tabs` (radio and label, no script) |
 | Evidence and raw data | `details` |
 | An illustration, only when asked | `spot` (one card per page, see Illustrations) |
@@ -125,6 +125,17 @@ Still a page: a checklist the user prints or ticks off alone, numbers you alread
 - **Move to Cloudflare** (Workers with static assets, Durable Objects for state, an Alchemy stack) when the app outgrows Lakebed: it must not expire or must be production-ready, needs a custom domain or npm packages, or would pass Lakebed's free limits (10,000 requests and 1,000 writes a day per deploy, 1 MiB of stored data).
 - Keep the write-up on Postplan and link the app with an ordinary link. A Postplan page can't embed or call it (no iframes, no fetch).
 
+## When the user must choose
+
+The page can't take an answer: a card, button, or CSS radio on it never reaches you. So the page explains the choice and the harness's own question dialog collects it (`AskUserQuestion` in Claude Code, which T3 Code shows as tappable options).
+
+- **On the page:** the `decisions` block is the record. Give each option its trade-off, put the recommended option first as A, and say why. It must still read on its own on Postplan, where there's no dialog.
+- **Then ask:** after the page is rendered and the short reply is written, make the dialog your last call. Ask the same questions with the same option names as the page's bold names, the recommended one first with "(Recommended)" at the end of its label. Write each question so it stands alone: the dialog may cover the page. Don't add an "Other" option; the dialog adds one for typed answers.
+- **Act on the answer** in the same turn. Don't stop to repeat the choices back.
+- **Limits:** at most 4 questions with 2 to 4 options each. With more, ask the ones that block the next step and leave the rest on the page.
+- **No dialog tool** (another harness): end the reply with "Answer like 1A, 2B."
+- A choice for several people (a vote, a team pick) needs shared state: see When a page isn't enough.
+
 ## Design
 
 The template sets this up:
@@ -172,4 +183,4 @@ Outside T3 Code with no render tool, publish to Postplan and give the link. When
 
 ## The chat reply
 
-After the page is shown or published, the reply is at most three sentences, caveats included: the main point in plain words, the link (if published) or the file path, and what wasn't verified or needs the user's decision. The comparison, options, and details live on the page; never paste them back into chat.
+After the page is shown or published, the reply is at most three sentences, caveats included: the main point in plain words, the link (if published) or the file path, and what wasn't verified or needs the user's decision. The comparison, options, and details live on the page; never paste them back into chat. When the user must choose, the question dialog follows the reply (see When the user must choose); don't ask them to type codes when the dialog exists.

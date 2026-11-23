@@ -188,7 +188,7 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
 .changes .kind{font-family:var(--mono);font-size:11px;color:var(--hi);margin-left:6px;white-space:nowrap}
 @media (max-width:560px){.changes td.f{overflow-wrap:anywhere}} /* stacked rows: break long paths anywhere */
 
-/* component: decisions (a choice the user must make; lettered options so they can answer "1A"; needs the details component) */
+/* component: decisions (a choice the user must make; the record of options, asked in the question dialog; needs the details component) */
 .decisions details{margin:0 0 10px}
 .decisions summary{font-size:16px}
 .decisions ul{list-style:none;margin:10px 0 0;padding:0}
@@ -461,7 +461,7 @@ details table{margin-top:10px;font-size:14px}
   <!-- component: decisions -->
   <section>
     <h2>decisions: a choice the user must make</h2>
-    <p class="sub">Number the questions and letter the options, so the reply can be as short as "1A, 2B". Mark one pick per question and give the reason. Leave the blocks open: nothing should hide behind a click.</p>
+    <p class="sub">Number the questions, letter the options, and put the recommended option first as A with its reason. The page is the record; the answer comes through the question dialog, with "1A, 2B" as the fallback. Leave the blocks open: nothing should hide behind a click.</p>
     <div class="decisions">
       <details open>
         <summary>1. Where does session state live?</summary>
