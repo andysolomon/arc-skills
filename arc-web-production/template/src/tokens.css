@@ -1,0 +1,20 @@
+/* arc-design tokens. Source of truth: arc-design/tokens.css. Don't edit this copy;
+   re-copy it, and run `node <arc-design>/scripts/check-tokens.mjs <this file>` to confirm it matches. */
+:root{
+  color-scheme:dark light;
+  --bg:#000; --fg:#fff; --dim:#a1a1aa; --line:#27272a; --surface:#0e0e11;
+  --hi:#ff2e93; --on-hi:#000; --link:#4f9dff; --ok:#3ddc84; --bad:#ff5a5f; --warn:#ffd23f;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  /* motion timings: hover 160ms, state change 220ms, entrance 500ms, 60ms between staggered items */
+  --t-micro:160ms; --t-state:220ms; --t-enter:500ms; --stagger:60ms;
+  --c1:#ff2e93; --c2:#4f9dff; --c3:#2ec4b6; --c4:#f5a524;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#fbfaf7; --fg:#141416; --dim:#5d5d66; --line:#e4e2dc; --surface:#ffffff;
+    --hi:#d1006b; --on-hi:#fff; --link:#1a62bd; --ok:#14884a; --bad:#c62f34; --warn:#946800;
+    --c1:#d1006b; --c2:#1f6fd1; --c3:#0f8a7e; --c4:#b86e00;
+  }
+}

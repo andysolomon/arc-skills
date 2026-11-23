@@ -1,0 +1,7 @@
+{
+  // The Worker runs on workerd, not Node: Workers types instead of DOM and Node types.
+  "extends": "../tsconfig.json",
+  "compilerOptions": { "lib": ["ES2024"], "types": ["@cloudflare/workers-types"] },
+  "include": ["worker.ts"],
+  "exclude": []
+}
