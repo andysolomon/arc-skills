@@ -7,10 +7,10 @@ Every maker is optional. When its skill or tool isn't installed, say so and use 
 | Maker | Makes | Shown from | Wired in by | How it takes the look | Without it |
 |---|---|---|---|---|---|
 | `diagram-design` | SVG diagrams | level 1 | `arc-html-response` | Its profile `diagram-profile.md` maps each diagram role to a token. | The kit's `diagram` shell, drawn by hand. |
-| `illustration-one-line` | One SVG card a page, only on request | level 1 | `arc-html-response` | It keeps its own colours. One style, one card. | No illustration. |
+| Illustration cards (`illustration-isometric-mono`, `illustration-teal-spot`, `illustration-line-interior`, `illustration-halftone-line`) | One SVG card a page, only on request, when no figure fits the idea | level 1 | `arc-html-response` | The kit's colour map for each style recolours the card from the page tokens. | No illustration. |
 | `stageshow` | A still of an interface that doesn't exist yet or isn't ours | level 1 | `arc-html-response` | `stage.mjs` captures it, scopes its CSS and follows the page's colour scheme. | No still. Our own apps are shown by a screenshot. |
 | `arc-article-to-images` | Article covers and carousels as PNG | level 1 | itself | It doesn't. It has its own field-notes style, kept apart from `tokens.css`. | Not applicable. |
-| hairline (`@lucasmarkes/hairline`) | A line figure that answers the pointer, for an empty state | level 2, because it runs script | `arc-interaction` | Its six `--hairline-*` properties are set from tokens. | The empty state's sentence alone. |
+| hairline (`hairline-create`, `@lucasmarkes/hairline`) | A line figure that answers the pointer | level 1 as a captured still, level 2 and up live, because the live figure runs script | `arc-html-response` for the still, `arc-interaction` for the live empty state | The page kit maps the figure's classes to tokens. In an app its six `--hairline-*` properties are set from tokens. | On a page, a card or no illustration. In an app, the empty state's sentence alone. |
 | HyperFrames (`hyperframes`) | An MP4 film rendered from HTML | any level, as a link or an embedded file | [film.md](film.md) | Composition variables that carry the token values, a copied design spec, and bundled Geist. | No film. Say so. |
 | `blender-skills` | 3D models, textures and renders | level 5 | `arc-3d` | `arc-3d` reads scene colours from the tokens. | Geometry built in code. |
 | `dream-loop` | A build, screenshot and compare loop for a scene | level 5 | `arc-3d` | Its target prompt carries the tokens. | The same loop against a written target. |
@@ -26,7 +26,7 @@ Every maker is optional. When its skill or tool isn't installed, say so and use 
 ## Install
 
 ```sh
-npx skills add MengTo/Skills -g -y -s illustration-one-line
+npx skills add MengTo/Skills -g -y -s illustration-isometric-mono   # and -teal-spot, -line-interior, -halftone-line
 npx skills add benjitaylor/skills -g -y -s stageshow
 npx skills add lucasmarkes/hairline -g -y -s hairline-create
 npx skills add lucasmarkes/hairline -g -y -s hairline-adopt

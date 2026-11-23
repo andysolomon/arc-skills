@@ -114,13 +114,20 @@ ${chart('donut', '--slug', 'wc-donut', '--title', 'Coverage', '--part', '0', '--
       <li class="is-key"><time>2026-11-23 09:12</time>Deploy ${LONG_PATH} rolls out to every region at once.</li>
       <li><time>2026-11-23 09:20</time>1 error.</li>
     </ol>
-    <div class="packet">
-<span class="key">revision</span> unknown<br>
-<span class="key">changed</span> 3 files, +12,841 −9,999<br>
-<span class="key">evidence</span> ${LONG_PATH} → 1,284 passed<br>
-<span class="key">checks</span> <span class="pass">PASS</span> unit · <span class="nr">NOT_RUN</span> e2e<br>
-<span class="key">open</span> ${LONG_URL}
-    </div>
+    <dl class="packet">
+      <div><dt>revision</dt><dd>unknown</dd></div>
+      <div><dt>changed</dt><dd>3 files, +12,841 −9,999</dd></div>
+      <div><dt>evidence</dt><dd><ul>
+        <li><code>${LONG_PATH}</code> → 1,284 passed</li>
+        <li><code>pnpm test</code> → 0 failed</li>
+      </ul></dd></div>
+      <div><dt>checks</dt><dd><ul class="checks">
+        <li><span class="st fail">FAIL</span><span>${LONG_PATH}</span></li>
+        <li><span class="st nr">NOT_RUN</span><span>e2e</span></li>
+        <li><span class="st pass">PASS</span><span>unit</span></li>
+      </ul></dd></div>
+      <div><dt>open</dt><dd>${LONG_URL}</dd></div>
+    </dl>
   </section>`;
 
 const page = `<!doctype html>

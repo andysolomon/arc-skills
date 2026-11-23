@@ -67,8 +67,19 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
 .row:last-child{border-bottom:1px solid var(--line)}
 .row .from{font-family:var(--mono);font-size:13px;color:var(--dim)}
 .row .arrow{color:var(--hi);text-align:center}
-.packet{font-family:var(--mono);font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;line-height:1.8;overflow-wrap:anywhere}
-.packet .key{color:var(--warn);display:inline-block;min-width:88px}
+/* packet: a dl on a two-column grid, so a wrapped value stays in its column. Keys are dim: colour is for status words only.
+   Words are sans; <code> marks literal values (a revision, a command, a path). One check per line in ul.checks. */
+.packet{margin:0;font-size:15px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 16px}
+.packet>div{display:grid;grid-template-columns:76px minmax(0,1fr);gap:2px 14px;padding:12px 0;border-top:1px solid var(--line)}
+.packet>div:first-child{border-top:0}
+.packet dt{font-family:var(--mono);font-size:12px;color:var(--dim);padding-top:3px}
+.packet dd{margin:0;overflow-wrap:anywhere}
+.packet code{border:0;padding:0;font-size:13px}
+.packet ul{list-style:none;margin:0;padding:0}
+.packet li+li{margin-top:6px}
+.packet .checks li{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px}
+.packet .st{font-family:var(--mono);font-size:12px;font-weight:700;padding-top:3px}
+@media (max-width:520px){.packet>div{grid-template-columns:minmax(0,1fr)}}
 .pass{color:var(--ok)} .fail{color:var(--bad)} .warn{color:var(--warn)} .nr{color:var(--dim)}
 @media (max-width:720px){
   .row{grid-template-columns:1fr;gap:4px}.row .arrow{display:none}
@@ -110,16 +121,23 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
     <div class="row" style="--i:1"><div class="from">another current behavior</div><div class="arrow">→</div><div>its replacement</div></div>
   </section>
 
-  <!-- Packet: only for reports of work, yours or work the user describes as yours. Delete it for analysis, plans and explanations. -->
+  <!-- Packet: only for reports of work, yours or work the user describes as yours. Delete it for analysis, plans and explanations.
+       The heading is the tally, worst first. One check per line, in the same order: FAIL, NOT_RUN, PASS. -->
   <section>
-    <h2>What was checked</h2>
-    <div class="packet">
-<span class="key">revision</span> abc1234<br>
-<span class="key">changed</span> path/to/file.ts<br>
-<span class="key">evidence</span> pnpm test → 42 passed<br>
-<span class="key">checks</span> <span class="pass">PASS</span> unit · <span class="fail">FAIL</span> e2e · <span class="nr">NOT_RUN</span> iOS<br>
-<span class="key">open</span> what still needs a decision or a run
-    </div>
+    <h2>Checked: 1 FAIL, 1 NOT_RUN, 1 PASS</h2>
+    <dl class="packet">
+      <div><dt>revision</dt><dd><code>abc1234</code></dd></div>
+      <div><dt>changed</dt><dd><code>path/to/file.ts</code></dd></div>
+      <div><dt>evidence</dt><dd><ul>
+        <li><code>pnpm test</code> → 42 passed</li>
+      </ul></dd></div>
+      <div><dt>checks</dt><dd><ul class="checks">
+        <li><span class="st fail">FAIL</span><span>e2e</span></li>
+        <li><span class="st nr">NOT_RUN</span><span>iOS</span></li>
+        <li><span class="st pass">PASS</span><span>unit</span></li>
+      </ul></dd></div>
+      <div><dt>open</dt><dd>what still needs a decision or a run</dd></div>
+    </dl>
   </section>
 </main>
 </body>
