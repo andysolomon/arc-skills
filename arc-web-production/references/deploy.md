@@ -14,15 +14,14 @@ Read this when the user asks to ship the app or to see it on a real URL. `templa
 npm run cf:dev        # builds the web app, then runs the Worker on local workerd; no Cloudflare account
 ```
 
-It prints a `http://localhost:8787` URL (set `PORT` to change it). Check, at minimum:
+It prints a `http://localhost:8787` URL; set `PORT` to use a free port instead. Check it:
 
 ```sh
-curl -s -X POST localhost:8787/api/notes -H 'content-type: application/json' -d '{"id":"k1","text":"hello"}'
-curl -s -X POST localhost:8787/api/notes -H 'content-type: application/json' -d '{"id":"k1","text":"hello"}'
-curl -s localhost:8787/api/notes      # exactly one note
+npm run api:check -- http://127.0.0.1:8787    # idempotent save, 400 on bad input, 405
 ```
 
-`alchemy dev` writes local state under `cloudflare/.alchemy/`, which is gitignored.
+- **It runs until stopped.** Stop it with Ctrl-C (SIGINT) and wait, up to about ten seconds, until the port is closed. workerd runs as a separate process, so killing the npm process leaves the port held.
+- **Local data persists** in `cloudflare/.alchemy/` (gitignored), under a stage named `dev_<your user>`. Delete the folder to start empty.
 
 ## Deploy
 
@@ -36,7 +35,7 @@ npm run cf:destroy -- --stage prod    # removes what this stack created
 - **Always pass `--stage`.** State is keyed by stack name and stage; without it Alchemy uses a per-user stage name, and two people would deploy two copies.
 - **Rename the stack** (`"FoldkitApp"` in `alchemy.run.ts`) per app before the first deploy. Renaming later orphans the old resources.
 - **State is local by default** (`Alchemy.localState()`). A deploy from CI or a second machine needs a shared state store; set one up before relying on it.
-- **Report** the URL, the three checks above run against it, and the destroy command.
+- **Report** the URL, `npm run api:check -- <url>` run against it, and the destroy command.
 
 ## Before real use
 
@@ -49,7 +48,7 @@ npm run cf:destroy -- --stage prod    # removes what this stack created
 | Check | Result |
 |---|---|
 | Typecheck of the stack and the Worker | PASS |
-| `alchemy dev` on local workerd: save, repeat save with the same id stored once, bad input answers 400, the built web app is served | PASS |
+| `alchemy dev` on local workerd: `api-check.ts` passes (repeat save stored once, 400 on bad input, 405), the built web app is served, SIGINT closes the port | PASS |
 | The web app in headless Chromium against that Worker: add, lost-reply retry, failed save then Retry | PASS |
 | `alchemy deploy` to a Cloudflare account | NOT_RUN |
 | A shared state store, a custom domain, sign-in | NOT_RUN |

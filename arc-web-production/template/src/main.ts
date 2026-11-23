@@ -74,8 +74,10 @@ export const update = (model: Model, message: Message): Return =>
     SucceededFetchNotes: ({ notes }) => ({
       model: modifyFields(model, {
         notes: (current) => AsyncData.settle(current, Result.succeed<ReadonlyArray<Note>>(notes)),
-        // A saved note leaves the pending list once the loaded list shows it.
-        pending: (ps) => ps.filter((p) => !(p.phase._tag === "Saved" && notes.some((n) => n.id === p.requestId)))
+        // A row leaves the pending list once the loaded list shows its note. That includes a
+        // Failed row whose reply was lost after the server stored it. Saving rows stay: their
+        // own reply decides.
+        pending: (ps) => ps.filter((p) => p.phase._tag === "Saving" || !notes.some((n) => n.id === p.requestId))
       })
     }),
 

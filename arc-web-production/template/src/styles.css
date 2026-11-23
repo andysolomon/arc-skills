@@ -19,22 +19,24 @@ h1{font-size:clamp(24px,5vw,32px);line-height:1.1;letter-spacing:-.02em;margin:0
 .field{display:flex;gap:8px}
 input{flex:1;min-width:0;font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
 input:focus-visible,button:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
-button{font:inherit;font-weight:600;min-height:44px;padding:0 16px;border-radius:8px;border:0;background:var(--hi);color:var(--on-hi);cursor:pointer;transition:opacity var(--t-micro) var(--ease)}
+button{font:inherit;font-weight:600;min-height:44px;padding:0 16px;border-radius:8px;border:0;background:var(--hi);color:var(--on-hi);cursor:pointer}
 button:hover{opacity:.85}
 button:disabled{opacity:.4;cursor:default}
 
 .items{list-style:none;margin:0;padding:0}
 .item{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;border-top:1px solid var(--line);padding:12px 0}
-.item .text{flex:1;min-width:0}
+.item .text{flex:1;min-width:0;max-width:65ch}
 .badge{font-family:var(--mono);font-size:12px;color:var(--dim);white-space:nowrap}
 .item.saved .badge{color:var(--ok)}
 .item.failed .badge{color:var(--bad)}
 
-/* Motion shows a state change, nothing else. CSS only, so `view` stays pure.
+/* Motion shows a state change, nothing else. CSS only, so `view` stays pure. Every animation
+   and transition sits inside this guard; scripts/check-styles.mjs checks that.
    Each state has its OWN keyframes name: a class change restarts an animation only when
    the animation name changes, so one shared name would play once and never again.
    Animate FROM the start state, so reduced motion or a still frame shows the final page. */
 @media (prefers-reduced-motion: no-preference){
+  button{transition:opacity var(--t-micro) var(--ease)}
   /* The name never changes while the row is unsaved, so this plays once, when the row is added. */
   .item.is-pending{animation:row-in var(--t-enter) var(--ease) backwards}
   .item.saved .badge{animation:state-saved var(--t-state) var(--ease) backwards}
