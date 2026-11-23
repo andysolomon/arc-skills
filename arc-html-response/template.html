@@ -47,8 +47,8 @@ a{color:var(--hi)}
 code{font-family:var(--mono);font-size:.88em;border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
 .note{font-size:13px;color:var(--dim);margin:10px 0 0}
 .wide{overflow-x:auto} /* wrap a wide table so only the table scrolls on phones */
-svg{width:100%;height:auto;display:block}
-svg:not(.spot svg) text{font-family:var(--sans)} /* illustration cards keep their own fonts */
+svg:where(:not(.stage svg)){width:100%;height:auto;display:block} /* captured stills size their own icons */
+svg:not(.spot svg, .stage svg) text{font-family:var(--sans)} /* illustration cards and stills keep their own fonts */
 table{width:100%;border-collapse:collapse;font-size:15px}
 /* numbers line up and don't jitter; body text stays near 65 characters a line */
 table,.packet,.bar .val,.changes td.n{font-variant-numeric:tabular-nums}

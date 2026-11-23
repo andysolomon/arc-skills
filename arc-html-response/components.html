@@ -43,8 +43,8 @@ h2{font-size:clamp(20px,3.2vw,25px);letter-spacing:-.015em;line-height:1.25;marg
 section{margin-top:56px}
 .sub{color:var(--dim);margin:0 0 18px;max-width:640px}
 code{font-family:var(--mono);font-size:.88em;border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
-svg{width:100%;height:auto;display:block}
-svg:not(.spot svg) text{font-family:var(--sans)} /* illustration cards keep their own fonts */
+svg:where(:not(.stage svg)){width:100%;height:auto;display:block} /* captured stills size their own icons */
+svg:not(.spot svg, .stage svg) text{font-family:var(--sans)} /* illustration cards and stills keep their own fonts */
 table{width:100%;border-collapse:collapse;font-size:15px}
 /* numbers line up and don't jitter; body text stays near 65 characters a line */
 table,.packet,.bar .val,.changes td.n{font-variant-numeric:tabular-nums}
@@ -197,6 +197,13 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
 .decisions .pick .k{color:var(--hi);border-color:var(--hi)}
 .decisions .rec{font-family:var(--mono);font-size:11px;color:var(--hi);margin-left:6px;white-space:nowrap}
 .decisions p{margin:2px 0 0;color:var(--dim);font-size:15px}
+
+/* component: stage (one Stageshow still per page, opt-in only: the page shows a product UI. Captured by
+   scripts/stage.mjs; paste its .css after this block and its .html where the still goes. The frame
+   scrolls only when a still has no compact design and its frame is narrower than 75% of it) */
+.stage{margin:0}
+.stage-frame{overflow-x:auto}
+.stage figcaption{font-size:13px;color:var(--dim);margin-top:8px}
 
 /* component: tabs (radio + label, no script; ids must be unique per page) */
 .tabs > input{position:absolute;opacity:0;pointer-events:none}
@@ -498,6 +505,19 @@ details table{margin-top:10px;font-size:14px}
     </figure>
   </section>
   <!-- /component: spot -->
+
+  <!-- component: stage -->
+  <section>
+    <h2>stage: a product UI still, only when the page shows UI</h2>
+    <p class="sub">For a page whose subject is an interface: a report on a UI change, a design proposal. The still comes from the <code>stageshow</code> skill and is captured to static HTML and CSS by <code>scripts/stage.mjs</code>; never hand-build a faux UI here. The box below is a placeholder showing the slot, not a real capture.</p>
+    <figure class="stage stage-sample">
+      <div class="stage-frame" role="img" aria-label="Placeholder for a captured product UI still">
+        <div class="stage-v" data-size="wide" data-tone="dark"><div style="max-width:400px;height:220px;margin:0 auto;border:1px dashed var(--line);border-radius:12px;display:grid;place-items:center;color:var(--dim);font-family:var(--mono);font-size:12px">stage.mjs output goes here</div></div>
+      </div>
+      <figcaption>Placeholder. A real caption says what the still shows, in the words of the capture's --label.</figcaption>
+    </figure>
+  </section>
+  <!-- /component: stage -->
 
   <!-- component: tabs -->
   <section>

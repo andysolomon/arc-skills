@@ -98,7 +98,9 @@ lint_file() {
 
   # Diagrams and charts.
   at=$(svg_unnamed "$file");                                            [ -n "$at" ] && fail "<svg> at line $at needs a <title> and a <desc> (or aria-hidden=\"true\" if decorative)"
-  if grep -qi '<svg' "$file" && command -v python3 >/dev/null 2>&1; then
+  # Only pages with an accessible SVG (a diagram or chart) go to self_check: a captured
+  # still's icons are all aria-hidden, and self_check rejects a page with no accessible SVG.
+  if grep -Eoi '<svg[^>]*>' "$file" | grep -qviE "aria-hidden=${Q}true" && command -v python3 >/dev/null 2>&1; then
     dd=$(diagram_design_dir)
     if [ -n "$dd" ]; then
       # Its single-file rule rejects every remote URL. A page may link out and
