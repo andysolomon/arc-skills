@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "scripts": { "render": "bun run render.cjs" },
+  "dependencies": { "@resvg/resvg-js": "2.6.2" }
+}

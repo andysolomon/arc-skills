@@ -1,0 +1,121 @@
+{
+  "audience": "Developers learning speech and audio AI",
+  "style": "Editorial field notes",
+  "dimensions": [
+    1080,
+    1350
+  ],
+  "source_mapping": "sources.md",
+  "cards": [
+    {
+      "id": "01-cover",
+      "role": "Cover metaphor",
+      "copy_verbatim": [
+        "SPEECH / AUDIO",
+        "FIELD NOTES \u2014 00",
+        "From sound",
+        "to conversation.",
+        "Build the parts.",
+        "Then connect them.",
+        "Signals. Turn-taking. Voice systems.",
+        "SOURCE / AI ENGINEERING FROM SCRATCH",
+        "Speech & Audio \u00b7 Phase 06"
+      ],
+      "editable_diagram": "01-cover.svg",
+      "route": "Hybrid generated art and SVG"
+    },
+    {
+      "id": "02-filter-before-downsampling",
+      "role": "Signal transformation",
+      "copy_verbatim": [
+        "SPEECH / AUDIO",
+        "FIELD NOTES",
+        "01",
+        "AUDIO FUNDAMENTALS",
+        "Filter before",
+        "you downsample.",
+        "Protect the signal before reducing its rate.",
+        "01 / INPUT",
+        "High-rate audio",
+        "Start with the recorded signal.",
+        "02 / FILTER",
+        "Remove high frequencies",
+        "Use an anti-aliasing low-pass filter.",
+        "03 / RESAMPLE",
+        "Keep fewer samples",
+        "Match the model\u2019s input rate.",
+        "SCHEMATIC SIGNALS",
+        "ENGINEERING NOTE",
+        "High frequencies can fold into lower ones.",
+        "Filter first to avoid aliasing.",
+        "SOURCE / AI ENGINEERING FROM SCRATCH",
+        "aiengineeringfromscratch.com",
+        "01 / 03"
+      ],
+      "editable_diagram": "02-filter-before-downsampling.svg",
+      "route": "Deterministic SVG"
+    },
+    {
+      "id": "03-turn-taking",
+      "role": "Turn-taking distinction",
+      "copy_verbatim": [
+        "SPEECH / AUDIO",
+        "FIELD NOTES",
+        "02",
+        "TURN-TAKING",
+        "A pause is not",
+        "a finished thought.",
+        "Detect speech. Then decide when to respond.",
+        "ONE UTTERANCE, WITH A PAUSE",
+        "speech",
+        "pause",
+        "speech",
+        "Silence alone does not settle the turn.",
+        "VOICE ACTIVITY",
+        "\u201cIs this speech?\u201d",
+        "TURN DETECTION",
+        "\u201cAre they done?\u201d",
+        "ENGINEERING NOTE",
+        "Combine speech activity with timing and context.",
+        "Respond too early, and you cut the speaker off.",
+        "SOURCE / AI ENGINEERING FROM SCRATCH",
+        "aiengineeringfromscratch.com",
+        "02 / 03"
+      ],
+      "editable_diagram": "03-turn-taking.svg",
+      "route": "Deterministic SVG"
+    },
+    {
+      "id": "04-interruptions",
+      "role": "Interruption control",
+      "copy_verbatim": [
+        "SPEECH / AUDIO",
+        "FIELD NOTES",
+        "03",
+        "VOICE SYSTEMS",
+        "Let the user",
+        "interrupt.",
+        "A conversation needs a way to stop.",
+        "A CASCADED VOICE ASSISTANT",
+        "TRANSCRIBE",
+        "speech \u2192 text",
+        "REASON",
+        "language model",
+        "SPEAK",
+        "text \u2192 audio",
+        "USER STARTS SPEAKING",
+        "Cancel generation",
+        "Stop playback",
+        "Return to listening.",
+        "ENGINEERING NOTE",
+        "Handle interruption across the whole pipeline.",
+        "Do not keep talking over the next user turn.",
+        "SOURCE / AI ENGINEERING FROM SCRATCH",
+        "aiengineeringfromscratch.com",
+        "03 / 03"
+      ],
+      "editable_diagram": "04-interruptions.svg",
+      "route": "Deterministic SVG"
+    }
+  ]
+}

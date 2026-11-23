@@ -1,0 +1,34 @@
+article-images - Article-to-images skill - Progress
+
+[x] 1.0 - Design contract
+    [x] 1.1 - Inspect all six reference images and distinguish cover/lesson styles
+    [x] 1.2 - Write skill and style/production references
+[x] 2.0 - Integration and evaluation
+    [x] 2.1 - Add README discovery and synthetic article fixture
+    [x] 2.2 - Add starter behavioral evaluation cases
+[x] 3.0 - Validation and archive
+    [x] 3.1 - Validate skill, JSON, references, fixtures, and diff
+    [x] 3.2 - Move plan and tracker together to docs/archive/
+
+Live image-generation trial completed in phase 4. Automated model-graded evaluations remain deferred.
+
+Validation: quick_validate PASS; arc-skill-eval audit PASS (zero findings); package validation PASS; local reference/fixture checks PASS; git diff --check PASS. Model-graded evaluations NOT_RUN.
+
+[x] 4.0 - Live article trial
+    [x] 4.1 - Read overview and linked lessons; create source-mapped storyboard
+    [x] 4.2 - Render four PNGs with editable source and inspect full/phone sizes
+    [x] 4.3 - Repair filtering schematic and improve skill guidance
+    [x] 4.4 - Verify image dimensions and record trial results
+
+[x] 5.0 - Art revision
+    [x] 5.1 - Generate a transparent microphone cutaway and revise all four compositions
+    [x] 5.2 - Inspect full-size and phone-size renders; preserve diagram semantics
+    [x] 5.3 - Update art-direction guidance, source notes and reproduction artifacts
+    [x] 5.4 - Verify PNG dimensions and package version 2 separately
+
+[x] 6.0 - Article and subsection cover contract
+    [x] 6.1 - Define structure-driven covers and arc-reader placement
+    [x] 6.2 - Add nested/repeated-heading and unsectioned-article evaluation cases
+    [x] 6.3 - Validate reference links, suite and packaging
+
+Arc-reader application integration is not implemented by this skill-contract update.
