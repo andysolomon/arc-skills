@@ -533,6 +533,121 @@
         "intent": "own-app-screenshot"
       },
       "sandbox": "just-bash"
+    },
+    {
+      "id": "scripted-step-through",
+      "description": "Golden path for the scripted rung: a click-through walkthrough becomes a scripted page built from the kit's stepper, which still reads in full with the script off.",
+      "prompt": "Walk me through how our deploy runs, as a page I can click through one step at a time: push to main, CI runs lint and unit tests, the Worker bundle builds, it deploys to staging, a smoke test runs, then it is promoted to production.",
+      "expected_output": "A level 1 scripted page built from the template and the stepper in scripted.html: one plain inline script that wires Back and Next buttons with addEventListener, controls that start hidden, all six steps readable as a list with the script off, no network or storage, and lint.sh --scripted passes.",
+      "assertions": [
+        {
+          "id": "one-plain-script",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The page should contain exactly one plain inline <script> (no src, no type attribute), and no on*= handler attributes; buttons are wired with addEventListener.",
+          "mustPass": true
+        },
+        {
+          "id": "reads-without-script",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "With the <script> removed, all six steps must still be readable on the page (for example as a numbered list), and the Back and Next controls must start with the hidden attribute.",
+          "mustPass": true
+        },
+        {
+          "id": "keeps-and-sends-nothing",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The script must not use fetch, XMLHttpRequest, WebSocket, import(), localStorage, sessionStorage, cookies, eval, innerHTML, window.parent or postMessage.",
+          "mustPass": true
+        },
+        {
+          "id": "motion-stays-css",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "Any motion must be CSS inside a prefers-reduced-motion guard; the script must not call animate().",
+          "mustPass": true
+        },
+        {
+          "id": "steady-height",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "Switching steps must not change the page's height: the steps share one grid cell or reserve the same space.",
+          "mustPass": false
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "scripted-rung",
+          "golden-path"
+        ],
+        "difficulty": "medium",
+        "intent": "scripted-step-through"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "negative-switch-views-stays-static",
+      "description": "Switching between two views is something CSS tabs already do, so it stays a static page with no script.",
+      "prompt": "Show p95 latency for us-east and eu-west and let me switch between the two regions. us-east: W1 120 ms, W2 135 ms, W3 128 ms. eu-west: W1 180 ms, W2 170 ms, W3 176 ms.",
+      "expected_output": "A static page that uses the kit's CSS tabs (radio and label) to switch regions, with no script, passing the plain lint.",
+      "assertions": [
+        {
+          "id": "no-script",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The page must contain no <script> and no on*= handler attributes.",
+          "mustPass": true
+        },
+        {
+          "id": "css-tabs",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The region switch should use the kit's tabs component (radio inputs and labels), not buttons wired by a script.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "scripted-rung",
+          "negative"
+        ],
+        "difficulty": "easy",
+        "intent": "tabs-stay-static"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "negative-remembered-step-is-an-app",
+      "description": "A page asked to remember the reader's place keeps state, which the scripted rung forbids; the assistant must not reach for localStorage.",
+      "prompt": "Make a page that walks me through our six onboarding steps, and have it remember which step I reached so I can pick up there tomorrow.",
+      "expected_output": "The assistant says in one line that remembering progress is state, which a page can't keep, and offers either a step-through page without memory or a Lakebed app, confirming before building the app. No page it writes uses localStorage, sessionStorage, IndexedDB or cookies.",
+      "assertions": [
+        {
+          "id": "no-browser-storage",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "No page the assistant writes may use localStorage, sessionStorage, IndexedDB or cookies to remember the step.",
+          "mustPass": true
+        },
+        {
+          "id": "names-the-boundary",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that remembering the step is state, which belongs in an app (Lakebed first), and confirm before building one rather than silently building it.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "scripted-rung",
+          "routing",
+          "negative"
+        ],
+        "difficulty": "medium",
+        "intent": "remembered-step-is-an-app"
+      },
+      "sandbox": "just-bash"
     }
   ]
 }

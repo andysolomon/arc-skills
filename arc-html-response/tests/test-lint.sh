@@ -22,9 +22,9 @@ page() { # page <name> <head-extra> <body>
 EOF
 }
 
-expect() { # expect <0|1> <name> [output-substring]
+expect() { # expect <0|1> <name> [output-substring]; LINT_FLAGS adds flags such as --scripted
   local want=$1 name=$2 needle=${3:-} out code
-  out=$(bash "$lint" "$work/$name.html" 2>&1); code=$?
+  out=$(bash "$lint" ${LINT_FLAGS:-} "$work/$name.html" 2>&1); code=$?
   if [ "$code" -ne "$want" ]; then
     echo "not ok  $name: exit $code, want $want"; echo "$out" | sed 's/^/        /'; fail=$((fail + 1)); return
   fi
@@ -108,6 +108,53 @@ head -c 600000 /dev/zero | tr '\0' 'a' > "$work/big-body.txt"
 page too-big '' "<p>$(cat "$work/big-body.txt")</p>"
 expect 1 too-big 'size:'
 
+# The scripted rung (--scripted): one plain inline script that keeps nothing and sends nothing.
+BTN='<button type="button" id="b" hidden>Next</button>'
+page sc-ok '' "$BTN<script>const b=document.getElementById('b');b.hidden=false;b.addEventListener('click',()=>{b.textContent='Done'})</script>"
+LINT_FLAGS=--scripted expect 0 sc-ok '(0 warning(s)'
+LINT_FLAGS= expect 1 sc-ok 'lint it with --scripted'
+
+page sc-two "" "$BTN<script>1</script><script>2</script>"
+LINT_FLAGS=--scripted expect 1 sc-two 'a scripted page has one'
+
+page sc-src '' "$BTN<script src=\"https://cdn.jsdelivr.net/npm/x@1.0.0\"></script>"
+LINT_FLAGS=--scripted expect 1 sc-src '<script src>'
+
+page sc-module '' "$BTN<script type=\"module\">1</script>"
+LINT_FLAGS=--scripted expect 1 sc-module 'with attributes'
+
+page sc-fetch '' "$BTN<script>
+fetch('/api/votes')
+</script>"
+LINT_FLAGS=--scripted expect 1 sc-fetch 'network call'
+
+page sc-socket '' "$BTN<script>new WebSocket('wss://x.test')</script>"
+LINT_FLAGS=--scripted expect 1 sc-socket 'network call'
+
+page sc-storage '' "$BTN<script>localStorage.setItem('k','v')</script>"
+LINT_FLAGS=--scripted expect 1 sc-storage 'keeps nothing'
+
+page sc-eval '' "$BTN<script>eval('1')</script>"
+LINT_FLAGS=--scripted expect 1 sc-eval 'from a string'
+
+page sc-innerhtml '' "$BTN<script>document.body.innerHTML='<p>x</p>'</script>"
+LINT_FLAGS=--scripted expect 1 sc-innerhtml 'from a string'
+
+page sc-parent '' "$BTN<script>window.parent.postMessage('x','*')</script>"
+LINT_FLAGS=--scripted expect 1 sc-parent 'outside its frame'
+
+page sc-animate '' "$BTN<script>document.body.animate([{opacity:0}],200)</script>"
+LINT_FLAGS=--scripted expect 1 sc-animate 'motion stays CSS'
+
+page sc-handler '' "<button onclick=\"go()\">Go</button><script>function go(){}</script>"
+LINT_FLAGS=--scripted expect 1 sc-handler 'on*= handler'
+
+page sc-no-hidden '' "<button type=\"button\" id=\"b\">Next</button><script>1</script>"
+LINT_FLAGS=--scripted expect 0 sc-no-hidden 'WARN nothing starts hidden'
+
+page sc-prose '' "$BTN<p>The page never calls fetch( or localStorage.</p><script>1</script>"
+LINT_FLAGS=--scripted expect 0 sc-prose '(0 warning(s)'
+
 # diagram-design's self_check runs when the skill is found, and its failure fails the lint.
 stub="$work/dd-stub"; mkdir -p "$stub/scripts"
 printf 'import sys\nprint("FAIL x")\nprint("  - stub finding")\nsys.exit(1)\n' > "$stub/scripts/self_check.py"
@@ -128,11 +175,12 @@ if node "$skill/tests/worst-case.mjs" "$work/worst.html" >/dev/null && bash "$li
   echo "ok      worst-case page passes lint"; pass=$((pass + 1))
 else echo "not ok  worst-case page passes lint"; bash "$lint" "$work/worst.html" | sed 's/^/        /'; fail=$((fail + 1)); fi
 
-# The skill's own pages must pass.
-for f in template components; do
-  out=$(bash "$lint" "$skill/$f.html" 2>&1)
-  if [ $? -eq 0 ]; then echo "ok      $f.html passes lint"; pass=$((pass + 1))
-  else echo "not ok  $f.html fails lint"; echo "$out" | sed 's/^/        /'; fail=$((fail + 1)); fi
+# The skill's own pages must pass: the static ones as pages, the scripted kit with --scripted.
+for f in template components scripted; do
+  flags=; [ "$f" = scripted ] && flags=--scripted
+  out=$(bash "$lint" $flags "$skill/$f.html" 2>&1)
+  if [ $? -eq 0 ]; then echo "ok      $f.html passes lint $flags"; pass=$((pass + 1))
+  else echo "not ok  $f.html fails lint $flags"; echo "$out" | sed 's/^/        /'; fail=$((fail + 1)); fi
 done
 
 echo "--- $pass passed, $fail failed"

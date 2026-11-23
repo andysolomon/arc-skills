@@ -1,13 +1,13 @@
 ---
 name: arc-html-response
-description: Answer with an HTML page instead of terminal prose. Use for replies that explain, compare, plan, review, recommend, or report finished work, or that have structure (steps, options, numbers, a flow). Renders inline in T3 Code and publishes keepable write-ups to Postplan as static, JavaScript-free pages with SVG/CSS charts, diagrams, and motion. Shows a product UI as a still when a page is about an interface (a screenshot of our own app, or a Stageshow capture). Asks the user's own choices through the harness's native question dialog, not as typed codes. Routes requests that need state (a vote, a shared checklist, live numbers) to a Lakebed app instead. Skip for one-liners, yes/no, commands to copy, and clarifying questions.
+description: Answer with an HTML page instead of terminal prose. Use for replies that explain, compare, plan, review, recommend, or report finished work, or that have structure (steps, options, numbers, a flow). Renders inline in T3 Code and publishes keepable write-ups to Postplan as static, JavaScript-free pages with SVG/CSS charts, diagrams, and motion. A scripted rung adds one inline script for a click CSS can't handle (a step-through, a sortable table), still keeping and sending nothing. Shows a product UI as a still when a page is about an interface (a screenshot of our own app, or a Stageshow capture). Asks the user's own choices through the harness's native question dialog, not as typed codes. Routes requests that need state (a vote, a shared checklist, live numbers) to a Lakebed app instead. Skip for one-liners, yes/no, commands to copy, and clarifying questions.
 ---
 
 # HTML response
 
 The user reads pages better than terminal scrollback. When a reply has shape (steps, options, a comparison, a flow, numbers, evidence), make it a small HTML page, show it, and keep the chat reply to a line or two.
 
-This skill builds level 1 of `arc-design`'s pyramid, a page. `arc-design` holds the look every level shares and routes a request that needs a lasting app to level 2, `arc-web-production`.
+This skill builds level 1 of `arc-design`'s pyramid, a page. Level 1 has two rungs: a static page, the default, and a scripted page (see The scripted rung) for a click CSS can't handle. `arc-design` holds the look every level shares and routes a request that needs a lasting app to level 2, `arc-web-production`.
 
 ## Decide: page or plain text?
 
@@ -45,7 +45,7 @@ Content:
 
 Every page follows Postplan 0.0.4's rules, even pages that are only rendered in T3. One static page then looks the same inline in T3, on Postplan, and when another agent fetches it raw.
 
-- **No JavaScript.** No `<script>` (inline or `src`), no `on*=` handler attributes, no `javascript:` URLs. Postplan rejects `<script src>` at upload and serves pages with `script-src 'none'`, so inline scripts never run either. Charts, tabs and motion are SVG and CSS.
+- **No JavaScript.** No `<script>` (inline or `src`), no `on*=` handler attributes, no `javascript:` URLs. Postplan rejects `<script src>` at upload and serves pages with `script-src 'none'`, so inline scripts never run either. Charts, tabs and motion are SVG and CSS. The scripted rung is the one exception, under its own rules.
 - **One inline `<style>`.** No `<link>` (blocked tag), no `@import`, no `@font-face` or web fonts (CSP `default-src 'none'`). Use the template's font stacks: they name Geist first, so a reader who has it installed sees it, and everyone else sees the system fonts behind it.
 - **No forms, iframes, embeds, objects, `<base>`, or meta refresh.** `<input>` and `<label>` outside a `<form>` are fine (the kit's tabs use them).
 - **Images from `https:` or `data:` only.** A local `chart.png` will not load.
@@ -79,7 +79,7 @@ Charts:
 - Plot real numbers from this session. Don't compute coordinates by hand: [scripts/chart.mjs](scripts/chart.mjs) prints ready markup for `bars` (scaled widths, an aria-label, a raw-numbers table), `line` (nice axis ticks, title, desc, a raw-numbers table) and `donut` (title, desc, the share with its denominator). It prints markup only, so also copy the matching CSS block from the kit, and the `details` block for the raw-numbers table it adds. `node <skill-dir>/scripts/chart.mjs --help` lists every flag. Show the scale (axis labels or a value on each mark).
 - `stats` or `donut`? A single share with a small denominator ("3 of 40 runs") reads better as a `stats` tile. Use a donut when the share itself is the headline.
 - Every `<svg>` gets `role="img"`, a `<title>` and a `<desc>`, with ids prefixed by a slug (`aria-labelledby="deploy-title deploy-desc"`). CSS charts get `role="img"` and an `aria-label`. Put the raw numbers in a `<details>` table under the chart.
-- For chart form and color choices, load the `dataviz` skill when it is available. Take its advice on form and colour only: anything of its that needs script, such as a hover tooltip, has no place on a page, and this kit's colours stay the tokens.
+- For chart form and color choices, load the `dataviz` skill when it is available. Take its advice on form and colour only: anything of its that needs script, such as a hover tooltip, has no place on a static page, and this kit's colours stay the tokens.
 - A chart the kit lacks (waterfall, scatter, Sankey, Gantt, radar, treemap) goes to `diagram-design` under the same overrides as a diagram, below. Without that skill, use the closest kit chart or a table.
 
 Diagrams:
@@ -91,7 +91,7 @@ Diagrams:
   - **Size:** viewBox 680 wide and no wider, with `min-width` equal to that width: a 728 preview with its side gutters leaves 696 px. A node with no technical detail has no sublabel and may be 48 high. Type: names 13px sans 600, sublabels 11px mono, arrow labels 10px mono capitals.
   - **Legend:** required when the diagram uses two or more kinds of node or line, and left out otherwise. Put it in a bottom strip inside the viewBox, under a `.rule` line that separates it from the diagram, with `.legend` text.
   - **Fonts:** the page's `--sans` and `--mono` stacks only. No font `<link>`.
-  - **Motion:** modes `none`, `loop`, or CSS-only `reveal`. Never `step`; it needs a script. `loop` means one thing only: dashes flowing along a wire to show direction, as the kit's `flow` does. It is the one loop a page may run. For a `reveal`, give each element `animation-delay: calc(var(--i) * var(--stagger))` in drawing order, wires before boxes.
+  - **Motion:** modes `none`, `loop`, or CSS-only `reveal`. Never diagram-design's `step`; it brings its own script. To walk through a diagram on the scripted rung, use the kit's `stepper` with one figure or caption per step. `loop` means one thing only: dashes flowing along a wire to show direction, as the kit's `flow` does. It is the one loop a page may run. For a `reveal`, give each element `animation-delay: calc(var(--i) * var(--stagger))` in drawing order, wires before boxes.
   - **No pause:** skip its confirm-before-drawing question. If you cut something from the user's description, say what in plain words in the section text ("The retry path is left out."). Don't describe the diagram itself.
   - **Geometry:** run `python3 <diagram-design>/scripts/verify_geometry.py <file.html>` when the installed diagram-design has it, and fix what it reports. It checks rule 6 (mask before node) and connector routing. Check rules 2 (label gap) and 4 (separate attach points) by eye in the preview.
   - **Phones:** the diagram keeps its width and scrolls sideways under 680 px, so put the focal node in the first 340 px.
@@ -160,9 +160,22 @@ A page about an interface (a report on a UI change, a design proposal, a feature
 - **Caption:** `--label` becomes both the frame's `aria-label` and its `figcaption`. A still is illustrative: its names and numbers are filler unless you put real ones in, so say so in the label ("Illustrative: …").
 - **Stills only:** one per page, and it doesn't move. A demo with a moving cursor goes off the page (see When a page isn't enough). The kit's `stage` shell and the 150 KiB warning apply to Stageshow captures; a screenshot needs neither.
 
+## The scripted rung
+
+Level 1 has two rungs. A static page is the default. A scripted page adds one inline script, for a click that changes what the page shows when CSS can't do it. It still keeps nothing and sends nothing: a reload starts over, and nothing it does reaches you or anyone else.
+
+- **When:** a step-through the reader takes in order, a table they sort, a figure recomputed from numbers already on the page. Not tabs, toggles or show-and-hide: CSS radios and `<details>` already do those, so they stay static. Anything saved, sent, or seen by someone else is an app (see When a page isn't enough). A choice still goes through the question dialog (see When the user must choose): a click on the page never reaches you.
+- **Start from** the template and copy parts from [scripted.html](scripted.html): `stepper` and `sort`, each with its CSS block and its function from that page's one script. Build a part the kit lacks the same way.
+- **It reads without the script.** Postplan blocks scripts, so with the script off the page still says everything: every step shows as a list, and the table keeps its written order (write it in the most useful order). Controls the script wires up start with the `hidden` attribute, and the script removes it.
+- **The script's rules** (`lint.sh --scripted` checks the tag, the calls and the handlers): one plain `<script>` at the end of `<body>`, with no `src` and no attributes. No network (`fetch`, sockets, `import()`), no storage (`localStorage`, cookies), no `eval` or `innerHTML` (build nodes with `createElement` and `textContent`), and nothing outside the frame (`window.parent`, `postMessage`). Handlers go on with `addEventListener`, never `on*=`. Every control is a real `<button>` with a visible label and follows `arc-design`'s control-state rules.
+- **Motion stays CSS.** The script switches classes and attributes, and transitions or keyframes do the moving, inside the reduced-motion guard. No `animate()`: that starts at level 3. Rows that travel to their new place are level 3 too; on this rung they jump.
+- **Keep the height.** T3 sizes the inline frame once, from the preview. Stack every state in one grid cell, as `stepper` does, so a click never makes the page taller.
+- **Check it** with `bash <skill-dir>/scripts/lint.sh --scripted <file.html>` and the token check. The preview returns the page's console output, which must be empty. To test a control, preview a copy with a few lines appended that click it and log the result, and never ship that copy. Then preview a copy with the script cut out, and read it as Postplan will show it.
+- **Publish** in two places. First the file as a claude.ai Artifact (the Artifact tool, following its own rules), which runs the script. Then add an ordinary link to that Artifact next to the interactive part ("Open the live version") and publish the same file to Postplan, which shows it with the script off; `postplan check` accepts the inline script. Artifacts start private: before the user shares the page, tell them to share the Artifact too. Inline in T3, render the file as usual: the frame runs the script.
+
 ## When a page isn't enough
 
-A page is static: no script, no fetch, no forms. A request that needs state is an app, not a page: a vote or poll, a sign-up sheet, a shared checklist, live numbers, sign-in, anything one person types into and others see.
+A page keeps nothing: no fetch, no forms, nothing saved, even on the scripted rung. A request that needs state is an app, not a page: a vote or poll, a sign-up sheet, a shared checklist, live numbers, sign-in, anything one person types into and others see.
 
 Still a page: a checklist the user prints or ticks off alone, numbers you already have, a plan or report about an app. Only reach for an app when people must write to it or see each other's changes.
 
@@ -170,7 +183,7 @@ Still a page: a checklist the user prints or ticks off alone, numbers you alread
 - **Lakebed first.** Build it as a Lakebed capsule, following [lakebed.md](lakebed.md): where the code goes, guests and caps, server-side permission checks, secrets that fail closed, a two-person test, and the hand-over (URL, expiry, claim). Report the URL, the checks you ran, and the expiry if the deploy is unclaimed.
 - **Move to `arc-web-production`** (a Foldkit app on Cloudflare: a Worker with static assets, Durable Objects for state, an Alchemy stack) when the app outgrows Lakebed: it must not expire or must be production-ready, needs a custom domain or npm packages, or would pass Lakebed's free limits (10,000 requests and 1,000 writes a day per deploy, 1 MiB of stored data).
 - Keep the write-up on Postplan and link the app with an ordinary link. A Postplan page can't embed or call it (no iframes, no fetch).
-- **An animated product demo** (a Stageshow demo with its cursor, or any React component) needs a script, so it never goes on a page, not even rebuilt as CSS keyframes. Put its poster on the page as a still (see Product UI stills) and link the running demo with an ordinary link. It needs npm packages, so host its built files the way `arc-web-production` deploys (its `references/deploy.md`: a Worker with static assets in an Alchemy stack). It stays a React demo; don't rebuild it as a Foldkit app. Confirm before deploying it.
+- **An animated product demo** (a Stageshow demo with its cursor, or any React component) needs a script and npm packages, so it never goes on a page, scripted or not, not even rebuilt as CSS keyframes. Put its poster on the page as a still (see Product UI stills) and link the running demo with an ordinary link. It needs npm packages, so host its built files the way `arc-web-production` deploys (its `references/deploy.md`: a Worker with static assets in an Alchemy stack). It stays a React demo; don't rebuild it as a Foldkit app. Confirm before deploying it.
 
 ## When the user must choose
 
@@ -199,7 +212,7 @@ The template sets this up:
 Run the lint and the token check, from any directory, and fix every `FAIL` before showing or publishing. `<skill-dir>` is this skill's folder and `<arc-design>` is the `arc-design` skill's folder, its sibling:
 
 ```sh
-bash <skill-dir>/scripts/lint.sh <file.html>
+bash <skill-dir>/scripts/lint.sh <file.html>          # a scripted page: lint.sh --scripted
 node <arc-design>/scripts/check-tokens.mjs <file.html>
 ```
 

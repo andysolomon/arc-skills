@@ -2,8 +2,12 @@
 # Lint an HTML response page against the Postplan 0.0.4 contract and the
 # skill's motion rules. Local and offline; run `postplan check` before upload.
 #
-# Usage: lint.sh <file.html> [more.html ...]
+# Usage: lint.sh [--scripted] <file.html> [more.html ...]
 # Exit:  0 when no FAIL, 1 on any FAIL, 2 on bad usage.
+#
+# --scripted checks a page on level 1's scripted rung instead: one plain inline
+# <script> is allowed, with no network, no storage, no eval and no animation
+# API, so the page still keeps nothing and sends nothing.
 #
 # When the diagram-design skill is installed and the page has an <svg>, its
 # self_check.py --offline also runs (accessible-SVG contract, content inside
@@ -14,8 +18,11 @@ set -u
 MAX_BYTES=$((512 * 1024))
 Q="[\"']?"   # optional attribute quote
 
+SCRIPTED=0
+if [ "${1:-}" = "--scripted" ]; then SCRIPTED=1; shift; fi
+
 if [ $# -eq 0 ]; then
-  echo "usage: $(basename "$0") <file.html> [more.html ...]" >&2
+  echo "usage: $(basename "$0") [--scripted] <file.html> [more.html ...]" >&2
   exit 2
 fi
 
@@ -29,6 +36,29 @@ css_lines() {
     /<style/ { s = 1 }
     s && tolower($0) ~ re { print NR }
     /<\/style>/ { s = 0 }
+  ' "$2" | head -5 | paste -sd, -
+}
+
+# Same, but only the text between <script> and </script>, even when a script
+# shares its line with prose. Pattern must be lowercase.
+script_lines() {
+  awk -v re="$1" '
+    {
+      l = tolower($0); hit = 0
+      while (l != "") {
+        if (!s) {
+          i = index(l, "<script"); if (!i) break
+          l = substr(l, i); j = index(l, ">"); if (!j) { l = ""; s = 1; break }
+          l = substr(l, j + 1); s = 1
+        }
+        k = index(l, "</script")
+        seg = k ? substr(l, 1, k - 1) : l
+        if (seg ~ re) hit = 1
+        if (!k) break
+        s = 0; l = substr(l, k + 8)
+      }
+      if (hit) print NR
+    }
   ' "$2" | head -5 | paste -sd, -
 }
 
@@ -70,8 +100,28 @@ lint_file() {
   bytes=$(wc -c < "$file" | tr -d ' ')
   [ "$bytes" -gt "$MAX_BYTES" ] && fail "size: $bytes bytes, budget is $MAX_BYTES (512 KiB)"
 
-  # JavaScript in any form (Postplan rejects <script src>; CSP blocks the rest).
-  at=$(doc_lines '<script' "$file");                                   [ -n "$at" ] && fail "<script> at line $at; draw it in SVG/CSS"
+  if [ "$SCRIPTED" -eq 0 ]; then
+    # JavaScript in any form (Postplan rejects <script src>; CSP blocks the rest).
+    at=$(doc_lines '<script' "$file");                                 [ -n "$at" ] && fail "<script> at line $at; draw it in SVG/CSS, or build a scripted page and lint it with --scripted"
+  else
+    # The scripted rung: one plain inline script that keeps nothing and sends nothing.
+    n=$(grep -Eoi '<script' "$file" | wc -l | tr -d ' ')
+    [ "$n" -eq 0 ] && warn "no <script>; a page without one is a static page, lint it without --scripted"
+    [ "$n" -gt 1 ] && fail "$n <script> tags; a scripted page has one"
+    at=$(doc_lines '<script[[:space:]][^>]*src[[:space:]]*=' "$file");   [ -n "$at" ] && fail "<script src> at line $at; inline the script (Postplan rejects src, and pages load nothing)"
+    at=$(doc_lines '<script[[:space:]]' "$file");                        [ -n "$at" ] && fail "<script> with attributes at line $at; use a plain <script>"
+    at=$(script_lines 'fetch[[:space:]]*\\(|xmlhttprequest|websocket|eventsource|sendbeacon|import[[:space:]]*\\(|rtcpeerconnection' "$file")
+    [ -n "$at" ] && fail "network call at line $at; a scripted page sends nothing (that is a level 2 app)"
+    at=$(script_lines 'localstorage|sessionstorage|indexeddb|document\\.cookie|caches\\.' "$file")
+    [ -n "$at" ] && fail "storage at line $at; a scripted page keeps nothing (that is a level 2 app)"
+    at=$(script_lines 'eval[[:space:]]*\\(|new[[:space:]]+function|innerhtml|outerhtml|insertadjacenthtml|document\\.write' "$file")
+    [ -n "$at" ] && fail "code or markup from a string at line $at; build nodes with createElement and textContent"
+    at=$(script_lines 'window\\.(open|top|parent|opener)|postmessage' "$file")
+    [ -n "$at" ] && fail "reaches outside its frame at line $at; a scripted page talks to nothing"
+    at=$(script_lines '\\.animate[[:space:]]*\\(' "$file")
+    [ -n "$at" ] && fail "animate() at line $at; motion stays CSS on a page, so toggle a class or attribute"
+    grep -Eqi '<[a-z][^>]*[[:space:]]hidden([[:space:]>=]|$)' "$file" || warn "nothing starts hidden; controls the script wires up should start hidden, so the page reads without the script"
+  fi
   at=$(doc_lines '<[a-z][^>]*[[:space:]]on[a-z]+[[:space:]]*=' "$file"); [ -n "$at" ] && fail "on*= handler at line $at"
   at=$(doc_lines "(href|src)=$Q[[:space:]]*javascript:" "$file");      [ -n "$at" ] && fail "javascript: URL at line $at"
 

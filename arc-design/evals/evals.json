@@ -242,6 +242,37 @@
         "intent": "rules-win-over-reviews"
       },
       "sandbox": "just-bash"
+    },
+    {
+      "id": "routes-click-through-to-scripted-rung",
+      "description": "A click-through explainer nobody types into is level 1 on its scripted rung, not an app.",
+      "prompt": "I want a page I can click through to explain our auth flow to a new hire, one step per click. Nothing needs saving.",
+      "expected_output": "The assistant names level 1, arc-html-response, on its scripted rung, and says why: nobody types into it and nothing is kept, but a step-through needs a click CSS can't do.",
+      "assertions": [
+        {
+          "id": "names-scripted-rung",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should choose level 1 (arc-html-response) on its scripted rung, not arc-web-production or Lakebed.",
+          "mustPass": true
+        },
+        {
+          "id": "states-the-question",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say in a sentence why: nothing is kept or typed in, and stepping through needs a click that CSS can't handle.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "scripted-rung"
+        ],
+        "difficulty": "easy",
+        "intent": "click-through-scripted-rung"
+      },
+      "sandbox": "just-bash"
     }
   ]
 }
