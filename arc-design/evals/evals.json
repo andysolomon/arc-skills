@@ -19,7 +19,7 @@
           "id": "uses-shared-tokens",
           "kind": "output",
           "method": "judge",
-          "prompt": "The response should take colours, fonts and motion timings from the shared tokens (tokens.css) and should not invent a new palette or add a web font.",
+          "prompt": "The response should take colours, fonts and motion timings from the shared tokens (tokens.css) and should not invent a new palette or add a typeface that is not in the token stacks.",
           "mustPass": true
         }
       ],
@@ -54,13 +54,13 @@
       "id": "negative-refuses-decorative-motion-library",
       "description": "Negative: a request for a decorative animation library is not silently fulfilled.",
       "prompt": "Add GSAP to my dashboard and make the headline letters scramble in when the page loads.",
-      "expected_output": "The assistant explains that motion must show meaning and is CSS only, does not add GSAP on its own, and offers a CSS state-change alternative or asks before adding a library.",
+      "expected_output": "The assistant explains that motion must show meaning and is CSS first, says GSAP is out and that a headline effect is none of the cases where Motion is allowed, does not add a library, and offers a CSS state-change alternative.",
       "assertions": [
         {
           "id": "does-not-add-library-silently",
           "kind": "output",
           "method": "judge",
-          "prompt": "The response should not install or wire up GSAP (or another animation library) without first saying the rule against it and asking the user.",
+          "prompt": "The response should not install or wire up GSAP or another animation library. It should say that GSAP is out, and that a headline effect is not one of the cases (a drag or swipe with velocity, a layout move, an interruptible spring) where Motion's animate() is allowed.",
           "mustPass": true
         },
         {
@@ -72,6 +72,30 @@
         }
       ],
       "metadata": { "tags": ["motion", "negative"], "difficulty": "medium", "intent": "motion-shows-meaning" },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "names-level-for-swipe-gesture",
+      "description": "A gesture request is placed at level 3, built with arc-web-production because arc-interaction does not exist, and Motion is limited to its named cases.",
+      "prompt": "Add swipe-to-dismiss to the notification cards in our Foldkit dashboard. The card should follow my finger and fly off at the speed I flick it.",
+      "expected_output": "The assistant names level 3 (Interaction), says the arc-interaction skill is not built and builds with arc-web-production, and either stays in CSS and pointer events or uses Motion's animate() and names the case that allows it, with a test that it mounts in Foldkit first.",
+      "assertions": [
+        {
+          "id": "names-level-3",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should place the request at level 3 (Interaction), say that the arc-interaction skill does not exist yet, and build the change with arc-web-production.",
+          "mustPass": true
+        },
+        {
+          "id": "motion-only-for-a-named-case",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should either stay in CSS and pointer events, or use Motion's plain JavaScript animate() and name the case that allows it (a swipe that carries its velocity). It should not add GSAP or Motion's React API.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["routing", "levels", "motion"], "difficulty": "medium", "intent": "level-3-interaction" },
       "sandbox": "just-bash"
     }
   ]
