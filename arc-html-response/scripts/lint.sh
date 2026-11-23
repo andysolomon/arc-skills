@@ -89,8 +89,10 @@ lint_file() {
   at=$(doc_lines '(/home/|/Users/|/tmp/|/private/var/)' "$file");      [ -n "$at" ] && fail "local path at line $at; use repo-relative paths"
 
   # Motion rules.
-  if [ -n "$(css_lines '@keyframes' "$file")" ] && [ -z "$(css_lines 'prefers-reduced-motion' "$file")" ]; then
-    fail "@keyframes without a prefers-reduced-motion guard"
+  # An animation in use (not `animation:none`) needs a reduced-motion guard somewhere.
+  # Unused @keyframes left over from the template are harmless.
+  if [ -n "$(css_lines 'animation(-name)?[[:space:]]*:[[:space:]]*[^n;}]' "$file")" ] && [ -z "$(css_lines 'prefers-reduced-motion' "$file")" ]; then
+    fail "animation without a prefers-reduced-motion guard"
   fi
   at=$(css_lines 'animation-timeline' "$file");                         [ -n "$at" ] && fail "scroll-driven animation at line $at; content stays hidden in T3's frame"
 
@@ -109,6 +111,11 @@ lint_file() {
       fi
     fi
   fi
+
+  # Motion taste (warnings): list exact properties, and never ease-in on UI
+  # (it starts slow, delaying the moment the reader is watching).
+  at=$(css_lines 'transition(-property)?[[:space:]]*:([^;}]*[ ,])?[[:space:]]*all([ ;,}]|$)' "$file"); [ -n "$at" ] && warn "transition: all at line $at; list the exact properties"
+  at=$(css_lines 'ease-in([^-]|$)' "$file");                          [ -n "$at" ] && warn "ease-in at line $at; use ease-out (or the template's --ease)"
 
   # House style and metadata.
   grep -Eqi '<title>[^<]+</title>' "$file"     || warn "no <title>"

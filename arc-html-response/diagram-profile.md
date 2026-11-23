@@ -9,6 +9,9 @@ notes: arc-html-response page tokens; system fonts; passes the Postplan 0.0.4 co
 <!-- Adapted from diagram-design v2.6 references/style-guide.md. MIT License, Copyright (c) 2025 Cathryn Lavery. https://github.com/cathrynlavery/diagram-design -->
 # Style Guide
 
+> **How arc-html-response uses this file.** Only these parts apply to a diagram inside a response page: the semantic roles and their token map, the contrast contract, the focal (one-accent) rule, the typography sizes, and the node treatments below, mapped to tokens as: `focal` → `.box.key` (accent-tint fill, accent stroke); `backend` → `var(--surface)` fill, `var(--fg)` stroke; `store` → `color-mix(in srgb, var(--fg) 5%, transparent)` fill, `var(--dim)` stroke; `external` → `color-mix(in srgb, var(--fg) 3%, transparent)` fill, `var(--line)` stroke; `optional` → the same as external with a `5 4` dash. The sizes here are tuned to the kit's 680-wide viewBox. Everything else (font links, Korean, Chinese and Cyrillic notes, the terminal skin, onboarding, export and repository scripts) is inherited from diagram-design and does not apply. Markup comes from the kit's `diagram` shell (its classes, markers and stroke widths), not from diagram-design's templates.
+
+
 **The single source of truth for colors, typography, and tokens.** Every diagram draws from this — not from hex values inlined in other reference files. If you want to change the visual skin of Diagram Design, change this file.
 
 Current skin: **Arc Postplan**. True black paper in dark and warm off-white in light, one pink accent, system fonts only. It matches the page tokens in arc-html-response (`template.html`), so a diagram drawn with this guide sits inside an HTML response page and passes the Postplan contract (no `<link>`, no web fonts, no script).
@@ -100,10 +103,10 @@ A self-contained palette for the terminal-window primitive (see [primitive-termi
 | Role | Family | Size | Weight | Usage |
 |---|---|---|---|---|
 | `title` | system serif (`ui-serif, Georgia, "Times New Roman", serif`) | 1.75rem | 400 | Page H1 |
-| `node-name` | system sans (`ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif`) | 12px | 600 | Human-readable labels |
-| `sublabel` | system mono (`ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`) | 9px | 400 | Port, protocol, URL, field type |
-| `eyebrow` | system mono | 7–8px | 500, tracked 0.18em, uppercase | Type tags, axis labels |
-| `arrow-label` | system mono | 8px | 400, tracked 0.06em | Arrow annotations |
+| `node-name` | system sans (`ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif`) | 13px | 600 | Human-readable labels |
+| `sublabel` | system mono (`ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`) | 11px | 400 | Port, protocol, URL, field type |
+| `eyebrow` | system mono | 10px | 500, tracked 0.18em, uppercase | Type tags, axis labels |
+| `arrow-label` | system mono | 10px | 400, tracked 0.06em | Arrow annotations |
 | `callout` | system serif *italic* | 14px | 400 | Editorial asides only |
 
 ### Font stack

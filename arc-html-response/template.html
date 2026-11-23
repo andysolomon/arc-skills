@@ -14,17 +14,22 @@
   --mono:var(--font-mono,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace);
   --sans:var(--font-sans,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif);
   --ease:cubic-bezier(.2,.7,.2,1);
+  /* motion timings: hover 160ms, state change 220ms, entrance 500ms, 60ms between staggered items */
+  --t-micro:160ms; --t-state:220ms; --t-enter:500ms; --stagger:60ms;
+  /* chart series colors (stacked bars, legends); read T3's chart palette inline */
+  --c1:var(--chart-1,#ff2e93); --c2:var(--chart-2,#4f9dff); --c3:var(--chart-3,#2ec4b6); --c4:var(--chart-4,#f5a524);
 }
 @media (prefers-color-scheme: light){
   :root:not([data-theme="dark"]){
     --bg:#fbfaf7; --fg:var(--foreground,#141416); --dim:var(--muted-foreground,#5d5d66);
     --line:var(--border,#e4e2dc); --surface:var(--card,#ffffff);
+    --c1:var(--chart-1,#d1006b); --c2:var(--chart-2,#1f6fd1); --c3:var(--chart-3,#0f8a7e); --c4:var(--chart-4,#b86e00);
     --hi:#d1006b; --link:var(--info,#1a62bd); --ok:var(--success,#14884a); --bad:var(--destructive,#c62f34); --warn:var(--warning,#946800);
   }
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{color:var(--fg);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+body{color:var(--fg);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-wrap:break-word} /* long words wrap instead of widening the page */
 main{max-width:820px;margin:0 auto;padding:8px 0 24px}
 
 /* standalone: delete this block for html_render; keep it for Postplan */
@@ -40,16 +45,21 @@ section{margin-top:56px}
 .sub{color:var(--dim);margin:0 0 18px;max-width:640px}
 a{color:var(--hi)}
 code{font-family:var(--mono);font-size:.88em;border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
+.note{font-size:13px;color:var(--dim);margin:10px 0 0}
+.wide{overflow-x:auto} /* wrap a wide table so only the table scrolls on phones */
 svg{width:100%;height:auto;display:block}
-svg text{font-family:var(--sans)}
+svg:not(.spot svg) text{font-family:var(--sans)} /* illustration cards keep their own fonts */
 table{width:100%;border-collapse:collapse;font-size:15px}
+/* numbers line up and don't jitter; body text stays near 65 characters a line */
+table,.packet,.bar .val,.changes td.n{font-variant-numeric:tabular-nums}
+main p{max-width:65ch}
 th,td{text-align:left;vertical-align:top;padding:10px 12px 10px 0;border-top:1px solid var(--line)}
 th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);border-top:none}
 /* table.stack-sm: each row becomes a block under 560px instead of squeezing columns */
 @media (max-width:560px){
   table.stack-sm tr:first-child{display:none}
   table.stack-sm tr{display:block;border-top:1px solid var(--line);padding:10px 0}
-  table.stack-sm td{display:block;border:0;padding:2px 0;white-space:normal}
+  table.stack-sm td{display:block;border:0;padding:2px 0;white-space:normal;overflow-wrap:anywhere}
   table.stack-sm td:first-child{font-weight:600}
 }
 .row{display:grid;grid-template-columns:1fr 24px 1fr;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
@@ -61,15 +71,18 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
 .pass{color:var(--ok)} .fail{color:var(--bad)} .warn{color:var(--warn)} .nr{color:var(--dim)}
 @media (max-width:720px){
   .row{grid-template-columns:1fr;gap:4px}.row .arrow{display:none}
-  .wide{overflow-x:auto}
 }
 
 /* Motion: animate FROM the start state so a still frame shows the finished page.
-   Everything lives behind reduced-motion. No scroll-driven animation. */
+   Everything lives behind reduced-motion. No scroll-driven animation.
+   Never animate the h1 or the lede: the answer shows at once. */
 @media (prefers-reduced-motion: no-preference){
-  .row{animation:rise .5s var(--ease) backwards;animation-delay:calc(var(--i,0) * 60ms)}
+  .row{animation:rise var(--t-enter) var(--ease) backwards;animation-delay:calc(var(--i,0) * var(--stagger))}
 }
 @keyframes rise{from{opacity:0;transform:translateY(8px)}}
+@keyframes statein{from{opacity:0}} /* tabs and details: opacity only, they are switched often */
+/* .still: put on a secondary chart so only the page's main visual animates */
+.still,.still *{animation:none!important}
 </style>
 </head>
 <body>
@@ -96,6 +109,7 @@ th{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--dim);borde
     <div class="row" style="--i:1"><div class="from">another current behavior</div><div class="arrow">→</div><div>its replacement</div></div>
   </section>
 
+  <!-- Packet: only for reports of work you did. Delete it for analysis, plans and explanations. -->
   <section>
     <h2>What was checked</h2>
     <div class="packet">

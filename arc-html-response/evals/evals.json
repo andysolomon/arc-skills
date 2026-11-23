@@ -291,6 +291,36 @@
       ]
     },
     {
+      "id": "stateful-request-routes-to-lakebed",
+      "description": "Routing: a request that needs shared state is treated as an app built on Lakebed first, not faked as a static page.",
+      "prompt": "Make a page where my team can vote on Friday lunch: tacos, ramen, or salad. Everyone should see the running tally.",
+      "expected_output": "The assistant explains that votes and a shared tally need an app rather than a static page, proposes building it as a Lakebed capsule, and confirms before deploying instead of publishing a static page with a non-working form.",
+      "assertions": [
+        {
+          "type": "regex-match",
+          "pattern": "Lakebed",
+          "target": "assistant-text",
+          "flags": "i"
+        },
+        {
+          "id": "no-fake-form",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not deliver a static HTML or Postplan page with a voting form or buttons that cannot actually record votes. It should say the tally needs shared state, name Lakebed as where to build it (Cloudflare only as the step up if it outgrows Lakebed), and either ask before deploying or build without deploying.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "lakebed"
+        ],
+        "difficulty": "medium",
+        "intent": "stateful-to-app"
+      },
+      "sandbox": "just-bash"
+    },
+    {
       "id": "negative-one-line-answer",
       "description": "Negative: a one-fact question stays in plain text.",
       "prompt": "What port does the Vite dev server use by default?",
