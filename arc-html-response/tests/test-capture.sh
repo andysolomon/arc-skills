@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tests for scripts/frames.mjs and the input checks of scripts/stage.mjs.
+# Tests for scripts/frames.mjs and the input checks of scripts/stage.mjs and scripts/hairline.mjs.
 # Run: bash arc-html-response/tests/test-capture.sh
 # stage.mjs's capture itself needs Chrome and an installed stageshow, so it runs in the
 # release gate (tests/fresh-agent.md), not here.
@@ -9,6 +9,7 @@ here=$(cd "$(dirname "$0")" && pwd)
 skill=$(dirname "$here")
 frames="$skill/scripts/frames.mjs"
 stage="$skill/scripts/stage.mjs"
+hairline="$skill/scripts/hairline.mjs"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 pass=0 fail=0
@@ -51,6 +52,17 @@ code "stage: a folder that isn't stageshow exits 2" 2 node "$stage" --stageshow 
 echo '{"name":"x"}' > "$work/package.json"
 out=$(node "$stage" --stageshow "$work" --url http://127.0.0.1:1/ --slug s --label l --out "$work/s" 2>&1)
 has "stage: missing playwright-core says to npm install" 'run npm install there first' "$out"
+
+# hairline.mjs: bad input is refused before any browser starts.
+code "hairline: --help exits 0" 0 node "$hairline" --help
+code "hairline: no arguments exits 2" 2 node "$hairline"
+code "hairline: a missing --desc exits 2" 2 node "$hairline" --page "$work/p.html" --slug s --title t --out "$work/s.svg"
+code "hairline: a bad slug exits 2" 2 node "$hairline" --page "$work/p.html" --slug "Bad Slug" --title t --desc d --out "$work/s.svg"
+code "hairline: --at outside the viewBox exits 2" 2 node "$hairline" --page "$work/p.html" --slug s --title t --desc d --at 500,10 --out "$work/s.svg"
+code "hairline: a missing page exits 2" 2 node "$hairline" --page "$work/none.html" --slug s --title t --desc d --out "$work/s.svg"
+echo '<!doctype html><p>not a figure</p>' > "$work/p.html"
+out=$(node "$hairline" --page "$work/p.html" --slug s --title t --desc d --out "$work/s.svg" 2>&1)
+has "hairline: a page that isn't Hairline is refused" 'is not a Hairline page' "$out"
 
 echo "--- $pass passed, $fail failed"
 [ "$fail" -eq 0 ]
