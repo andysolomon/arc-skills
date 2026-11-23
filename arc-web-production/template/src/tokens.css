@@ -5,8 +5,9 @@
   color-scheme:dark light;
   --bg:#000; --fg:#fff; --dim:#a1a1aa; --line:#27272a; --surface:#0e0e11;
   --hi:#ff2e93; --on-hi:#000; --link:#4f9dff; --ok:#3ddc84; --bad:#ff5a5f; --warn:#ffd23f;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  /* Geist first; where it isn't loaded or installed, the system stack behind it shows */
+  --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --ease:cubic-bezier(.2,.7,.2,1);
   /* motion timings: hover 160ms, state change 220ms, entrance 500ms, 60ms between staggered items */
   --t-micro:160ms; --t-state:220ms; --t-enter:500ms; --stagger:60ms;
