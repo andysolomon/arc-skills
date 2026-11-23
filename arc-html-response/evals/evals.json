@@ -84,6 +84,49 @@
       "sandbox": "just-bash"
     },
     {
+      "id": "decision-asks-in-dialog",
+      "description": "A choice the user must make is explained on the page and asked through the harness's native question dialog, not as typed codes or buttons on the page.",
+      "prompt": "Help me decide two things for the sync backend. Storage: Durable Objects or Postgres. Rollout: behind a flag in one region first, or straight to everyone. Lay out the trade-offs and let me pick. Save the page as decide/index.html in the current directory.",
+      "expected_output": "decide/index.html shows both questions as a decisions block with the recommended option first; the chat reply is short and the assistant then asks both questions through its question tool (AskUserQuestion when available), recommended option first and labeled, instead of asking the user to type \"1A, 2B\". With no question tool it falls back to \"Answer like 1A, 2B\".",
+      "assertions": [
+        {
+          "type": "file-exists",
+          "path": "decide/index.html"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "^(?![\\s\\S]*<script)(?![\\s\\S]*<form[\\s>])(?![\\s\\S]*<button[\\s>])(?=[\\s\\S]*Durable Objects)[\\s\\S]*Postgres",
+          "target": {
+            "file": "decide/index.html"
+          },
+          "flags": "i"
+        },
+        {
+          "id": "asks-in-dialog",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "If the assistant had a native question tool (such as AskUserQuestion), it should use it after the page to ask both questions, with option names matching the page, the recommended option listed first and marked Recommended, and no hand-made 'Other' option. It should not only ask the user to type answers like '1A, 2B'. If it had no such tool, ending with 'Answer like 1A, 2B' passes.",
+          "mustPass": true
+        },
+        {
+          "id": "page-explains-not-collects",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The page should explain each option's trade-off and the recommendation, and should not pretend to collect the answer itself (no clickable buttons, forms, or 'tap to choose' copy).",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "decisions",
+          "routing"
+        ],
+        "difficulty": "medium",
+        "intent": "choice-via-native-dialog"
+      },
+      "sandbox": "just-bash"
+    },
+    {
       "id": "publishes-keepable-writeup",
       "description": "Golden path: a write-up the user wants to share is published to Postplan and the link is reported.",
       "prompt": "Write up the migration plan for moving our auth to passkeys so I can send it to the team. Save the page as plan/index.html in the current directory.",

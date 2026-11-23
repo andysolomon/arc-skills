@@ -21,7 +21,7 @@ The idea comes from MengTo/Skills: after writing each illustration skill, its au
 Each one exercises a different part of the skill. Real data is in the prompt so the agent has nothing to invent.
 
 1. **Chart and findings.** "Our build times last week were: esbuild 1.2 s, Vite 2.9 s, webpack 9.8 s, Rollup 4.1 s. CI flakes: 3 of 40 runs failed on the e2e suite, all on the login spec. Write me a short report on where the build time goes and what to fix first."
-2. **Branching diagram and a decision.** "Explain how a request moves through our system and help me decide on caching. The browser calls the API gateway, which sends reads to a cache and writes to the orders service; the orders service writes to Postgres and publishes to a queue that the email worker consumes. Options: cache at the gateway, or in the orders service."
+2. **Branching diagram and a decision.** "Explain how a request moves through our system and help me decide on caching. The browser calls the API gateway, which sends reads to a cache and writes to the orders service; the orders service writes to Postgres and publishes to a queue that the email worker consumes. Options: cache at the gateway, or in the orders service." Also check that the choice is asked in the question dialog, with the recommended option first, not as a request to type "1A".
 3. **Work report.** "You changed src/auth/session.ts (+24 −9, refresh once per tab), added src/auth/lock.ts (+41, a cross-tab lock) and fixed tests/e2e/login.spec.ts (+18 −30, wait for the cookie instead of sleeping). Unit tests passed 212/212; e2e on CI was not run. Report the work."
 
 ## Rubric
