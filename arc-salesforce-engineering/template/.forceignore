@@ -1,0 +1,7 @@
+# Files the sf CLI never deploys or retrieves
+package.xml
+**/jsconfig.json
+**/.eslintrc.json
+**/__tests__/**
+**/tsconfig.json
+**/*.ts

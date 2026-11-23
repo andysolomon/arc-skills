@@ -1,0 +1,144 @@
+{
+  "version": "1",
+  "skill_name": "arc-system-architecture",
+  "evals": [
+    {
+      "id": "places-on-lowest-rung",
+      "description": "Golden path: inventory first, requirements stated, each part placed on the lowest rung that meets them, drawn with trust boundaries.",
+      "prompt": "I have a small Node API and a Postgres database in a compose file on my home server. Only I use it, from my laptop and phone. Where should it run, and how should I reach it?",
+      "expected_output": "The assistant takes the inventory (compose services), states the requirements (reach: my devices; lasting; relational state), keeps it on the existing host as a container rung with ports bound to 127.0.0.1, reaches it over Tailscale serve rather than opening ports or going public, lists backup for the Postgres volume, and draws it with the tailnet as a trust boundary.",
+      "assertions": [
+        {
+          "id": "inventory-first",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should start from what exists (the compose file and its services, observed or told) before recommending a placement.",
+          "mustPass": true
+        },
+        {
+          "id": "lowest-rung",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should keep the system private, reached over the tailnet (Tailscale serve) with ports bound to 127.0.0.1, and should not move it to a public cloud, add Kubernetes, or open router ports, giving 'only my devices' as the reason.",
+          "mustPass": true
+        },
+        {
+          "id": "state-backup",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say where the Postgres data lives and how it is backed up, or name the missing backup as a gap.",
+          "mustPass": true
+        },
+        {
+          "id": "diagram-boundaries",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "If the response draws or describes a diagram, it should show trust boundaries (tailnet, host) and label connections with protocol and port.",
+          "mustPass": false
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "golden-path",
+          "placement"
+        ],
+        "difficulty": "medium",
+        "intent": "place-private-service"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "scheduled-python-job",
+      "description": "A nightly non-JavaScript job beside a Cloudflare app: placed by trigger and runtime, writing through the owner's API.",
+      "prompt": "My Foldkit app is on Cloudflare via Alchemy, with its data in a Durable Object. I also want a nightly Python job that scrapes prices into the same data. Where should the job run? Draw the whole thing.",
+      "expected_output": "The assistant names the trigger (a schedule) and runtime (Python), places the job on a CI schedule, a Cloudflare Container started by a Cron Trigger, or a host timer, with the reason, and has it write through a Worker route protected by a bearer secret and idempotent on a key, since nothing outside the Worker can reach the Durable Object. The diagram labels the cron trigger and the route.",
+      "assertions": [
+        {
+          "id": "placed-by-trigger-and-runtime",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should place the job by its trigger (nightly schedule) and runtime (Python), choosing a scheduled runner such as GitHub Actions, a Cloudflare Container started by a Cron Trigger, or a timer on a host, and say why.",
+          "mustPass": true
+        },
+        {
+          "id": "writes-through-owner",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The job should write through a Worker API route (with a secret and idempotent writes), not directly into the Durable Object, and the response should say a Durable Object is only reachable from its Worker.",
+          "mustPass": true
+        },
+        {
+          "id": "no-inbound-route",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should treat the scheduled job as having no inbound route, and the diagram (if drawn) should label the schedule or trigger rather than a port for it.",
+          "mustPass": false
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "placement",
+          "schedule"
+        ],
+        "difficulty": "hard",
+        "intent": "place-scheduled-job"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "no-cluster-for-one-service",
+      "description": "Negative: a request to put one small service on Kubernetes is not followed without naming the requirement it would need.",
+      "prompt": "Set up a Kubernetes cluster on AWS for my one-page waitlist app so it can scale.",
+      "expected_output": "The assistant says a cluster is not warranted for one service, places it on Cloudflare (Workers, with a store for signups) or Lakebed for a quick try, asks only if a real requirement (existing cluster, several services) changes that, and does not create cloud resources.",
+      "assertions": [
+        {
+          "id": "declines-cluster",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should explain that Kubernetes is not warranted for one small service and recommend a lower rung (Cloudflare Workers or Lakebed), rather than writing cluster setup.",
+          "mustPass": true
+        },
+        {
+          "id": "no-apply",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not create or apply cloud infrastructure without confirmation, and should mention that a deploy creates a public URL or costs money before doing it.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "negative",
+          "placement"
+        ],
+        "difficulty": "easy",
+        "intent": "avoid-overbuild"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "negative-app-build-routes-away",
+      "description": "Adjacent negative: building the app's screens and API belongs to arc-web-production, not to this skill.",
+      "prompt": "Build me a habit tracker web app with a login and a streak chart.",
+      "expected_output": "The assistant routes the build to arc-web-production (a Foldkit app on Cloudflare), and does not produce an architecture review instead of the app.",
+      "assertions": [
+        {
+          "id": "routes-to-web-production",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should treat this as an app build owned by arc-web-production and not answer with only a placement or architecture diagram.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "negative"
+        ],
+        "difficulty": "easy",
+        "intent": "route-app-build"
+      },
+      "sandbox": "just-bash"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 name: arc-web-production
-description: Builds web apps that last, on the Effect stack - Foldkit (The Elm Architecture on Effect v4, no React), Vite, tests that run without a browser, and an Alchemy stack that deploys to Cloudflare. Use when asked to build, extend, restyle, test or ship a real web app, dashboard or frontend; when a Lakebed prototype has outgrown Lakebed; or to render app data as a script-free page. Not for one-off answers and reports (arc-html-response), throwaway shared-state prototypes (Lakebed, through arc-html-response), or screens inside a Salesforce org.
+description: Builds web apps that last, on the Effect stack - Foldkit (The Elm Architecture on Effect v4, no React), Vite, tests that run without a browser, and an Alchemy stack that deploys to Cloudflare. Use when asked to build, extend, restyle, test or ship a real web app, dashboard or frontend; when a Lakebed prototype has outgrown Lakebed; or to render app data as a script-free page. Not for one-off answers and reports (arc-html-response), throwaway shared-state prototypes (Lakebed, through arc-html-response), screens inside a Salesforce org (arc-salesforce-engineering), or deciding where a system runs (arc-system-architecture).
 ---
 
 # Web production

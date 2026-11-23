@@ -28,9 +28,9 @@
     },
     {
       "id": "salesforce-host-exception",
-      "description": "A screen inside a Salesforce org keeps the shared rules but takes the host's accent, and the missing layer is named.",
+      "description": "A screen inside a Salesforce org keeps the shared rules, takes the host's accent and light theme, and is routed to the Salesforce layer.",
       "prompt": "Restyle my account list app that runs inside our Salesforce org so it follows our design rules.",
-      "expected_output": "The assistant says the Salesforce layer skill does not exist yet, keeps the shared type, spacing, status and motion rules, and uses Salesforce blue as the accent inside the org.",
+      "expected_output": "The assistant routes the work to arc-salesforce-engineering, keeps the shared type, spacing, status and motion rules, and uses Salesforce blue as the accent with the light values inside the org.",
       "assertions": [
         {
           "id": "host-accent",
@@ -40,10 +40,10 @@
           "mustPass": true
         },
         {
-          "id": "says-layer-is-planned",
+          "id": "routes-to-salesforce-layer",
           "kind": "output",
           "method": "judge",
-          "prompt": "The response should say plainly that the Salesforce engineering layer is planned and not built yet, rather than pretending a skill for it exists.",
+          "prompt": "The response should name arc-salesforce-engineering as the layer for a screen inside the org, and should not build it as a Foldkit app with arc-web-production.",
           "mustPass": true
         }
       ],

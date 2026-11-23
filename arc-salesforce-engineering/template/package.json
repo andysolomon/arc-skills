@@ -1,0 +1,19 @@
+{
+  "name": "arc-salesforce-app",
+  "private": true,
+  "scripts": {
+    "test": "sfdx-lwc-jest",
+    "lint:styles": "node scripts/check-styles.mjs",
+    "apex:check": "prettier --check \"force-app/**/*.cls\"",
+    "source:check": "node -e \"require('fs').rmSync('.sf/convert-check',{recursive:true,force:true})\" && SF_DISABLE_TELEMETRY=true npx -y @salesforce/cli@2.159.7 project convert source --root-dir force-app --output-dir .sf/convert-check",
+    "check": "npm test && npm run lint:styles && npm run apex:check && npm run source:check",
+    "org:validate": "SF_DISABLE_TELEMETRY=true npx -y @salesforce/cli@2.159.7 project deploy validate --source-dir force-app --test-level RunLocalTests",
+    "org:deploy": "SF_DISABLE_TELEMETRY=true npx -y @salesforce/cli@2.159.7 project deploy start --source-dir force-app --test-level RunLocalTests",
+    "org:test": "SF_DISABLE_TELEMETRY=true npx -y @salesforce/cli@2.159.7 apex run test --test-level RunLocalTests --code-coverage --result-format human --wait 10"
+  },
+  "devDependencies": {
+    "@salesforce/sfdx-lwc-jest": "7.9.0",
+    "prettier": "3.10.1",
+    "prettier-plugin-apex": "2.4.0"
+  }
+}
