@@ -1,0 +1,260 @@
+{
+  "version": "1",
+  "skill_name": "arc-interaction",
+  "evals": [
+    {
+      "id": "swipe-to-dismiss-ends-in-a-fact",
+      "description": "Golden path: a swipe gesture in a Foldkit app is built as a Mount that reports a fact, with a button that does the same and the motion rules kept.",
+      "prompt": "In our Foldkit tasks app, let me swipe a task row sideways to archive it. A quick flick should send it off, a small slow drag should spring back. It is built from the arc-web-production template.",
+      "expected_output": "The assistant names the case (a swipe that carries its velocity), keeps the Model as the truth with a past-tense Message from a Foldkit Mount, adds a labelled Archive button that reaches the same update branch, puts the spring and velocity numbers in one constants module, handles reduced motion, and plans Story, Scene and real-browser tests.",
+      "assertions": [
+        {
+          "id": "names-the-case",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that this is a drag or swipe that carries its velocity, one of the three cases level 3 is for, before describing code.",
+          "mustPass": true
+        },
+        {
+          "id": "gesture-ends-in-a-fact",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should have the gesture end in one past-tense Message (for example SwipedAwayTask) sent from a Foldkit Mount, and should leave the decision to archive to update.",
+          "mustPass": true
+        },
+        {
+          "id": "no-drag-state-in-model",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should keep the row's position during the drag out of the Model, inside the Mount's own DOM code.",
+          "mustPass": true
+        },
+        {
+          "id": "mount-with-acquire-release",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should bring the pointer and animation code into the view through Mount.define or Mount.defineStream with OnMount, and build the listeners inside Effect.acquireRelease so they are released when the row leaves.",
+          "mustPass": true
+        },
+        {
+          "id": "button-path",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should add a labelled button (for example Archive) that does the same thing as the swipe, for keyboards and screen readers.",
+          "mustPass": true
+        },
+        {
+          "id": "numbers-in-one-module",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should put spring and velocity numbers in one constants module as named constants, and should not present them as CSS tokens.",
+          "mustPass": true
+        },
+        {
+          "id": "reduced-motion",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that under prefers-reduced-motion the row may still follow the finger and the release ends at once, with no spring and no fly-off animation.",
+          "mustPass": true
+        },
+        {
+          "id": "three-kinds-of-test",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should plan a Story test for update, a Scene test that the Mount is present and that its Message changes the Model, and a real-browser test for the movement itself.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "golden-path",
+          "swipe"
+        ],
+        "difficulty": "medium",
+        "intent": "build-swipe-gesture"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "hover-spring-is-level-two-css",
+      "description": "Adjacent negative: a decorative hover spring and a scroll effect are not level 3 work.",
+      "prompt": "Make the cards in our Foldkit dashboard bounce with a spring when I hover them, and fade each section in as I scroll down to it.",
+      "expected_output": "The assistant says neither request is one of the three level 3 cases, declines the hover spring and the scroll-driven animation, and offers a plain CSS hover transition on the timing tokens inside the reduced-motion guard instead.",
+      "assertions": [
+        {
+          "id": "not-level-three",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that a hover effect and a scroll-triggered fade are not among the three cases level 3 covers (a velocity-carrying drag or swipe, a layout move, an interruptible spring).",
+          "mustPass": true
+        },
+        {
+          "id": "no-motion-library-for-hover",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not add Motion's animate() or any other animation library for the hover effect.",
+          "mustPass": true
+        },
+        {
+          "id": "no-scroll-driven-animation",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should decline the scroll-driven fade, or say that scroll-driven animation is out of bounds.",
+          "mustPass": true
+        },
+        {
+          "id": "css-on-tokens",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should offer a plain CSS transition for the hover that uses the timing tokens (such as --t-micro and --ease) inside a prefers-reduced-motion: no-preference guard.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "adjacent-negative",
+          "decoration"
+        ],
+        "difficulty": "easy",
+        "intent": "refuse-decoration"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "refuses-gsap-and-react-motion",
+      "description": "Edge: the user names GSAP and Motion's React API for a reorder with moving neighbours. The layout move is built with Motion's plain animate() in a Mount.",
+      "prompt": "Add drag to reorder to the list in our Foldkit app. Use GSAP Draggable, or framer-motion's <motion.li layout> if that is easier, so the other rows slide out of the way.",
+      "expected_output": "The assistant keeps the goal and changes the tools: no GSAP, no Motion React API (Foldkit has no React), a layout move by FLIP with Motion's plain animate() inside a Foldkit Mount, a non-gesture way to reorder, and reduced motion handled in the code because animate() does not do it by default.",
+      "assertions": [
+        {
+          "id": "no-gsap",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should decline GSAP and say that other animation libraries stay out.",
+          "mustPass": true
+        },
+        {
+          "id": "no-react-api",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that Motion's React API (motion.li, motion/react, framer-motion components) can't be used because a Foldkit app has no React.",
+          "mustPass": true
+        },
+        {
+          "id": "plain-animate-in-mount",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should use Motion's plain JavaScript animate(), imported from \"motion\", inside a Foldkit Mount.",
+          "mustPass": true
+        },
+        {
+          "id": "flip",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should move the neighbouring rows with the FLIP technique or an equivalent description: measure each row before and after the change, invert with a transform, then play to zero.",
+          "mustPass": true
+        },
+        {
+          "id": "non-gesture-reorder",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should add a labelled control, such as move up and move down buttons, so the reorder does not depend on dragging.",
+          "mustPass": true
+        },
+        {
+          "id": "reduced-motion-checked-in-code",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should check prefers-reduced-motion in its own code before animating, or say that Motion's animate() does not respect it by default.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "edge",
+          "library-choice",
+          "layout-move"
+        ],
+        "difficulty": "hard",
+        "intent": "keep-library-rule"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "scene-breaks-on-unresolved-mount",
+      "description": "Edge: adding a Mount to a row breaks existing Scene tests. The fix is to resolve the Mount, not to drop the test.",
+      "prompt": "I added a swipe Mount to every row in our Foldkit list, following arc-interaction. Now my old Scene tests throw 'I found unresolved Mounts when an interaction dispatched a new Message'. They only click the Add button. What do I do?",
+      "expected_output": "The assistant explains that a Scene must resolve every Mount it renders before its next step, gives the swipe Mount a first Message that changes nothing, resolves one instance per row with Scene.Mount.resolveAll, and keeps the tests.",
+      "assertions": [
+        {
+          "id": "explains-the-rule",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should explain that a Scene test throws when a rendered Mount has not been resolved before the next interaction, and that a streaming Mount counts too.",
+          "mustPass": true
+        },
+        {
+          "id": "harmless-first-message",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should resolve the swipe Mount with a Message that leaves the Model unchanged (for example a Completed or attached Message the Mount sends when it starts listening), not with the Message that removes the row.",
+          "mustPass": true
+        },
+        {
+          "id": "one-resolver-per-row",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should resolve each row's Mount, one resolver per row, using Scene.Mount.resolveAll or Scene.Mount.resolve.",
+          "mustPass": true
+        },
+        {
+          "id": "keeps-the-tests",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should keep the existing Scene tests and should not suggest deleting them, skipping them, or removing the Mount.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "edge",
+          "testing"
+        ],
+        "difficulty": "medium",
+        "intent": "fix-scene-mounts"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "routes-live-cursors-elsewhere",
+      "description": "Routing: live presence is level 4, not an interaction request, even though things move on screen.",
+      "prompt": "Show everyone else's cursor moving on our shared board in real time.",
+      "expected_output": "The assistant says this needs a live connection, which is level 4 (arc-realtime), and does not treat it as a gesture to build with this skill.",
+      "assertions": [
+        {
+          "id": "names-live-connection",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that other people's cursors need a live connection such as a WebSocket or presence, which is level 4 (arc-realtime), not level 3.",
+          "mustPass": true
+        },
+        {
+          "id": "does-not-build-as-gesture",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not present a drag, swipe or spring Mount as the answer to this request.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "adjacent-negative"
+        ],
+        "difficulty": "easy",
+        "intent": "route-to-realtime"
+      },
+      "sandbox": "just-bash"
+    }
+  ]
+}

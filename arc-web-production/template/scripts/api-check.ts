@@ -20,6 +20,8 @@ assert.equal((await post(JSON.stringify({ id, text: "api check" }))).status, 200
 assert.equal((await post(JSON.stringify({ id, text: "api check" }))).status, 200, "the same save again answers 200")
 assert.equal(await count(), 1, "the same id saved twice is stored once")
 assert.equal((await post(JSON.stringify({ id: randomUUID(), text: "  " }))).status, 400, "blank text answers 400")
+assert.equal((await post(JSON.stringify({ id: "x".repeat(65), text: "a note" }))).status, 400, "an id past 64 characters answers 400")
+assert.equal((await post(JSON.stringify({ id: randomUUID(), text: "x".repeat(2001) }))).status, 400, "text past 2,000 characters answers 400")
 assert.equal((await post("not json")).status, 400, "bad JSON answers 400")
 assert.equal((await fetch(url, { method: "DELETE" })).status, 405, "an unknown method answers 405")
 console.log(`ok  api: ${base} keeps the contract (idempotent save, 400 on bad input, 405)`)

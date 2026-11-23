@@ -7,6 +7,8 @@ description: Decides where and how things run - which machine, platform or cloud
 
 An architecture here is a placement. It records every component, where it runs, how it is reached, what starts it, and where its state and secrets live. Start from what is observed, not from memory. Place each part as low as its needs allow, draw it, and write it as code only when asked to set it up.
 
+In `arc-design`'s pyramid this skill is the architecture side of every level: what has to run behind a page, an app, a live connection or a 3D scene. [references/placement.md](references/placement.md) says which rung each level needs.
+
 This skill owns the wiring between parts: platforms, tunnels, hosts, schedules, clusters, DNS, and the infrastructure code for them. The app inside a part belongs to its own layer: `arc-web-production` for a web app (its deploy guide covers its own Alchemy stack), `arc-salesforce-engineering` for an org.
 
 ## Steps

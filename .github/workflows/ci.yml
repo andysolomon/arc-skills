@@ -1,0 +1,56 @@
+# Checks every skill on each pull request, on main, and once a week (pinned packages and the
+# skills installer can still change under us). scripts/ci.sh runs the same steps locally.
+# Not run here: the eval cases and the fresh-agent gates, which need a model.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: bash scripts/ci.sh checks
+
+  templates:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: arc-web-production template
+            test: arc-web-production/tests/test-template.sh
+          - name: arc-salesforce-engineering template
+            test: arc-salesforce-engineering/tests/test-template.sh
+          - name: arc-interaction overlay
+            test: arc-interaction/tests/test-overlay.sh
+          - name: arc-realtime overlay
+            test: arc-realtime/tests/test-overlay.sh
+          - name: arc-3d overlay
+            test: arc-3d/tests/test-overlay.sh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: bash ${{ matrix.test }}

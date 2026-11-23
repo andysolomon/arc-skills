@@ -1,0 +1,144 @@
+{
+  "version": "1",
+  "skill_name": "arc-realtime",
+  "evals": [
+    {
+      "id": "live-notes-and-presence",
+      "description": "Golden path: a notes app from the template gets a room socket, presence and a screen for every connection state, checked against the mock and local workerd.",
+      "prompt": "Our team's notes app is built from the arc-web-production template. When one person adds a note, the others only see it after the 5 second reload. Make it show up straight away for everyone, and show how many people have the app open.",
+      "expected_output": "The assistant places the request at level 4, starts from the overlay, treats the socket as a Foldkit Subscription and sending as a Command, decodes every frame with a Schema, keeps saves on the idempotent HTTP path, gives connecting, live, reconnecting and offline each a screen, shows a presence count, changes the Worker and the mock together, and reports each check as PASS, FAIL or NOT_RUN for the mock and for local workerd.",
+      "assertions": [
+        {
+          "id": "socket-is-a-subscription",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should model the WebSocket as a Foldkit Subscription that emits Messages, and sending as a Command. It should not open or read a socket inside update or view.",
+          "mustPass": true
+        },
+        {
+          "id": "frames-are-decoded",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should decode every incoming frame with a Schema into a past-tense Message, and turn a frame that fails to decode into a failure Message instead of throwing.",
+          "mustPass": true
+        },
+        {
+          "id": "every-connection-state-has-a-screen",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should give connecting, live, reconnecting and offline each its own screen text, and keep the last loaded notes visible while the app is reconnecting.",
+          "mustPass": true
+        },
+        {
+          "id": "writes-stay-on-http",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should keep saving a note through the existing idempotent HTTP request, so a dropped socket loses no write.",
+          "mustPass": true
+        },
+        {
+          "id": "both-servers-checked",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should change the Worker and the mock API together, and run the API check against the mock and against the Worker on local workerd (npm run cf:dev), or label whichever it did not run as NOT_RUN.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["golden-path", "websocket", "presence"], "difficulty": "medium", "intent": "live-notes" },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "negative-slow-data-keeps-the-poll",
+      "description": "Adjacent negative: data that changes a few times an hour does not get a socket.",
+      "prompt": "Add a WebSocket to our Foldkit status dashboard so the build numbers stay fresh. They change a few times an hour.",
+      "expected_output": "The assistant says a socket needs a reason, that numbers changing a few times an hour are served by the poll the template already has, adds no WebSocket, and names what would justify one.",
+      "assertions": [
+        {
+          "id": "adds-no-socket",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not add a WebSocket or a room server. It should say the data changes too rarely to need a live connection.",
+          "mustPass": true
+        },
+        {
+          "id": "names-the-poll-and-the-reasons",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should name polling (a tick Message and a list reload) as the right tool here, and say what would justify a socket: a change that must show within about a second, presence, or a WebRTC handshake.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["negative", "polling"], "difficulty": "easy", "intent": "socket-needs-a-reason" },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "video-call-and-turn-are-unverified",
+      "description": "Edge and routing: a video call with a TURN server gets the proven data-channel path, an honest NOT_RUN for media and TURN, and a hand-over of the placement.",
+      "prompt": "Add video calls between two people to our notes app, and set up a TURN server on Cloudflare for it.",
+      "expected_output": "The assistant carries the offer and answer over the existing room socket, says the skill has only proven a data channel between two pages on one machine, labels camera, microphone and TURN as NOT_RUN, lists what to check in the current Cloudflare Realtime docs without quoting prices, limits or API names from memory, sends the choice and placement of the TURN or media server to arc-system-architecture, and creates no cloud resource.",
+      "assertions": [
+        {
+          "id": "labels-media-and-turn-not-run",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that camera, microphone and TURN are not verified by this skill, and label them NOT_RUN unless it actually ran them.",
+          "mustPass": true
+        },
+        {
+          "id": "hands-placement-to-system-architecture",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should send the choice of a TURN or media server, and where it runs, to arc-system-architecture. It should not pick or create the service itself.",
+          "mustPass": true
+        },
+        {
+          "id": "no-facts-from-memory",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not state a Cloudflare price, limit or API name from memory. It should tell the reader which items to check in the current Cloudflare Realtime docs.",
+          "mustPass": true
+        },
+        {
+          "id": "signals-through-the-room-socket",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should send the WebRTC offer and answer over the app's existing room socket, with the server checking and relaying each signal frame.",
+          "mustPass": false
+        }
+      ],
+      "metadata": { "tags": ["edge", "routing", "webrtc"], "difficulty": "hard", "intent": "webrtc-unverified" },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "backoff-and-bad-frames-leave-update",
+      "description": "Edge: reconnect code that reads the clock in update and crashes on an unknown frame is fixed through Messages.",
+      "prompt": "Our Foldkit app's reconnect code calls Date.now() and Math.random() inside update to work out the backoff, and the whole app crashes when the server sends a frame we don't recognise. Fix both.",
+      "expected_output": "The assistant makes update pure by moving the wait and the random jitter into a Command that answers with a Message, keeps the delay schedule as a pure function, decodes frames with a Schema so an unknown one becomes a failure Message, and adds tests for the backoff Command and for a bad frame.",
+      "assertions": [
+        {
+          "id": "update-reads-no-clock",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should remove the clock and the randomness from update, and put the backoff wait in a Command whose result comes back as a Message.",
+          "mustPass": true
+        },
+        {
+          "id": "unknown-frame-becomes-a-message",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should decode each frame with a Schema and turn an unknown or malformed frame into a failure Message, so the app keeps running.",
+          "mustPass": true
+        },
+        {
+          "id": "tests-cover-both",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should add or describe a test that asserts the backoff Command update asks for, and a test that feeds a bad frame and expects the failure Message.",
+          "mustPass": false
+        }
+      ],
+      "metadata": { "tags": ["edge", "purity", "decoding"], "difficulty": "medium", "intent": "time-through-messages" },
+      "sandbox": "just-bash"
+    }
+  ]
+}

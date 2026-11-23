@@ -1,0 +1,144 @@
+{
+  "version": "1",
+  "skill_name": "arc-3d",
+  "evals": [
+    {
+      "id": "golden-scene-in-foldkit-app",
+      "description": "Golden path: a request for a 3D view of real app data is built as a canvas behind a Foldkit Mount, fed by Commands, coloured from tokens, with a fallback.",
+      "prompt": "Our Foldkit warehouse app (built from the arc-web-production template) has a Model with every pallet's rack, shelf level and depth slot and how full it is. Add a 3D view of the racks so a picker can see which slots are full. It has to keep up when a pallet is moved.",
+      "expected_output": "The assistant says why this is level 5 (the data is positions in three dimensions), hosts one three.js canvas through a Foldkit Mount whose resources are built in Effect.acquireRelease, sends later Model changes to the scene with a Command from update, reads colours from the design tokens, gives every state a screen including a table when WebGL is missing, and reports checks as PASS, FAIL or NOT_RUN with frame rate NOT_RUN.",
+      "assertions": [
+        {
+          "id": "states-why-level-5",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say in a sentence what the scene shows from the Model and why it needs 3D (the pallets have a position in three dimensions), before building.",
+          "mustPass": true
+        },
+        {
+          "id": "mount-with-acquire-release",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should host the scene on a canvas through Foldkit's Mount API and build the renderer inside Effect.acquireRelease so it is disposed when the canvas leaves, and should not create the renderer in the view, at module level or in entry.ts.",
+          "mustPass": true
+        },
+        {
+          "id": "model-change-by-command",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should send a moved pallet to the running scene through a Command returned from update, and should say or show that Mount args are read only once, at mount.",
+          "mustPass": true
+        },
+        {
+          "id": "colours-from-tokens",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should take the scene's colours from the app's design tokens by reading their computed values in one module, and should not write a hex or other colour literal in the scene code.",
+          "mustPass": true
+        },
+        {
+          "id": "fallback-shows-same-data",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should include a screen for a browser without WebGL that shows the same data as HTML (a table or a list), and should keep text as HTML outside the canvas with a role of img and a label on the canvas.",
+          "mustPass": true
+        },
+        {
+          "id": "frame-rate-not-claimed",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not claim a frame rate or smoothness from a headless or software-rendered browser test; it should label frame rate NOT_RUN or send that work to arc-webgl-performance.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["golden-path", "mount", "tokens"], "difficulty": "hard", "intent": "build-data-scene" },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "negative-decorative-background",
+      "description": "Adjacent negative: a decorative 3D background that shows no data is declined, with a reason and an alternative.",
+      "prompt": "Add a slowly rotating 3D particle galaxy behind the login form of our Foldkit app. Grab a nice free model or shader from the web, it just needs to look impressive.",
+      "expected_output": "The assistant says the scene would show no data and no mechanism, so it is decoration under the design rules, does not add three.js, a stock model or an endless animation, and offers what the rules allow instead.",
+      "assertions": [
+        {
+          "id": "names-it-decoration",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that a background scene which shows no data or mechanism is decoration and is not what the 3D level is for, in plain words.",
+          "mustPass": true
+        },
+        {
+          "id": "does-not-build-it",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not install three.js, download a stock model or shader, or add an animation that loops forever.",
+          "mustPass": true
+        },
+        {
+          "id": "offers-an-allowed-alternative",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should offer an alternative that fits the rules, such as a plain login screen in the shared tokens, or a scene that shows something real from the app, and may ask which the user wants.",
+          "mustPass": false
+        }
+      ],
+      "metadata": { "tags": ["negative", "taste"], "difficulty": "medium", "intent": "decline-decoration" },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "routing-chart-stays-in-svg",
+      "description": "Routing: a chart that fits in SVG is sent down to a lower level, not built on the GPU.",
+      "prompt": "Make the monthly signups chart on our dashboard a 3D bar chart with three.js so it pops. It is twelve bars, one per month.",
+      "expected_output": "The assistant says twelve bars over one axis fit in SVG, keeps the chart at level 1 or 2 (arc-html-response for a page, arc-web-production for the app), and does not add three.js.",
+      "assertions": [
+        {
+          "id": "keeps-chart-in-svg",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that a twelve-bar chart fits in SVG and should stay there, and should name the lower level or its skill (arc-html-response or arc-web-production) for it.",
+          "mustPass": true
+        },
+        {
+          "id": "no-three-js",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not add three.js or a WebGL canvas for this chart.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["routing", "negative"], "difficulty": "easy", "intent": "route-down-to-svg" },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "edge-blender-not-installed",
+      "description": "Edge: a model is asked for on a machine without Blender. The assistant says so, labels the Blender path NOT_RUN and uses geometry built in code.",
+      "prompt": "The rack view needs a forklift shape that drives to the slot being picked. Model the forklift in Blender and load it into the scene. Blender is not installed on this machine and neither is the blender-skills plugin.",
+      "expected_output": "The assistant says Blender and the blender-skills plugin are missing, does not download a stock model or fake a model file, builds the forklift from geometry in code, and labels the Blender path NOT_RUN while saying how a .glb would be loaded once Blender exists.",
+      "assertions": [
+        {
+          "id": "says-tool-missing",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say plainly that Blender or the blender-skills plugin is not installed, and should label the Blender path NOT_RUN.",
+          "mustPass": true
+        },
+        {
+          "id": "falls-back-to-code-geometry",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should build the shape from geometry made in code (boxes or similar) as the fallback, and should not download a stock model from the web or hand-write a model file.",
+          "mustPass": true
+        },
+        {
+          "id": "names-the-model-path",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say how a Blender model would reach the scene once Blender is available: exported as a .glb file, kept inside the app, and loaded with three.js's GLTFLoader under a size budget.",
+          "mustPass": false
+        }
+      ],
+      "metadata": { "tags": ["edge", "optional-tool", "evidence"], "difficulty": "medium", "intent": "blender-fallback" },
+      "sandbox": "just-bash"
+    }
+  ]
+}
