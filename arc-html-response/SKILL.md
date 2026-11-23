@@ -1,11 +1,13 @@
 ---
 name: arc-html-response
-description: Answer with an HTML page instead of terminal prose. Use for replies that explain, compare, plan, review, recommend, or report finished work, or that have structure (steps, options, numbers, a flow). Renders inline in T3 Code and publishes keepable write-ups to Postplan as static, JavaScript-free pages with SVG/CSS charts, diagrams, and motion. Shows a product UI as a static Stageshow still when a page is about an interface. Asks the user's own choices through the harness's native question dialog, not as typed codes. Routes requests that need state (a vote, a shared checklist, live numbers) to a Lakebed app instead. Skip for one-liners, yes/no, commands to copy, and clarifying questions.
+description: Answer with an HTML page instead of terminal prose. Use for replies that explain, compare, plan, review, recommend, or report finished work, or that have structure (steps, options, numbers, a flow). Renders inline in T3 Code and publishes keepable write-ups to Postplan as static, JavaScript-free pages with SVG/CSS charts, diagrams, and motion. Shows a product UI as a still when a page is about an interface: a screenshot of our own app, or a Stageshow capture. Asks the user's own choices through the harness's native question dialog, not as typed codes. Routes requests that need state (a vote, a shared checklist, live numbers) to a Lakebed app instead. Skip for one-liners, yes/no, commands to copy, and clarifying questions.
 ---
 
 # HTML response
 
 The user reads pages better than terminal scrollback. When a reply has shape (steps, options, a comparison, a flow, numbers, evidence), make it a small HTML page, show it, and keep the chat reply to a line or two.
+
+This is the base layer under `arc-design`, which holds the look every layer shares and routes a request that needs a lasting app to `arc-web-production`.
 
 ## Decide: page or plain text?
 
@@ -96,14 +98,11 @@ Diagrams:
 - **Mermaid, draw.io, Excalidraw sources:** never embed them live or paste a renderer's layout. With diagram-design, use its import (it redraws and reports what it merged or dropped). Without it, redraw by hand in the `diagram` shell.
 
 Motion (CSS only):
-- Motion shows meaning: dashes flowing along an arrow show direction, bars growing show size, a stagger shows order, a panel fading in confirms that a tab or `<details>` opened. No decorative loops.
+- **The shared rules are `arc-design`'s** (its Motion section): motion shows meaning, the four timing tokens, every animation and transition inside the reduced-motion guard, the poster frame, `transform` and `opacity` under 1s each. The template and the kit already follow them. Read that section before writing an animation the kit doesn't have.
+- On a page, meaning looks like this: dashes flowing along an arrow show direction, bars growing show size, a stagger shows order, a panel fading in confirms that a tab or `<details>` opened.
 - Motion is optional. A page with no chart or diagram needs none.
 - Reading order: never animate the headline or the lede, so the answer shows at once. One entrance moment per page, on the main chart or diagram; supporting rows may follow in a stagger. Put `class="still"` on any other chart so it doesn't animate. Feedback on tabs and `<details>` doesn't count as a moment.
-- Use the template's timing tokens, not one-off numbers: `--t-micro` 160ms for hover, `--t-state` 220ms for a state change, `--t-enter` 500ms for entrances, `--stagger` 60ms between items.
-- Put every animation inside `@media (prefers-reduced-motion: no-preference)`.
-- **The poster frame.** Animate *from* the start state (`animation-fill-mode: backwards`), so a screenshot, a thumbnail, or reduced motion shows the finished page. That resting frame must tell the story on its own: the result left on screen, nothing caught mid-change. (The rule comes from Stageshow, which calls that frame the poster.)
 - No scroll-driven animation (`animation-timeline: view()`). T3's frame sizes to the content and never scrolls, so the content stays invisible.
-- Keep each animation under 1s, on `transform` and `opacity`, with the template's `--ease`.
 - **Rehearse it.** A page with an entrance gets filmed before it is shown. `node <skill-dir>/scripts/frames.mjs <file.html> --select "<main visual>"` writes `<file>.frames.html` next to it: the page frozen at 0, 120, 240, 360 and 500 ms, then the poster, each frame labelled with what is moving. `html_preview` that one file at the width the script prints, and read every frame: the stagger runs in order, nothing jumps between frames, and the poster holds up alone. A label in red means one animation runs past 1s. The sheet runs a script to freeze the frames, so it is for preview only: never render, lint or publish it. (Also from Stageshow, which films every demo as a contact sheet before handing it over.)
 
 ## Illustrations (opt-in)
@@ -120,7 +119,8 @@ Pages are spec-like, so they carry no illustrations by default. Add one only whe
 
 A page about an interface (a report on a UI change, a design proposal, a feature walkthrough) may show one still of that interface. Like an illustration it is opt-in: add one only when the page's subject is a UI or the user asks for one.
 
-- **Where stills come from:** the `stageshow` skill ([benjitaylor/skills](https://github.com/benjitaylor/skills/tree/main/stageshow), MIT; `npx skills add benjitaylor/skills --skill stageshow`). Load it and follow its own workflow through its rehearsal (`film.mjs --gate`, ending in `rehearsal passed`). Build a still, or a demo with a `poster`: the poster is the frame that gets captured. If it isn't installed, say so and skip the still. Never hand-build a faux UI.
+- **One of our own apps:** a still of an app we built (with `arc-web-production`) is a screenshot of the real, running app, not a Stageshow build. Shoot it at the width it is shown at, in the page's dark theme (add a light shot only when the light look matters), with real data. Headless Chromium driven by Playwright works. Embed it as an `<img>` with a `data:` PNG source and `alt` text that says what it shows, and name the width and theme in a `figcaption`. Shots at 390 and 728 px ran 10 to 25 KB each.
+- **Any other interface** (one that doesn't exist yet, or isn't ours): stills come from the `stageshow` skill ([benjitaylor/skills](https://github.com/benjitaylor/skills/tree/main/stageshow), MIT; `npx skills add benjitaylor/skills --skill stageshow`). Load it and follow its own workflow through its rehearsal (`film.mjs --gate`, ending in `rehearsal passed`). Build a still, or a demo with a `poster`: the poster is the frame that gets captured. If it isn't installed, say so and skip the still. Never hand-build a faux UI.
 - **Capture:** Stageshow's output is a React component, which a page can't run, so [scripts/stage.mjs](scripts/stage.mjs) renders it in headless Chrome and copies out the laid-out result. Start Stageshow's playground (`npm run dev` in its folder; it needs `npm install` there first), or the host app's own route, then:
 
   ```sh
@@ -134,7 +134,7 @@ A page about an interface (a report on a UI change, a design proposal, a feature
 - **Fit:** the size follows the frame's own width (a container query), so one still fits T3's thread and a full-width Postplan page. It steps the zoom down to 75% before it swaps to the compact design. `--theme both` captures the light and dark themes and swaps them with the page's color scheme. A still with no compact design scrolls inside its frame on phones. The script warns when this happens; give the still a compact design in Stageshow (Stageshow asks for one anyway).
 - **Budget:** with both themes and both sizes, Stageshow's `static-card` came to 35 KiB and `hero-demo` to 71 KiB. The script prints the size and warns past 150 KiB.
 - **Caption:** `--label` becomes both the frame's `aria-label` and its `figcaption`. A still is illustrative: its names and numbers are filler unless you put real ones in, so say so in the label ("Illustrative: …").
-- **Stills only:** one per page, and it doesn't move. A demo with a moving cursor goes off the page (see When a page isn't enough).
+- **Stills only:** one per page, and it doesn't move. A demo with a moving cursor goes off the page (see When a page isn't enough). The kit's `stage` shell and the 150 KiB warning apply to Stageshow captures; a screenshot needs neither.
 
 ## When a page isn't enough
 
@@ -144,9 +144,9 @@ Still a page: a checklist the user prints or ticks off alone, numbers you alread
 
 - If the user asked for a page and it turns out to need state, say so in one line and confirm before building. If they asked for the app itself, build it. Either way, a deploy creates a public URL.
 - **Lakebed first.** Build it as a Lakebed capsule, following [lakebed.md](lakebed.md): where the code goes, guests and caps, server-side permission checks, secrets that fail closed, a two-person test, and the hand-over (URL, expiry, claim). Report the URL, the checks you ran, and the expiry if the deploy is unclaimed.
-- **Move to Cloudflare** (Workers with static assets, Durable Objects for state, an Alchemy stack) when the app outgrows Lakebed: it must not expire or must be production-ready, needs a custom domain or npm packages, or would pass Lakebed's free limits (10,000 requests and 1,000 writes a day per deploy, 1 MiB of stored data).
+- **Move to `arc-web-production`** (a Foldkit app on Cloudflare: a Worker with static assets, Durable Objects for state, an Alchemy stack) when the app outgrows Lakebed: it must not expire or must be production-ready, needs a custom domain or npm packages, or would pass Lakebed's free limits (10,000 requests and 1,000 writes a day per deploy, 1 MiB of stored data).
 - Keep the write-up on Postplan and link the app with an ordinary link. A Postplan page can't embed or call it (no iframes, no fetch).
-- **An animated product demo** (a Stageshow demo with its cursor, or any React component) needs a script, so it never goes on a page, not even rebuilt as CSS keyframes. Put its poster on the page as a still (see Product UI stills) and link the running demo with an ordinary link. It needs npm packages, so it is hosted the Cloudflare way described above. Confirm before deploying it.
+- **An animated product demo** (a Stageshow demo with its cursor, or any React component) needs a script, so it never goes on a page, not even rebuilt as CSS keyframes. Put its poster on the page as a still (see Product UI stills) and link the running demo with an ordinary link. It needs npm packages, so host its built files the way `arc-web-production` deploys (its `references/deploy.md`: a Worker with static assets in an Alchemy stack). It stays a React demo; don't rebuild it as a Foldkit app. Confirm before deploying it.
 
 ## When the user must choose
 
@@ -163,8 +163,7 @@ The page can't take an answer: a card, button, or CSS radio on it never reaches 
 
 The template sets this up:
 - **Spec-like, not a landing page.** A plain headline sized as a heading, not a hero. Tables and lists over decorative card chrome. No marketing voice, no em dashes.
-- **Dark first:** true black (`#000`) page, white text, dark gray only for secondary surfaces. Light mode via `prefers-color-scheme`.
-- **One accent** (the template's pink) for emphasis. Green, red and yellow only for status (pass, fail, warn).
+- **The look is `arc-design`'s:** dark first, one pink accent, green, red and yellow for status only, system fonts. The template's token block holds its values, and `node <arc-design>/scripts/check-tokens.mjs <page.html>` checks a page still matches. Don't change a token's value on a page.
 - Colors as tokens on `:root`. Don't name your own tokens after T3's theme variables (`--card`, `--muted`, `--accent`, `--border`…): `--card: var(--card, …)` is a cycle and silently breaks, and overriding them restyles the thread. Read T3's values as fallbacks instead, like the template's `--surface: var(--card, #0e0e11)`.
 - Readable at 390px wide: single column under 720px, no horizontal page scroll, 16px side gutter. Give tables of three or more columns `class="stack-sm"` so rows stack on phones instead of squeezing.
 - External links get `target="_blank" rel="noopener noreferrer"`.

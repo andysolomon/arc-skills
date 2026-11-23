@@ -498,6 +498,37 @@
         "intent": "static-contract"
       },
       "sandbox": "just-bash"
+    },
+    {
+      "id": "own-app-still-is-a-screenshot",
+      "description": "A still of an app we built comes from the real running app, not a Stageshow or hand-built faux UI.",
+      "prompt": "Write up the restyle we just did on our notes app (the Foldkit one in this repo) and show what it looks like now.",
+      "expected_output": "The page shows a screenshot of the real notes app running, embedded as a data: PNG with alt text and a caption naming its width and theme, and does not build a Stageshow still or a hand-made mock of the UI.",
+      "assertions": [
+        {
+          "id": "real-screenshot",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The page's picture of the notes app should be a screenshot of the real app running (an <img> with a data: PNG and alt text), not a Stageshow capture and not a hand-built HTML or SVG mock of the interface.",
+          "mustPass": true
+        },
+        {
+          "id": "no-script-on-page",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The page must contain no script, iframe or embed.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "routing",
+          "stills"
+        ],
+        "difficulty": "medium",
+        "intent": "own-app-screenshot"
+      },
+      "sandbox": "just-bash"
     }
   ]
 }
