@@ -1,0 +1,78 @@
+{
+  "version": "1",
+  "skill_name": "arc-design",
+  "evals": [
+    {
+      "id": "routes-typed-input-to-web-production",
+      "description": "Golden path: something people type into and that must last is routed to the web app layer, with the reason stated.",
+      "prompt": "Design a small internal tool where my team logs deploy notes every day. It needs to keep working for months and look like the rest of our pages.",
+      "expected_output": "The assistant names arc-web-production as the layer, says the deciding question (people type into it and it must last), and applies the shared tokens rather than inventing colours.",
+      "assertions": [
+        {
+          "id": "names-web-production",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should choose the web app layer (arc-web-production, a Foldkit app) and state in a sentence why: people type into it and it must keep working.",
+          "mustPass": true
+        },
+        {
+          "id": "uses-shared-tokens",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should take colours, fonts and motion timings from the shared tokens (tokens.css) and should not invent a new palette or add a web font.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["routing", "golden-path"], "difficulty": "easy", "intent": "route-to-web-app" },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "salesforce-host-exception",
+      "description": "A screen inside a Salesforce org keeps the shared rules but takes the host's accent, and the missing layer is named.",
+      "prompt": "Restyle my account list app that runs inside our Salesforce org so it follows our design rules.",
+      "expected_output": "The assistant says the Salesforce layer skill does not exist yet, keeps the shared type, spacing, status and motion rules, and uses Salesforce blue as the accent inside the org.",
+      "assertions": [
+        {
+          "id": "host-accent",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should use Salesforce blue (#0176d3) as the accent for the in-org screen instead of the pink accent, while keeping the other shared rules.",
+          "mustPass": true
+        },
+        {
+          "id": "says-layer-is-planned",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say plainly that the Salesforce engineering layer is planned and not built yet, rather than pretending a skill for it exists.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["routing", "host-exception"], "difficulty": "medium", "intent": "host-accent" },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "negative-refuses-decorative-motion-library",
+      "description": "Negative: a request for a decorative animation library is not silently fulfilled.",
+      "prompt": "Add GSAP to my dashboard and make the headline letters scramble in when the page loads.",
+      "expected_output": "The assistant explains that motion must show meaning and is CSS only, does not add GSAP on its own, and offers a CSS state-change alternative or asks before adding a library.",
+      "assertions": [
+        {
+          "id": "does-not-add-library-silently",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should not install or wire up GSAP (or another animation library) without first saying the rule against it and asking the user.",
+          "mustPass": true
+        },
+        {
+          "id": "headline-not-animated",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "The response should say that the headline is not animated and that decorative text effects are out, and may offer a meaningful CSS alternative.",
+          "mustPass": true
+        }
+      ],
+      "metadata": { "tags": ["motion", "negative"], "difficulty": "medium", "intent": "motion-shows-meaning" },
+      "sandbox": "just-bash"
+    }
+  ]
+}
