@@ -293,6 +293,96 @@
       "sandbox": "just-bash"
     },
     {
+      "id": "explainer-is-visual-and-explorable",
+      "description": "Golden path: an explanation of a multi-stage flow leads with a diagram of the whole path, lets the reader step through it with CSS-only controls, and moves along the main route.",
+      "prompt": "Walk me through how a checkout request works: the browser posts to the API gateway, which calls the payments service; payments charges the card with Stripe and, on success, writes the order to Postgres and publishes an order.created event that the email worker turns into a receipt. Save the page as checkout/index.html in the current directory.",
+      "expected_output": "checkout/index.html opens with a diagram of the whole checkout path right after the lede, wraps it in the kit's steps component (radio inputs, data-s tags, an \"All\" resting state) so each stage can be walked, animates direction along the main route with flowing dashes or a packet, and has no script.",
+      "assertions": [
+        {
+          "type": "file-exists",
+          "path": "checkout/index.html"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "^(?![\\s\\S]*<script)(?=[\\s\\S]*type=[\"']?radio)(?=[\\s\\S]*:has\\()(?=[\\s\\S]*data-s=)[\\s\\S]*<svg",
+          "target": {
+            "file": "checkout/index.html"
+          },
+          "flags": "i"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "(?=[\\s\\S]*prefers-reduced-motion)(?=[\\s\\S]*(offset-path|stroke-dashoffset))(?=[\\s\\S]*Stripe)[\\s\\S]*Postgres",
+          "target": {
+            "file": "checkout/index.html"
+          },
+          "flags": "i"
+        },
+        {
+          "id": "hero-figure-first",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "In checkout/index.html, the first figure should come straight after the lede and show the whole checkout path at rest (every stage visible before any control is used), with step captions that each explain one stage.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "diagrams",
+          "interaction",
+          "motion",
+          "visual-first"
+        ],
+        "difficulty": "hard",
+        "intent": "explorable-explainer"
+      },
+      "sandbox": "just-bash"
+    },
+    {
+      "id": "before-after-uses-toggle",
+      "description": "Golden path: a before/after comparison of numbers becomes one chart whose bars slide between the two states on a CSS-only switch, with the verdict written on the figure.",
+      "prompt": "We moved the e2e suite to shared fixtures. Before: checkout spec 6.2 min, search spec 3.8 min, login spec 2.1 min, profile spec 1.4 min. After: checkout 2.9 min, search 1.7 min, login 2.0 min, profile 0.6 min. Show me what the change bought us. Save the page as fixtures/index.html in the current directory.",
+      "expected_output": "fixtures/index.html draws the spec times as bars made by chart.mjs bars --then inside the kit's toggle (a checkbox switch, --v and --w on each bar), annotates the biggest saving on the figure, carries all eight numbers, and has no script.",
+      "assertions": [
+        {
+          "type": "file-exists",
+          "path": "fixtures/index.html"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "^(?![\\s\\S]*<script)(?=[\\s\\S]*type=[\"']?checkbox)[\\s\\S]*--w\\s*:",
+          "target": {
+            "file": "fixtures/index.html"
+          },
+          "flags": "i"
+        },
+        {
+          "type": "regex-match",
+          "pattern": "(?=[\\s\\S]*\\b6\\.2\\b)(?=[\\s\\S]*\\b2\\.9\\b)(?=[\\s\\S]*\\b3\\.8\\b)(?=[\\s\\S]*\\b1\\.7\\b)",
+          "target": {
+            "file": "fixtures/index.html"
+          }
+        },
+        {
+          "id": "verdict-on-figure",
+          "kind": "output",
+          "method": "judge",
+          "prompt": "In fixtures/index.html, the chart itself should carry the takeaway (an annotation such as the checkout spec's saving next to its bar), and the resting state before the switch is flipped should still let a reader see the answer.",
+          "mustPass": true
+        }
+      ],
+      "metadata": {
+        "tags": [
+          "charts",
+          "interaction",
+          "visual-first"
+        ],
+        "difficulty": "medium",
+        "intent": "before-after-toggle"
+      },
+      "sandbox": "just-bash"
+    },
+    {
       "id": "published-page-has-no-local-paths",
       "description": "Edge: a published work report names files by repo-relative path, never by absolute local path.",
       "prompt": "You just fixed token refresh in src/auth/session.ts in the repo checked out at /home/dev/projects/acme, and the unit suite passed. Write a report of the work and publish it to Postplan so I can share it. Save the page as report/index.html in the current directory.",

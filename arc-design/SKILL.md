@@ -29,7 +29,7 @@ A tool that outputs a file is a maker, not a level: a diagram, an illustration, 
 ## Steps
 
 1. **Pick the layer skill.** Ask in order; the first yes wins.
-   1. Is it an answer, a report or a write-up that nobody types into? Level 1, `arc-html-response`. If a click must change what it shows and CSS can't do it (a step-through, a sortable table), take level 1's scripted rung.
+   1. Is it an answer, a report or a write-up that nobody types into? Level 1, `arc-html-response`. If a click must change what it shows and CSS can't do it (a strict one-step-per-click walk, a sortable table), take level 1's scripted rung. A figure lit step by step, a before/after switch or hover details stay on the static rung.
    2. Does someone type into it, or must it keep working after today? Level 2, `arc-web-production`. It picks its own rung (static render, Lakebed prototype, full app). Then load the skill of every higher level the request needs:
       - a drag, a swipe, a spring or a layout move: level 3, `arc-interaction`.
       - a live connection (a WebSocket, presence, WebRTC): level 4, `arc-realtime`.
@@ -74,13 +74,13 @@ A tool that outputs a file is a maker, not a level: a diagram, an illustration, 
 
 ## Motion, every layer
 
-- **Motion shows meaning**: a state changed, an order, a direction, a size. No decorative loops, no text effects.
+- **Motion shows meaning**: a state changed, an order, a direction, a size. No decorative loops, no text effects. A number counting up to its value on a stat is size, not a text effect.
 - **CSS first.** Motion on a page is CSS only: a scripted page's script switches classes and attributes, and CSS does the moving. From level 3 up, Motion's plain JavaScript `animate()` is allowed for three cases CSS can't do: a drag or swipe that carries its velocity, a layout move (an element changes place or size), and a spring the user can interrupt. Name the case before adding it. Everything else stays CSS. GSAP and every other animation library stay out of pages and apps, and Motion's React API can't run in Foldkit. A Motion animation still rests under reduced motion and still moves only `transform` and `opacity`. `animate()` does not check the reduced-motion setting by itself, so the code that calls it must. `arc-interaction` holds the pattern, proven through a Foldkit Mount on `motion` 14.14.0, and its tests.
 - **Use the timing tokens**: `--t-micro` for hover, `--t-state` for a state change, `--t-enter` for an entrance, `--stagger` between items, with `--ease`.
 - **Inside `@media (prefers-reduced-motion: no-preference)`**, always: every animation and every transition, hover included.
-- **Animate from the start state** (`animation-fill-mode: backwards`), on `transform` and `opacity`, each animation under one second. The resting frame, which is what a screenshot or reduced motion shows, must tell the story on its own.
+- **Animate from the start state** (`animation-fill-mode: backwards`), on `transform` and `opacity`, each entrance and state change under one second. A loop that shows ongoing flow (dashes along a wire, a packet on its route) runs longer, at a steady pace on a multiple of `--t-enter`. The resting frame, which is what a screenshot or reduced motion shows, must tell the story on its own.
 
-Each layer adds its own motion rules on top: a page has one entrance moment and no scroll-driven animation (`arc-html-response`); an app gives each state its own `@keyframes` name (`arc-web-production`); a gesture ends in a Message and keeps a button beside it (`arc-interaction`). A film is a maker's output and takes its motion rules from [film.md](film.md), not from this section's limits.
+Each layer adds its own motion rules on top: a page leads with its hero figure's entrance, moves on CSS-only controls, and has no scroll-driven animation (`arc-html-response`); an app gives each state its own `@keyframes` name (`arc-web-production`); a gesture ends in a Message and keeps a button beside it (`arc-interaction`). A film is a maker's output and takes its motion rules from [film.md](film.md), not from this section's limits.
 
 ## How this skill grows
 

@@ -14,7 +14,7 @@ The idea comes from MengTo/Skills: after writing each illustration skill, its au
    - `bash scripts/lint.sh <page>` prints `PASS`.
    - `cd ~ && npx -y postplan@0.0.6 check <page>` prints `Ready.`
    - Preview at 728 and at 390 (light): no page-level horizontal scroll, nothing clipped, readable in both themes.
-   - A page with an entrance: the agent ran `scripts/frames.mjs` and previewed the sheet, and the poster frame shows the finished visual.
+   - A page with an entrance or a control: the agent ran `scripts/frames.mjs` (with `--states` for each control) and previewed the sheet, the poster frame shows the finished visual, and each state frame shows its step or its new values.
    - Score it with the rubric below.
 4. Fix the skill for every gap a run exposed, then run that prompt again with a new fresh agent.
 
@@ -25,6 +25,8 @@ Each one exercises a different part of the skill. Real data is in the prompt so 
 1. **Chart and findings.** "Our build times last week were: esbuild 1.4 s, Vite 3.2 s, webpack 11.6 s, Rollup 4.7 s. CI flakes: 5 of 60 runs failed on the e2e suite, all on the login spec. Write me a short report on where the build time goes and what to fix first."
 2. **Branching diagram and a decision.** "Explain how a request moves through our system and help me decide on caching. The browser calls the API gateway, which sends reads to a cache and writes to the orders service; the orders service writes to Postgres and publishes to a queue that the email worker consumes. Options: cache at the gateway, or in the orders service." Also check that the choice is asked in the question dialog, with the recommended option first, not as a request to type "1A".
 3. **Work report.** "You changed src/auth/session.ts (+24 −9, refresh once per tab), added src/auth/lock.ts (+41, a cross-tab lock) and fixed tests/e2e/login.spec.ts (+18 −30, wait for the cookie instead of sleeping). Unit tests passed 212/212; e2e on CI was not run. Report the work."
+4. **Explorable explainer.** "Walk me through how a checkout request works: the browser posts to the API gateway, which calls the payments service; payments charges the card with Stripe and, on success, writes the order to Postgres and publishes an order.created event that the email worker turns into a receipt." Check for a hero diagram right after the lede, `steps` around it resting on "All", and motion along the main route.
+5. **Before and after.** "We moved the e2e suite to shared fixtures. Before: checkout spec 6.2 min, search spec 3.8 min, login spec 2.1 min, profile spec 1.4 min. After: checkout 2.9 min, search 1.7 min, login 2.0 min, profile 0.6 min. Show me what the change bought us." Check for `chart.mjs bars --then` in a `toggle`, and the saving written on the figure (`--note`).
 
 ## Rubric
 
@@ -34,8 +36,8 @@ Five criteria, 0, 1 or 2 points each. The bar is 8 of 10. With two judges, score
 |---|---|
 | Answer first | The headline is the verdict, and the first paragraph says what to do. |
 | Kit fidelity | It reuses the kit's components and tokens instead of inventing look-alikes. |
-| Visual earns its place | Each chart or diagram shows real numbers or a real mechanism, with a title, a desc and a scale. |
-| Contract and motion | Lint passes; motion follows the reading-order rule and the timing tokens. |
+| Visual first | The hero figure follows the lede and carries the verdict; each claim has a figure of real numbers or a real mechanism, with a title, a desc, a scale and the takeaway written on it; an idea with states can be explored (`steps`, `toggle`, `focus`, `tip`) and rests on a state that tells the answer. |
+| Contract and motion | Lint passes; the headline and lede stay still, figures enter in reading order on the timing tokens, and loops only show flow. |
 | Plain and short | Plain words, 3 to 6 sections, nothing the user won't act on. Work reports end with a packet using the literal `PASS` / `FAIL` / `NOT_RUN`. |
 
 ## Record
@@ -44,6 +46,8 @@ Add a row per run, newest first.
 
 | Date | Skill commit | Prompt | Lint | Check | Score | Gaps found → fixed |
 |---|---|---|---|---|---|---|
+| 2026-11-23 | b4486de + uncommitted (visual-first kit) | 1. Chart and findings | PASS | not run | 8/10, one judge | 17 found. Fixed: `stacked` vs `bars` had no tie-breaker and `stacked` had no entrance; tips were unclear on bars that print values; `units` reads as an order and had no word on raw numbers; no flag for a note on a bar (`--note`); the frames labels, height and second figure; a headless way to read the sheet; the kit's note matched this prompt. Not fixed: dataviz's validator fails `--c2`..`--c4` in dark; reviews and arc-design's routing sentence still have no home on an analysis page. |
+| 2026-11-23 | b4486de + uncommitted (visual-first kit) | 4. Explorable explainer | PASS | not run | 9/10, one judge | 18 found. Fixed: `.anno` lost its mono font to the template's text rule; a `<code>` in a step caption fell into the number column; lit step wires flowed as dashes, which read as async; `reveal` had no CSS; where the hero sits under its `h2`; the accent budget with notes and packets; a dimmed label's mask let its wire show through. Not fixed: three different `ext` borders between the profile and the kit; no diagram phone variant; no shell parts for zones, diamonds or lifelines. |
 | 2026-11-23 | 3ca72e2 + uncommitted, after the fixes below | 2. Branching diagram, rerun | PASS | Ready | 9/10, one judge | 13 found, against 17 the first time. Fixed: 720 was too wide for a 728 preview, so the viewBox is 680 and no wider; the focal node goes in the first 340 px; a legend is required with two kinds of node; the `ext` treatment was near invisible in dark; a `chosen` style for the option the user picked; a name-only node; the kit example's label gap. Not fixed: the lint doesn't say whether diagram-design's self-check ran, and the headless preview has no fixed place to load Playwright from. |
 | 2026-11-23 | 3ca72e2 + uncommitted, after the fixes below | 1. Chart and findings, rerun | PASS | Ready | 9/10, one judge | 12 found, against 15 the first time. Fixed: reviews were required by `arc-design` and optional here, so a page now names only the reviews it ran; a wrong pointer from `reviews.md` to `worst-case.mjs`; plain lists ran past 65 characters; a rule for the title and the headline accent; a relative date in the user's own data; `chart.mjs bars` needs the `details` block too. |
 | 2026-11-23 | 3ca72e2 + uncommitted | 3. Work report | PASS | Ready | 9/10, one judge | 21 found. Fixed: Design named as the page's look step, with reviews reported in the packet and never in chat; `check-tokens.mjs` added to Check it and both path placeholders defined; the packet's `evidence` lines named; `NOT_RUN` with "not recorded" for a check with no record; a two-section work report allowed; a kicker rule for a request with no project; the template's packet comment; the example total, which matched this prompt; a headless-browser preview path. Not fixed: `NOT_RUN` stays in the dim colour, and the lint still doesn't check the status words. |
