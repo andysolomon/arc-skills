@@ -34,6 +34,12 @@ has "the poster finishes every finite animation" 'finite ? timing.endTime : 0' "
 has "frames scroll to --select" '&quot;.bars&quot;' "$sheet"
 has "the page is escaped into srcdoc" 'srcdoc="&lt;!doctype html&gt;' "$sheet"
 has "the sheet says it is preview only" 'for preview only' "$sheet"
+node "$frames" "$skill/components.html" --at 0 --states 'input[name=read-step][value="2"];.toggle .switch input' --out "$work/states.frames.html" 2>/dev/null
+sheet=$(cat "$work/states.frames.html")
+n=$(grep -o '<iframe ' <<<"$sheet" | wc -l | tr -d ' ')
+[ "$n" -eq 4 ] && ok "one time, the poster and two states make four frames" || bad "frame count is $n, want 4"
+has "state frames are labelled with their selector" '<b>state: .toggle .switch input</b>' "$sheet"
+has "a state frame checks its input before settling" 'input.checked = true' "$sheet"
 node "$frames" "$skill/template.html" 2>/dev/null
 [ -f "$skill/template.frames.html" ] && ok "default output sits next to the page" || bad "no template.frames.html next to the page"
 rm -f "$skill/template.frames.html"

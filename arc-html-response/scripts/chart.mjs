@@ -7,6 +7,13 @@
 //   node chart.mjs line   --slug latency --title "p95 latency by week" --desc "..." \
 //                         --labels W1,W2,W3 --values 420,390,410 --unit " ms" [--min 0] [--max 500]
 //   node chart.mjs donut  --slug coverage --title "Line coverage" --part 18 --whole 25 --noun files
+//   node chart.mjs units  --title "e2e runs" --part 5 --whole 60 --hit failed --miss passed [--tone bad] [--cols 10]
+//
+// bars --then 0.9,2.1,3.9 adds a second state: the bars sit in a toggle and slide to these values when the
+// switch is flipped. --switch "Show after the fix" labels the switch; --cols then takes three names.
+// bars --note "webpack=the long pole" writes an annotate note under that bar's label (repeat with ";" between notes).
+// line also draws a hover read-out per point (the value and a guide to the axis).
+// units draws one cell per item, up to 100; --tone bad|ok|warn colours the counted cells as a status.
 //
 // --labels and --values are comma separated (a label with a comma: use --sep ";").
 // --unit is appended to each value. Use a symbol (" s", " ms", "%"), or " run| runs" for
@@ -71,7 +78,8 @@ const cols = (fallback) => {
   const c = opt('cols');
   if (c === undefined) return fallback;
   const parts = c.split(',').map(s => s.trim());
-  if (parts.length !== 2 || parts.some(p => !p)) die('--cols takes two names, like "bundler,build time"');
+  const n = fallback.length;
+  if (parts.length !== n || parts.some(p => !p)) die(`--cols takes ${n === 2 ? 'two' : 'three'} names, like "${n === 2 ? 'bundler,build time' : 'bundler,before,after'}"`);
   return parts;
 };
 const slugOk = s => /^[a-z][a-z0-9-]{0,40}$/.test(s);
@@ -94,29 +102,49 @@ function bars() {
   const labels = list('labels');
   const values = nums('values');
   if (labels.length !== values.length) die(`${labels.length} labels but ${values.length} values`);
-  if (values.some(v => v < 0)) die('bars cannot show negative values; use a table or diagram-design (waterfall)');
+  const then = opt('then') === undefined ? null : nums('then');
+  if (then && then.length !== values.length) die(`${values.length} values but ${then.length} --then values`);
+  if ([...values, ...(then || [])].some(v => v < 0)) die('bars cannot show negative values; use a table or diagram-design (waterfall)');
   const unit = opt('unit', '');
   const key = opt('key');
   const sort = opt('sort', 'desc');
-  let rows = labels.map((label, i) => ({ label, value: values[i] }));
+  const notes = new Map((opt('note') || '').split(';').filter(Boolean).map(n => {
+    const at = n.indexOf('=');
+    if (at < 1 || !n.slice(at + 1).trim()) die('--note takes "label=text", several separated by ";"');
+    return [n.slice(0, at).trim(), n.slice(at + 1).trim()];
+  }));
+  for (const label of notes.keys()) if (!labels.includes(label)) die(`--note names "${label}", which is not one of the labels`);
+  let rows = labels.map((label, i) => ({ label, value: values[i], then: then ? then[i] : null }));
   if (sort === 'asc') rows.sort((a, b) => a.value - b.value);
   else if (sort === 'desc') rows.sort((a, b) => b.value - a.value);
   else if (sort !== 'none') die('--sort is asc, desc or none');
-  const max = Math.max(...rows.map(r => r.value)) || 1;
-  const u = r => unitFor(unit, r.value);
+  // Both states share one scale, so a bar that shrinks is seen to shrink.
+  const max = Math.max(...rows.map(r => Math.max(r.value, r.then ?? 0))) || 1;
+  const U = n => fmt(n) + unitFor(unit, n);
   const title = opt('title');
-  const [c1, c2] = cols(['item', 'value']);
-  const aria = (title ? `${title}: ` : '') + rows.map(r => `${r.label} ${fmt(r.value)}${u(r)}`).join(', ');
-  const out = [`<div class="bars" role="img" aria-label="${esc(aria)}">`];
+  const [c1, c2, c3] = cols(then ? ['item', 'before', 'after'] : ['item', 'value']);
+  const aria = (title ? `${title}: ` : '') + rows.map(r => `${r.label} ${U(r.value)}${then ? ` to ${U(r.then)}` : ''}`).join(', ');
+  const out = [];
+  const pad = then ? '  ' : '';
+  if (then) {
+    out.push('<div class="toggle">');
+    out.push(`  <label class="switch"><input type="checkbox"><span class="knob"></span><span>${esc(opt('switch', `Show ${c3}`))}</span></label>`);
+  }
+  out.push(`${pad}<div class="bars${then ? ' morph' : ''}" role="img" aria-label="${esc(aria)}">`);
   rows.forEach((r, i) => {
     const v = r1((r.value / max) * 100);
-    const cls = ['bar', r.label === key && 'is-key', r.value === 0 && 'is-zero'].filter(Boolean).join(' ');
-    out.push(`  <div class="${cls}" style="--v:${v};--i:${i}"><div class="lbl">${esc(r.label)}</div><div class="track"><div class="fill"></div><span class="val">${esc(fmt(r.value) + u(r))}</span></div></div>`);
+    const zero = r.value === 0 && (!then || r.then === 0);
+    const cls = ['bar', r.label === key && 'is-key', zero && 'is-zero'].filter(Boolean).join(' ');
+    const style = `--v:${v};${then ? `--w:${r1((r.then / max) * 100)};` : ''}--i:${i}`;
+    const val = then ? `<span class="when-off">${esc(U(r.value))}</span><span class="when-on">${esc(U(r.then))}</span>` : esc(U(r.value));
+    out.push(`${pad}  <div class="${cls}" style="${style}"><div class="lbl">${esc(r.label)}${notes.has(r.label) ? `<span class="ann">${esc(notes.get(r.label))}</span>` : ''}</div><div class="track"><div class="fill"></div><span class="val">${val}</span></div></div>`);
   });
-  out.push('</div>');
+  out.push(`${pad}</div>`);
+  if (then) out.push('</div>');
   out.push('<details>');
   out.push('  <summary>Raw numbers</summary>');
-  out.push(`  <table><tr><th>${esc(c1)}</th><th>${esc(c2)}</th></tr>${rows.map(r => `<tr><td>${esc(r.label)}</td><td>${esc(fmt(r.value) + u(r))}</td></tr>`).join('')}</table>`);
+  const head = `<tr><th>${esc(c1)}</th><th>${esc(c2)}</th>${then ? `<th>${esc(c3)}</th>` : ''}</tr>`;
+  out.push(`  <table>${head}${rows.map(r => `<tr><td>${esc(r.label)}</td><td>${esc(U(r.value))}</td>${then ? `<td>${esc(U(r.then))}</td>` : ''}</tr>`).join('')}</table>`);
   out.push('</details>');
   return out.join('\n');
 }
@@ -162,6 +190,15 @@ function line() {
   // Put the end label above the point, or below it when the point is near the top.
   const ly = ey - 10 < Y0 + 4 ? r1(ey + 18) : r1(ey - 10);
   out.push(`  <text class="end" x="${X1 - 8}" y="${ly}" text-anchor="end">${esc(U(end))}</text>`);
+  // Hover read-out: one band per point, last in the SVG so it sits on top.
+  const band = (X1 - X0) / last;
+  values.forEach((v, i) => {
+    const px = x(i), py = y(v);
+    const bx = r1(Math.max(X0 - 8, px - band / 2)), bw = r1(Math.min(X1 + 8, px + band / 2) - bx);
+    const anchor = i === 0 ? 'start' : i === last ? 'end' : 'middle';
+    const ty = py - 12 < Y0 ? r1(py + 22) : r1(py - 12);
+    out.push(`  <g class="pt"><rect class="hit" x="${bx}" y="${Y0}" width="${bw}" height="${Y1 - Y0}"/><g class="pv">${py + 6 < Y1 ? `<line x1="${px}" y1="${r1(py + 6)}" x2="${px}" y2="${Y1}"/>` : ''}<circle cx="${px}" cy="${py}" r="4"/><text x="${px}" y="${ty}" text-anchor="${anchor}">${esc(labels[i] + ' · ' + U(v))}</text></g></g>`);
+  });
   out.push('</svg>');
   out.push('<details>');
   out.push('  <summary>Raw numbers</summary>');
@@ -195,6 +232,30 @@ function donut() {
   ].join('\n');
 }
 
-const kinds = { bars, line, donut };
+function units() {
+  const part = Number(opt('part')), whole = Number(opt('whole'));
+  if (!Number.isInteger(part) || !Number.isInteger(whole) || whole < 1 || whole > 100 || part < 0 || part > whole) die('--part and --whole must be whole numbers with 0 <= part <= whole <= 100; past 100 cells use stats or a donut');
+  const hit = opt('hit');
+  if (!hit) die('--hit is required: what the coloured cells are, like "failed"');
+  const miss = opt('miss', 'other');
+  const noun = opt('noun', '');
+  const title = opt('title');
+  const tone = opt('tone', 'hi');
+  if (!['hi', 'bad', 'ok', 'warn'].includes(tone)) die('--tone is hi, bad, ok or warn');
+  const colsN = opt('cols') === undefined ? (whole <= 20 ? whole : 10) : Number(opt('cols'));
+  if (!Number.isInteger(colsN) || colsN < 1 || colsN > 20) die('--cols must be a whole number from 1 to 20');
+  const rows = Math.ceil(whole / colsN);
+  const aria = `${title ? `${title}: ` : ''}${fmt(part)} of ${fmt(whole)}${noun ? ' ' + noun : ''} ${hit}`;
+  const style = `--cols:${colsN};--rows:${rows}${tone === 'hi' ? '' : `;--tone:var(--${tone})`}`;
+  const cells = [];
+  for (let i = 0; i < whole; i++) cells.push(`<i class="u${i < part ? ' hit' : ''}" style="--r:${Math.floor(i / colsN)}"></i>`);
+  const out = [`<div class="units" role="img" aria-label="${esc(aria)}" style="${style}">`];
+  for (let r = 0; r < rows; r++) out.push('  ' + cells.slice(r * colsN, (r + 1) * colsN).join(''));
+  out.push('</div>');
+  out.push(`<p class="units-key"${tone === 'hi' ? '' : ` style="--tone:var(--${tone})"`}><span><i class="hit"></i>${esc(hit)}: ${fmt(part)}</span><span><i></i>${esc(miss)}: ${fmt(whole - part)}</span></p>`);
+  return out.join('\n');
+}
+
+const kinds = { bars, line, donut, units };
 if (!kinds[kind]) die(`first argument is the chart kind: ${Object.keys(kinds).join(', ')}`);
 process.stdout.write(kinds[kind]() + '\n');

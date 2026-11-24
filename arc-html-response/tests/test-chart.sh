@@ -49,6 +49,34 @@ has "cols name the raw table" '<th>trigger</th><th>runs</th>' "$out"
 out=$(node "$chart" donut --slug f --title Flaky --part 3 --whole 40 --noun runs)
 has "small shares keep one decimal" '>7.5%</text>' "$out"
 
+out=$(node "$chart" line --slug h --title t --labels Mon,Tue,Wed --values 3,1500,5 --unit " job| jobs")
+has "line draws a hover read-out per point" '<g class="pt">' "$out"
+has "the first read-out opens rightwards" 'text-anchor="start">Mon · 3 jobs</text>' "$out"
+has "a point on the axis gets no guide" '<g class="pv"><circle cx="56"' "$out"
+has "the last read-out opens leftwards" 'text-anchor="end">Wed · 5 jobs</text>' "$out"
+has "a read-out near the top sits under its point" 'y="42" text-anchor="middle">Tue · 1,500 jobs</text>' "$out"
+
+out=$(node "$chart" bars --labels a,b --values 10,4 --then 5,8 --unit " s" --switch "Show with the cache" --cols "tool,cold,cached")
+has "bars --then sit in a toggle with a labelled switch" '<label class="switch"><input type="checkbox"><span class="knob"></span><span>Show with the cache</span></label>' "$out"
+has "bars --then share one scale" 'style="--v:100;--w:50;--i:0"' "$out"
+has "bars --then swap their values" '<span class="when-off">4 s</span><span class="when-on">8 s</span>' "$out"
+has "bars --then name both states in the aria-label" 'aria-label="a 10 s to 5 s, b 4 s to 8 s"' "$out"
+has "bars --then raw table has both columns" '<th>tool</th><th>cold</th><th>cached</th>' "$out"
+
+out=$(node "$chart" bars --labels a,b --values 10,4 --note "a=the long pole")
+has "bars --note writes an annotate note under the label" '<div class="lbl">a<span class="ann">the long pole</span></div>' "$out"
+
+out=$(node "$chart" units --title "e2e runs" --part 5 --whole 60 --noun runs --hit failed --miss passed --tone bad)
+n=$(grep -o '<i class="u' <<<"$out" | wc -l)
+[ "$n" -eq 60 ] && ok "units draws one cell per item" || bad "units draws $n cells, want 60"
+n=$(grep -o '<i class="u hit"' <<<"$out" | wc -l)
+[ "$n" -eq 5 ] && ok "units colours the counted cells" || bad "units colours $n cells, want 5"
+has "units says the count in the aria-label" 'aria-label="e2e runs: 5 of 60 runs failed"' "$out"
+has "units lays out ten columns and names the rows" 'style="--cols:10;--rows:6;--tone:var(--bad)"' "$out"
+has "units key gives both counts" '<i class="hit"></i>failed: 5</span><span><i></i>passed: 55</span>' "$out"
+out=$(node "$chart" units --part 3 --whole 8 --hit open)
+has "a short units row keeps one row" 'style="--cols:8;--rows:1"' "$out"
+
 out=$(node "$chart" --help); code=$?
 if [ "$code" -eq 0 ] && grep -q -- '--cols' <<<"$out"; then ok "--help prints every flag"; else bad "--help prints every flag" "exit $code"; fi
 
@@ -58,19 +86,26 @@ for args in "line --slug x --title t --labels a,b --values 1,z" \
             "bars --labels a,b --values 1,-2" \
             "donut --slug c --title t --part 30 --whole 25" \
             "line --slug Bad_Slug --title t --labels a,b --values 1,2" \
+            "bars --labels a,b --values 1,2 --then 3" \
+            "units --part 5 --whole 160 --hit failed" \
+            "bars --labels a,b --values 1,2 --note c=x" \
+            "units --part 5 --whole 60" \
+            "units --part 5 --whole 60 --hit x --tone pink" \
             "pie --values 1"; do
   # shellcheck disable=SC2086
   err=$(node "$chart" $args 2>&1 >/dev/null); code=$?
   if [ "$code" -eq 2 ] && [ -n "$err" ]; then ok "rejects: $args"; else bad "rejects: $args" "exit $code: $err"; fi
 done
 
-# All three outputs, dropped into a page with the kit's CSS, pass the lint.
-css=$(awk '/\/\* component: (bars|line|donut|details) /{p=1} /\/\* component: (stacked|heat|flow|diagram|timeline|compare|findings|changes|decisions|tabs) /{p=0} p' "$skill/components.html")
+# Every output, dropped into a page with the kit's CSS, pass the lint.
+css=$(awk '/\/\* component: (bars|line|donut|details|units|toggle) /{p=1} /\/\* component: (stacked|heat|flow|diagram|timeline|compare|findings|changes|decisions|tabs|stage|hairline|spot|annotate|count|packet|steps|focus|tip) /{p=0} p' "$skill/components.html")
 {
   printf '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Chart Test</title><style>:root{--fg:#fff;--dim:#aaa;--line:#333;--surface:#111;--hi:#f39;--mono:monospace;--sans:sans-serif;--ease:ease}\n%s\n</style></head><body>\n' "$css"
   node "$chart" bars --labels a,b --values 1,2
   node "$chart" line --slug l --title "A line" --labels a,b,c --values 1,3,2
   node "$chart" donut --slug d --title "A donut" --part 1 --whole 4
+  node "$chart" bars --labels a,b --values 1,2 --then 2,1
+  node "$chart" units --part 1 --whole 4 --hit open
   printf '</body></html>\n'
 } > "$work/page.html"
 lout=$(DIAGRAM_DESIGN_DIR=none bash "$lint" "$work/page.html" 2>&1)

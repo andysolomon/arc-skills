@@ -64,6 +64,35 @@ ${chart('donut', '--slug', 'wc-donut', '--title', 'Coverage', '--part', '0', '--
   </section>
 
   <section>
+    <h2>units: a hundred cells, then exactly one</h2>
+${chart('units', '--title', 'Subscribers migrated', '--part', '99', '--whole', '100', '--hit', 'Benachrichtigungseinstellungen übernommen', '--miss', 'نور الهدى عبد الرحمن', '--tone', 'warn')}
+${chart('units', '--part', '1', '--whole', '1', '--hit', 'J')}
+  </section>
+
+  <section>
+    <h2>toggle: a giant shrinks, a zero grows</h2>
+${chart('bars', '--labels', 'Paramètres de confidentialité et de sécurité;Jo;zero', '--sep', ';', '--values', '1284000;1;0', '--then', '12;1284000;5', '--unit', ' event| events', '--switch', `Show after the ${'Benachrichtigungseinstellungen'} migration for ${EMAIL}`)}
+  </section>
+
+  <section>
+    <h2>steps: long labels, long captions, a tip at the edge</h2>
+    <div class="steps">
+      <div class="steps-bar" role="radiogroup" aria-label="Steps">
+        <label><input type="radio" name="wc-step" value="0" checked>All</label>
+        <label><input type="radio" name="wc-step" value="1">1 Benachrichtigungseinstellungen</label>
+        <label><input type="radio" name="wc-step" value="2">2 نور الهدى</label>
+        <label><input type="radio" name="wc-step" value="3">3 J</label>
+      </div>
+      <div class="steps-fig"><p class="sub" data-s="1 2" data-tip="${EMAIL} opened ${LONG_URL}" tabindex="0">A figure part tagged for steps 1 and 2, with a long tip.</p><p class="sub tip-end" data-s="3" data-tip="${LONG_PATH}" tabindex="0" style="text-align:right">A part at the right edge, tagged for step 3.</p></div>
+      <ol class="steps-text">
+        <li data-s="1">${LONG_PATH} is read for ${EMAIL}, then every one of 1,284,000 subscribers.</li>
+        <li data-s="2">نور الهدى عبد الرحمن sees the digest in the right direction.</li>
+        <li data-s="3">J.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
     <h2>changes: a path with no break points</h2>
     <div class="wide">
       <table class="changes stack-sm">

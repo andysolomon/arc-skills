@@ -7,12 +7,15 @@
 // reduced motion show. The idea is Stageshow's rehearsal: read every frame, and make sure
 // the poster tells the story on its own.
 //
-//   node frames.mjs <page.html> [--at 0,120,240,360,500] [--select ".bars"] [--width 728] [--height 420] [--out <file>]
+//   node frames.mjs <page.html> [--at 0,120,240,500,800] [--select ".bars"] [--states "<sel>;<sel>"]
+//                   [--width 728] [--height 560] [--out <file>]
 //
-// --at       times in ms to freeze at, before the poster (default 0,120,240,360,500).
+// --at       times in ms to freeze at, before the poster (default 0,120,240,500,800).
 // --select   scrolls this element to the top of each frame (default: the page's top).
+// --states   inputs to switch on, separated by ";": after the poster, one settled frame per selector
+//            with that radio or checkbox checked, so each step or toggle state can be read at rest.
 // --width    frame width in px (default 728, T3's reply width; try 390 for a phone).
-// --height   frame height in px (default 420).
+// --height   frame height in px (default 560).
 // --out      the contact sheet (default <page>.frames.html next to the page).
 // Each frame's label also reports what is moving: how many animations, the longest one's own
 // duration, when the last one settles (stagger included), and how many loop forever. An
@@ -39,22 +42,32 @@ const opt = (name, fallback) => {
 const file = argv[0];
 let page;
 try { page = readFileSync(file, 'utf8'); } catch { die(`can't read ${file}`); }
-const at = opt('at', '0,120,240,360,500').split(',').map(s => {
+const at = opt('at', '0,120,240,500,800').split(',').map(s => {
   const n = Number(s.trim());
   if (s.trim() === '' || !Number.isFinite(n) || n < 0) die(`--at has a time that is not a number of ms: "${s}"`);
   return n;
 });
 const width = Number(opt('width', '728'));
-const height = Number(opt('height', '420'));
+const height = Number(opt('height', '560'));
 if (!(width >= 240 && width <= 1600)) die('--width must be between 240 and 1600');
 if (!(height >= 120 && height <= 4000)) die('--height must be between 120 and 4000');
 const select = opt('select');
+const states = (opt('states') || '').split(';').map(s => s.trim()).filter(Boolean);
 const out = opt('out', file.replace(/\.html?$/i, '') + '.frames.html');
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// t is a time in ms, 'poster', or { state: selector } (the poster after checking that input).
 const freeze = t => `<script>(() => {
   const sel = ${JSON.stringify(select ?? null)};
+  const state = ${JSON.stringify(t.state ?? null)};
   const run = () => {
+    if (state) {
+      const input = document.querySelector(state);
+      if (!input) { parent.postMessage({ frame: ${JSON.stringify(String(t.state ?? t))}, missing: true }, '*'); return; }
+      input.checked = true;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      getComputedStyle(document.body).opacity; // flush styles so the state's transitions exist
+    }
     if (sel) { const el = document.querySelector(sel); if (el) el.scrollIntoView({ block: 'start' }); }
     const all = document.getAnimations();
     let end = 0, longest = 0, loops = 0;
@@ -63,16 +76,17 @@ const freeze = t => `<script>(() => {
       const finite = timing && timing.endTime !== Infinity;
       if (finite) { end = Math.max(end, timing.endTime); longest = Math.max(longest, timing.activeDuration); } else loops++;
       a.pause();
-      a.currentTime = ${t === 'poster' ? 'finite ? timing.endTime : 0' : t};
+      a.currentTime = ${t === 'poster' || t.state ? 'finite ? timing.endTime : 0' : t};
     }
-    parent.postMessage({ frame: ${JSON.stringify(String(t))}, count: all.length, end: Math.round(end), longest: Math.round(longest), loops }, '*');
+    parent.postMessage({ frame: ${JSON.stringify(String(t.state ?? t))}, count: all.length, end: Math.round(end), longest: Math.round(longest), loops }, '*');
   };
   if (document.readyState === 'complete') run(); else addEventListener('load', run);
 })();</script>`;
 const frameDoc = t => /<\/body>/i.test(page) ? page.replace(/<\/body>/i, `${freeze(t)}</body>`) : page + freeze(t);
 
-const cells = [...at, 'poster'].map(t => `<figure>
-  <figcaption><b>${t === 'poster' ? 'poster (all settled)' : `${t} ms`}</b> <span data-t="${t}"></span></figcaption>
+const title = t => t === 'poster' ? 'poster (all settled)' : t.state ? `state: ${esc(t.state)}` : `${t} ms`;
+const cells = [...at, 'poster', ...states.map(state => ({ state }))].map(t => `<figure>
+  <figcaption><b>${title(t)}</b> <span data-t="${esc(t.state ?? t)}"></span></figcaption>
   <iframe width="${width}" height="${height}" srcdoc="${esc(frameDoc(t))}"></iframe>
 </figure>`).join('\n');
 
@@ -86,12 +100,13 @@ figcaption{margin:0 0 4px}
 figcaption .late{color:#ff5a5f}
 iframe{display:block;max-width:100%;border:1px solid #3f3f46;border-radius:6px;background:#fff}
 </style></head><body>
-<p>Contact sheet for preview only (it runs a script). ${at.length + 1} frames at ${width}×${height}${select ? `, scrolled to ${esc(select)}` : ''}.</p>
+<p>Contact sheet for preview only (it runs a script). ${at.length + 1 + states.length} frames at ${width}×${height}${select ? `, scrolled to ${esc(select)}` : ''}.</p>
 ${cells}
 <script>
 addEventListener('message', e => {
   const d = e.data; if (!d || typeof d.frame !== 'string') return;
-  for (const span of document.querySelectorAll('span[data-t="' + d.frame + '"]')) {
+  for (const span of document.querySelectorAll('span[data-t="' + CSS.escape(d.frame) + '"]')) {
+    if (d.missing) { span.className = 'late'; span.textContent = '· no element matches this selector'; continue; }
     span.textContent = '· ' + d.count + ' animation' + (d.count === 1 ? '' : 's') + ', longest ' + d.longest + ' ms, all settled by ' + d.end + ' ms' + (d.loops ? ', ' + d.loops + ' looping' : '');
     if (d.longest > 1000) { span.className = 'late'; span.textContent += ' · one runs over 1000 ms'; }
   }
@@ -101,4 +116,4 @@ addEventListener('message', e => {
 `;
 writeFileSync(out, sheet);
 // The sheet adds 12px padding and a 1px border each side; previewing at this width shows frames 1:1.
-process.stderr.write(`frames.mjs: ${at.length} frames + poster → ${out}\nframes.mjs: preview it at width ${width + 26}\n`);
+process.stderr.write(`frames.mjs: ${at.length} frames + poster${states.length ? ` + ${states.length} state(s)` : ''} → ${out}\nframes.mjs: preview it at width ${width + 26}\n`);
