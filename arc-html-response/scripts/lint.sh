@@ -86,7 +86,7 @@ diagram_design_dir() {
 }
 
 lint_file() {
-  local file=$1 fails=0 warns=0 bytes at dd out
+  local file=$1 fails=0 warns=0 bytes at dd out target tmp
 
   echo "$file"
   if [ ! -f "$file" ]; then
@@ -153,10 +153,18 @@ lint_file() {
   if grep -Eoi '<svg[^>]*>' "$file" | grep -qviE "aria-hidden=${Q}true" && command -v python3 >/dev/null 2>&1; then
     dd=$(diagram_design_dir)
     if [ -n "$dd" ]; then
+      # self_check allows no script but its own motion controller, so it reads a
+      # scripted page with the script cut out. The checks above cover the script.
+      target=$file; tmp=
+      if [ "$SCRIPTED" -eq 1 ]; then
+        tmp=$(mktemp -d); target="$tmp/page.html"
+        python3 -c 'import re, sys; sys.stdout.write(re.sub(r"(?is)<script\b.*?</script\s*>", "", open(sys.argv[1], encoding="utf-8").read()))' "$file" > "$target"
+      fi
       # Its single-file rule rejects every remote URL. A page may link out and
       # load https images (Postplan allows both), so those findings are dropped.
-      out=$(python3 "$dd/scripts/self_check.py" --offline "$file" 2>&1 |
+      out=$(python3 "$dd/scripts/self_check.py" --offline "$target" 2>&1 |
         grep -E '^[[:space:]]*-' | grep -Ev 'remote reference on <(a|img)>: https://')
+      [ -n "$tmp" ] && rm -rf "$tmp"
       if [ -n "$out" ]; then
         fail "diagram-design self_check:"
         printf '%s\n' "$out" | head -8 | sed 's/^[[:space:]]*/       /'
