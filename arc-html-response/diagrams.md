@@ -1,0 +1,18 @@
+# Diagrams
+
+Read this when a figure is a `flow` or a `diagram`, when a chart the kit lacks goes to `diagram-design`, or when the source is Mermaid, draw.io or Excalidraw.
+
+- **A straight line of five steps or fewer, no forks:** the kit's `flow`. Wrap it in `steps` when each step needs its own explanation.
+- **Anything else** (a fork, an architecture, a sequence, a state machine, a schema): if the `diagram-design` skill is available, load it and let it choose the type, the layout and what to cut. Follow its type reference, complexity budget, connector rules and taste gate, with these overrides so the result fits this page:
+  - **Style guide:** read [diagram-profile.md](diagram-profile.md) directly as the effective style guide; its first paragraph says which parts apply. Don't run diagram-design's `load` or `switch` profile commands (they overwrite the user's own skin), and skip its first-run style gate.
+  - **Who wins:** diagram-design decides the type, layout, what to cut, connector routing and the complexity budget. The kit's `diagram` shell decides the markup: its classes, markers and stroke widths, and its sizes below.
+  - **Output:** no standalone file. Write the `<svg>` into the page inside the kit's `diagram` shell (`.dd-wrap` > `svg.dd`), using the shell's classes and page tokens instead of hex colors, so one SVG serves dark and light. The profile lists the role-to-token map.
+  - **Size:** viewBox 680 wide and no wider, with `min-width` equal to that width: a 728 preview with its side gutters leaves 696 px. A node with no technical detail has no sublabel and may be 48 high. Type: names 13px sans 600, sublabels 11px mono, arrow labels 10px mono capitals.
+  - **Legend:** required when the diagram uses two or more kinds of node or line, and left out otherwise. Put it in a bottom strip inside the viewBox, under a `.rule` line that separates it from the diagram, with `.legend` text.
+  - **Fonts:** the page's `--sans` and `--mono` stacks only. No font `<link>`.
+  - **Motion:** modes `none`, `loop`, `reveal`, or `step`, all in CSS. `loop` is dashes flowing along a wire, as the kit's `flow` does, or a `packet` riding the main route. For a `reveal`, give each element `animation-delay: calc(var(--i) * var(--stagger))` in drawing order, wires before boxes. `step` is the kit's `steps`: tag each wire, label and box group with its steps in `data-s` instead of using diagram-design's script. When the user asks to click through strictly one step at a time, use the scripted rung's `stepper` instead ([scripted.md](scripted.md)).
+  - **No pause:** skip its confirm-before-drawing question. If you cut something from the user's description, say what in plain words in the section text ("The retry path is left out."). Don't describe the diagram itself.
+  - **Geometry:** run `python3 <diagram-design>/scripts/verify_geometry.py <file.html>` when the installed diagram-design has it, and fix what it reports. It checks rule 6 (mask before node) and connector routing. Check rules 2 (label gap) and 4 (separate attach points) by eye in the preview.
+  - **Phones:** the diagram keeps its width and scrolls sideways under 680 px, so put the focal node in the first 340 px.
+- **Without diagram-design:** use the `diagram` shell and its rules by hand (right-angle elbows, arrows drawn before boxes, a masked label on every branch, names in sans and mono only for technical sublabels, one accent path, 9 nodes at most), or split the idea into two simpler figures.
+- **Mermaid, draw.io, Excalidraw sources:** never embed them live or paste a renderer's layout. With diagram-design, use its import (it redraws and reports what it merged or dropped). Without it, redraw by hand in the `diagram` shell.

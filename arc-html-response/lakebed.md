@@ -1,6 +1,6 @@
 # Building a Lakebed app
 
-Read this when a request needs state a static page can't hold (see "When a page isn't enough" in [SKILL.md](SKILL.md)). Everything here comes from building and deploying four real Lakebed apps: a lunch vote, a two-judge scorecard, a story inbox with a secret-protected pull API, and a live game-day play caller.
+Read this when a request needs state a page can't hold: step 1 of [SKILL.md](SKILL.md) says which requests those are. A deploy creates a public URL, so when the user asked for a page and it turned out to need state, confirm before building. Everything here comes from building and deploying four real Lakebed apps: a lunch vote, a two-judge scorecard, a story inbox with a secret-protected pull API, and a live game-day play caller.
 
 ## Where the code goes
 
@@ -37,10 +37,11 @@ Read this when a request needs state a static page can't hold (see "When a page 
 - **Claiming needs the user** (`npx lakebed claim`). The claim token lives only in the capsule's `.lakebed/` folder, so never delete that folder, or the worktree holding it, before the user claims.
 - After a claim, every deploy copies `.env.lakebed.server` to the hosted app. Never leave a test secret in that file.
 - Write the page about it as usual: why it's an app and not a page, a link to the app, and a packet with the URL, the expiry, the tests run, any test data left on the live app, and the steps only the user can take.
+- Keep that write-up on Postplan and link the app with an ordinary link. A Postplan page can't embed or call it (no iframes, no fetch).
 
 ## When to move to Cloudflare
 
-When the app must not expire or must be production-ready, needs a custom domain or npm packages, or would pass Lakebed's free limits: 10,000 requests and 1,000 writes a day per deploy, and 1 MiB of stored data. Move it to Workers with static assets, with Durable Objects for state, as an Alchemy stack.
+When the app must not expire or must be production-ready, needs a custom domain or npm packages, or would pass Lakebed's free limits: 10,000 requests and 1,000 writes a day per deploy, and 1 MiB of stored data. Move it to `arc-web-production`: a Foldkit app on Cloudflare (a Worker with static assets, Durable Objects for state, an Alchemy stack).
 
 ## Example
 
