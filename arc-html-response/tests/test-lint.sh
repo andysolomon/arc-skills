@@ -166,6 +166,10 @@ DIAGRAM_DESIGN_DIR="$stub" expect 0 clean PASS
 page no-svg '' '<p>No diagram here</p>'
 printf 'import sys\nprint("  - stub finding")\nsys.exit(1)\n' > "$stub/scripts/self_check.py"
 DIAGRAM_DESIGN_DIR="$stub" expect 0 no-svg PASS
+# A scripted page with a diagram: self_check allows no script but its own, so it reads the page with the script cut out.
+printf 'import sys\nif "<script" in open(sys.argv[-1], encoding="utf-8").read():\n    print("  - script finding")\n    sys.exit(1)\nprint("OK")\n' > "$stub/scripts/self_check.py"
+page sc-svg '' "$BTN$SVG_OK<script>const b=document.getElementById('b');b.hidden=false;b.addEventListener('click',()=>{b.textContent='Done'})</script>"
+DIAGRAM_DESIGN_DIR="$stub" LINT_FLAGS=--scripted expect 0 sc-svg '(0 warning(s)'
 # A captured still's icons are all aria-hidden: self_check (which wants an accessible SVG) is skipped.
 page still-icons '' '<figure class="stage"><div class="stage-frame" role="img" aria-label="A still"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M0 0h24"/></svg></div></figure>'
 DIAGRAM_DESIGN_DIR="$stub" expect 0 still-icons PASS
